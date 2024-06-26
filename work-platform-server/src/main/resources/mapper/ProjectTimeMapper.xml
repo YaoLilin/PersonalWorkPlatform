@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personalwork.dao.ProjectTimeMapper">
+    <insert id="insert" parameterType="com.personalwork.modal.entity.ProjectTimeDo">
+        insert into project_time (project_id, date, start_time, end_time,week_id)
+        values (#{project.id}, #{date}, #{startTime}, #{endTime},#{weekId});
+    </insert>
+
+    <update id="update" parameterType="com.personalwork.modal.entity.ProjectTimeDo">
+        update project_time set date=#{date},start_time=#{startTime},end_time=#{endTime} where week_id=#{weekId} and project_id=#{project.id}
+    </update>
+
+    <delete id="deleteWeekProjectTime">
+        delete from project_time where week_id=#{week_id}
+    </delete>
+    <delete id="deleteByProjectId">
+        delete from project_time where project_id=#{projectId}
+    </delete>
+    
+    <select id="getProjectTimeByDate" resultMap="projectTimeMap">
+        select * from project_time where project_id=#{projectId} and date = #{date}
+    </select>
+
+    <select id="getProjectTimeByProjectId" resultMap="projectTimeMap">
+        select * from project_time where project_id=#{projectId}
+    </select>
+
+    <select id="getProjectTimeByWeek" resultMap="projectTimeMap">
+        select * from project_time where week_id=#{weekId}
+    </select>
+    <select id="getAllProjectTime" resultMap="projectTimeMap">
+        select * from project_time
+    </select>
+
+    <resultMap id="projectTimeMap" type="com.personalwork.modal.entity.ProjectTimeDo">
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="week_id" property="weekId"/>
+        <association property="project" column="project_id" select="getProject" javaType="com.personalwork.modal.entity.ProjectDo"/>
+    </resultMap>
+
+    <select id="getProject" resultType="com.personalwork.modal.entity.ProjectDo">
+        select * from project where id = #{id}
+    </select>
+
+    <select id="getProjectTimesByRange"  resultMap="projectTimeMap">
+        select * from project_time where date >= #{startDate} and date &lt;= #{endDate}
+    </select>
+
+</mapper>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personalwork.dao.RecordMonthMapper">
+    <select id="list" resultType="RecordMonthDo">
+        select id,year,month,mark,summary,work_time workTime,is_summarize from record_month order by year desc,month desc
+    </select>
+    <select id="getById" resultType="RecordMonthDo">
+        select id,year,month,mark,summary,work_time workTime from record_month where id=#{id} order by year desc,month desc
+    </select>
+    <insert id="insert" parameterType="RecordMonthDo">
+        insert into record_month (year,month,mark,summary,work_time) values(#{year},#{month},#{mark},#{summary},
+            #{workTime})
+    </insert>
+    <select id="getByDate" resultType="RecordMonthDo">
+        select id,year,month,mark,summary,work_time workTime from record_month where year=#{year} and month=#{month}
+    </select>
+    <update id="update" parameterType="RecordMonthDo">
+        update record_month
+        <set>
+            <if test="year != null">
+                    year=#{year},
+            </if>
+            <if test="month != null">
+                    month=#{month},
+            </if>
+            <if test="workTime != null">
+                    work_time=#{workTime},
+            </if>
+            <if test="mark != null">
+                    mark=#{mark},
+            </if>
+            <if test="summary != null">
+                    summary=#{summary},
+            </if>
+            <if test="isSummarize != null">
+                 is_summarize=#{isSummarize},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+</mapper>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personalwork.dao.MonthProjectCountMapper">
+   <delete id="deleteByMonth">
+       delete from month_project_count where month_id = #{monthId}
+   </delete>
+    <delete id="delete">
+        delete from month_project_count where id = #{id}
+    </delete>
+    <delete id="deleteByProjectId">
+        delete from month_project_count where project_id = #{projectId}
+    </delete>
+    <select id="list" resultType="MonthProjectCountDo">
+        select * from month_project_count where  month_id = #{monthId};
+    </select>
+    <select id="listByProjectId" resultType="MonthProjectCountDo">
+        select * from month_project_count where  project_id = #{projectId};
+    </select>
+    <update id="update" parameterType="MonthProjectCountDo">
+        update month_project_count set minute=#{minute} where id=#{id}
+    </update>
+    <insert id="insert" parameterType="MonthProjectCountDo">
+        insert into month_project_count ( project_id, minute, month_id) value (#{projectId},#{minute},#{monthId})
+    </insert>
+</mapper>

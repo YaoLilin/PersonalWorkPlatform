@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personalwork.dao.ProblemMapper">
+    <select id="getProblems" parameterType="com.personalwork.modal.query.ProblemDbQr"
+            resultType="com.personalwork.modal.entity.ProblemDo">
+        select id,title,resolve,state,level,week_date weekDate from problem
+        <where>
+            <if test="title != null">
+                and title like "%"#{title}"%"
+            </if>
+            <if test="startDate != null">
+                and week_date >= #{startDate}
+            </if>
+            <if test="endDate != null">
+                and week_date &lt;= #{endDate}
+            </if>
+            <if test="state != null">
+                and state=#{state}
+            </if>
+            <if test="level != null">
+                and level=#{level}
+            </if>
+        </where>
+        order by state asc,week_date desc
+    </select>
+    <select id="getProblemsExceptThisWeek" resultType="com.personalwork.modal.entity.ProblemDo">
+        select id, title, resolve, state, level, week_date weekDate
+        from problem
+        where week_date != (select date from record_week where id = #{weekId})
+          and state = 0
+    </select>
+
+    <select id="getProblemsByWeekDate" resultType="ProblemDo">
+        select id, title, resolve, state, level, week_date weekDate
+        from problem
+        where week_date = #{weekDate}
+    </select>
+    <select id="getProblemById" resultType="com.personalwork.modal.entity.ProblemDo">
+        select id, title, resolve, state, level, week_date weekdDate
+        from problem
+        where id = #{id}
+    </select>
+    <select id="getProblemByName" resultType="com.personalwork.modal.entity.ProblemDo">
+        select id, title, resolve, state, level, week_date weekdDate
+        from problem
+        where title = #{title}
+    </select>
+    <select id="getOpenProblemByName" resultType="com.personalwork.modal.entity.ProblemDo">
+        select id, title, resolve, state, level, week_date weekDate
+        from problem
+        where title = #{title}
+          and state = 0
+    </select>
+    <insert id="add" parameterType="com.personalwork.modal.entity.ProblemDo">
+        insert into problem (title, resolve, state, level, week_date)
+        values (#{title}, #{resolve},
+                #{state}, #{level}, #{weekDate})
+    </insert>
+    <update id="update" parameterType="com.personalwork.modal.entity.ProblemDo">
+        update problem
+        <set>
+            <if test="title != null">
+                title=#{title},
+            </if>
+            <if test="resolve != null">
+                resolve=#{resolve},
+            </if>
+            <if test="state != null">
+                state=#{state},
+            </if>
+            <if test="level != null">
+                level=#{level},
+            </if>
+            <if test="weekDate != null">
+                week_date=#{weekDate}
+            </if>
+        </set>
+         where id=#{id}
+    </update>
+    <update id="done">
+        update problem
+        set state=1
+        where id = #{id}
+    </update>
+    <update id="callback">
+        update problem
+        set state=0
+        where id = #{id}
+    </update>
+    <delete id="delete">
+        delete
+        from problem
+        where id = #{id}
+    </delete>
+</mapper>

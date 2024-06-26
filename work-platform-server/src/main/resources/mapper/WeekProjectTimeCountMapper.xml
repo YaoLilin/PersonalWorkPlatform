@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personalwork.dao.WeekProjectTimeCountMapper">
+    <insert id="add" parameterType="com.personalwork.modal.entity.WeekProjectTimeCountDo">
+        insert into week_project_time_count (week_id,project,minutes) values (#{weekId}, #{project}, #{minutes});
+    </insert>
+
+    <update id="update" parameterType="com.personalwork.modal.entity.WeekProjectTimeCountDo">
+        update week_project_time_count set minutes=#{minutes} where week_id = #{weekId} and project = #{project}
+    </update>
+
+    <select id="listByWeekId" resultMap="timeCountMap">
+        select * from week_project_time_count where week_id=#{weekId} order by minutes desc;
+    </select>
+
+    <select id="listByProjectId" resultMap="timeCountMap">
+        select * from week_project_time_count where project=#{projectId};
+    </select>
+
+    <resultMap id="timeCountMap" type="com.personalwork.modal.entity.WeekProjectTimeCountDo">
+        <result column="week_id" property="weekId"/>
+    </resultMap>
+
+    <delete id="delete" >
+        delete from week_project_time_count where week_id=#{weekId};
+    </delete>
+    <delete id="deleteByProjectId">
+        delete from week_project_time_count where project=#{projectId};
+    </delete>
+</mapper>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personalwork.dao.MonthGoalMapper">
+    <select id="list" resultType="MonthGoalDo" parameterType="GoalQueryParam">
+        select id,project_id ,content,is_done ,year,month from month_goal
+        <where>
+            <if test="year != null">
+                and year = #{year}
+            </if>
+            <if test="month != null">
+                and month = #{month}
+            </if>
+        </where>
+    </select>
+    <insert id="insert" parameterType="MonthGoalParam">
+        insert into month_goal (project_id, content, is_done, year, month) value (#{projectId},#{content},#{isDone}
+            ,#{year},#{month})
+    </insert>
+    <update id="changeState" >
+        update month_goal set is_done=#{state} where id =#{id}
+    </update>
+    <delete id="delete" >
+        delete from month_goal where id=#{id}
+    </delete>
+</mapper>

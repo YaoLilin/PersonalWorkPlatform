@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personalwork.dao.ProjectMapper">
+    <select id="getAll" resultMap="projectsMap">
+        select * from project;
+    </select>
+
+    <select id="getProject" resultMap="projectsMap">
+        select * from project where id =#{id};
+    </select>
+    
+    <resultMap id="projectsMap" type="com.personalwork.modal.entity.ProjectDo">
+        <result column="close_date" property="closeDate"/>
+        <result column="is_startdate_only" property="isStartDateOnly"/>
+        <association property="type" column="type" javaType="TypeDo" select="getType"/>
+    </resultMap>
+
+    <select id="getType" resultType="com.personalwork.modal.entity.TypeDo">
+        select * from type where id = #{type};
+    </select>
+
+    <insert id="addProject" parameterType="com.personalwork.modal.entity.ProjectDo">
+        insert into project (name,startdate,enddate,close_date,type,progress,state,important,is_startdate_only) values (#{name},#{startDate},#{endDate},#{closeDate}
+                                                                                           ,#{type.id},#{progress},#{state},#{important},#{isStartDateOnly});
+    </insert>
+
+    <delete id="deleteProject" >
+        delete from project where id =#{id}
+    </delete>
+
+    <update id="updateProject" parameterType="com.personalwork.modal.entity.ProjectDo">
+        update project
+        <set>
+            <if test="startDate == '' ">
+                startdate=null,
+            </if>
+            <if test="startDate != '' ">
+                startdate=#{startDate},
+            </if>
+            <if test="endDate == '' ">
+                enddate=null,
+            </if>
+            <if test="endDate != '' ">
+                enddate=#{endDate},
+            </if>
+            <if test="closeDate == '' ">
+                close_date=null,
+            </if>
+            <if test="closeDate != '' ">
+                close_date=#{closeDate},
+            </if>
+        </set>
+        ,name =#{name},type=#{type.id},progress=#{progress},state=#{state},important=#{important}
+        ,is_startdate_only=#{isStartDateOnly}  where id = #{id}
+    </update>
+</mapper>

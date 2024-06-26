@@ -1,0 +1,19 @@
+
+.tree_title{
+    font-size:16px;
+    padding:4px 0;
+
+}
+
+/*树组件的加号图标*/
+.tree_bt{
+    cursor: pointer !important;
+    margin-left:6px;
+    color:#008cc0;
+    display: none;
+}
+
+/*鼠标移到标题时显示加号图标*/
+.tree_title:hover .tree_bt{
+    display: inline-block;
+}

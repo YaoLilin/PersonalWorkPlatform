@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personalwork.dao.RecordWeekMapper">
+   <select id="getWorkWeekByDate" resultType="RecordWeekDo">
+       select * from record_week where date =#{date}
+   </select>
+    <select id="getWorkWeekById" resultType="RecordWeekDo">
+        select * from record_week where id =#{id}
+    </select>
+    <select id="getWorkWeekList" resultType="RecordWeekDo">
+        select * from record_week order by date desc
+    </select>
+    <insert id="addWorkWeek" parameterType="com.personalwork.modal.entity.RecordWeekDo">
+        insert into record_week( date, time, summary, mark) values (#{date},#{time},#{summary},#{mark})
+    </insert>
+    <delete id="deleteWorkWeek">
+        delete from record_week where id =#{id}
+    </delete>
+    <update id="updateWorkWeek" parameterType="com.personalwork.modal.entity.RecordWeekDo">
+        update record_week set date=#{date},time=#{time},summary=#{summary},mark=#{mark} where id=#{id}
+    </update>
+</mapper>

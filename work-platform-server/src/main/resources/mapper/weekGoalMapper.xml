@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personalwork.dao.WeekGoalMapper">
+    <select id="list" resultType="WeekGoalDo" parameterType="GoalQueryParam">
+        select id,project_id ,content,is_done ,year,week_number from week_goal
+        <where>
+            <if test="year != null">
+                and year = #{year}
+            </if>
+            <if test="weekNumber != null">
+                and week_number = #{weekNumber}
+            </if>
+        </where>
+    </select>
+    <insert id="insert" parameterType="com.personalwork.modal.query.WeekGoalParam">
+        insert into week_goal (project_id, content, is_done, year, week_number) value (#{projectId},#{content},#{isDone}
+                                                                                 ,#{year},#{weekNumber})
+    </insert>
+    <update id="changeState" >
+        update week_goal set is_done=#{state} where id =#{id}
+    </update>
+    <delete id="delete" >
+        delete from week_goal where id=#{id}
+    </delete>
+</mapper>
