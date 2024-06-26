@@ -1,7 +1,4 @@
 Log/
-.idea/
-*/.idea/
-*.iml
 work-platform-react/build/
 work-platform-react/node_modules/
 work-platform-server/log/
