@@ -1,16 +1,14 @@
 package com.personalwork.dao;
 
 import com.personalwork.modal.entity.GoalDo;
-import com.personalwork.modal.entity.WeekGoalDo;
 import com.personalwork.modal.query.GoalParam;
 import com.personalwork.modal.query.GoalQueryParam;
-
 
 import java.util.List;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 目标Mapper
  * @date 2024/5/4
  */
 public interface GoalMapper {
