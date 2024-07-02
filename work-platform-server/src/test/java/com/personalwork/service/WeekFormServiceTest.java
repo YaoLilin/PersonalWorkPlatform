@@ -125,8 +125,8 @@ public class WeekFormServiceTest {
 
     @Test
     public void testDelete() {
-        String weekId = "1";
-        when(recordWeekMapper.deleteWorkWeek(anyString())).thenReturn(true);
+        int weekId = 1;
+        when(recordWeekMapper.deleteWorkWeek(anyInt())).thenReturn(true);
 
         boolean result = weekFormService.delete(weekId);
 

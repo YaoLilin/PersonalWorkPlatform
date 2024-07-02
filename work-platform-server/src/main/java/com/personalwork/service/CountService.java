@@ -51,7 +51,7 @@ public class CountService {
         return recordWeekMapper.addWorkWeek(recordWeekDo);
     }
 
-    public boolean deleteWorkWeek(String  id) {
+    public boolean deleteWorkWeek(Integer  id) {
         return recordWeekMapper.deleteWorkWeek(id);
     }
 

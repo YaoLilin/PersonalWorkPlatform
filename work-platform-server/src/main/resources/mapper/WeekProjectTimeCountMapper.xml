@@ -23,7 +23,7 @@
         <result column="week_id" property="weekId"/>
     </resultMap>
 
-    <delete id="delete" >
+    <delete id="deleteByWeek" >
         delete from week_project_time_count where week_id=#{weekId};
     </delete>
     <delete id="deleteByProjectId">

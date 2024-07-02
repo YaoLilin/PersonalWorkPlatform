@@ -20,6 +20,6 @@ public interface RecordWeekMapper {
     List<RecordWeekDo> getWorkWeekList();
 
     boolean addWorkWeek(RecordWeekDo recordWeekDo);
-    boolean deleteWorkWeek(String  id);
+    boolean deleteWorkWeek(Integer  id);
     boolean updateWorkWeek(RecordWeekDo recordWeekDo);
 }

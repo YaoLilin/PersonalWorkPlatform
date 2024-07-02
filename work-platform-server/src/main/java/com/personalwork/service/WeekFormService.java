@@ -65,7 +65,7 @@ public class WeekFormService {
     @Transactional(rollbackFor = Exception.class)
     public boolean saveForm(Integer id, WeekFormParam param) {
         projectTimeMapper.deleteWeekProjectTime(id);
-        countMapper.delete(id);
+        countMapper.deleteByWeek(id);
 
         RecordWeekDo recordWeekDo = convertToRecordWeekDo(param);
         recordWeekDo.setId(id);
@@ -115,9 +115,9 @@ public class WeekFormService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public boolean delete(String weekId) {
-        projectTimeMapper.deleteWeekProjectTime(Integer.parseInt(weekId));
-        countMapper.delete(Integer.parseInt(weekId));
+    public boolean delete(Integer weekId) {
+        projectTimeMapper.deleteWeekProjectTime(weekId);
+        countMapper.deleteByWeek(weekId);
         recordWeekMapper.deleteWorkWeek(weekId);
         return true;
     }

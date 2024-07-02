@@ -17,7 +17,7 @@ public interface WeekProjectTimeCountMapper {
     List<WeekProjectTimeCountDo> listByWeekId(Integer weekId);
     List<WeekProjectTimeCountDo> listByProjectId(Integer projectId);
     boolean add(WeekProjectTimeCountDo timeCount);
-    boolean delete(Integer week);
+    boolean deleteByWeek(Integer week);
 
     boolean deleteByProjectId(Integer projectId);
 

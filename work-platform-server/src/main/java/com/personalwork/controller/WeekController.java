@@ -80,7 +80,7 @@ public class WeekController {
     }
 
     @DeleteMapping("/{id}")
-    public boolean delete(@PathVariable String id){
+    public boolean delete(@PathVariable Integer id){
         return formService.delete(id);
     }
 

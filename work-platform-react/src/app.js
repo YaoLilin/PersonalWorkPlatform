@@ -42,6 +42,7 @@ const items = [
     getItem('工作统计', 'count', <FundViewOutlined style={{fontSize: '1.2em'}}/>, [
         getItem('周统计', '/weeks'),
         getItem('月统计', '/months'),
+        getItem('统计图表', '/chart'),
     ]),
     getItem('目标', 'goal', <CheckCircleOutlined style={{fontSize: '1.2em'}}/>, [
         getItem('周目标', '/goal/weeks'),
@@ -69,6 +70,9 @@ const getSelectedKey = (pathname) => {
     if (pathname.startsWith('/months')) {
         defaultSelectedKey = '/months';
     }
+    if (pathname.startsWith('/chart')) {
+        defaultSelectedKey = '/chart';
+    }
     if (pathname.startsWith('/goal/months')) {
         defaultSelectedKey = '/goal/months';
     }
@@ -90,10 +94,7 @@ const App = () => {
     const navigate = useNavigate();
 
     let defaultOpenKey;
-    if (pathname.startsWith('/weeks')) {
-        defaultOpenKey = 'count';
-    }
-    if (pathname.startsWith('/months')) {
+    if (pathname.startsWith('/weeks') || pathname.startsWith('/months') || pathname.startsWith('/chart')) {
         defaultOpenKey = 'count';
     }
     if (pathname.startsWith('/goal')) {

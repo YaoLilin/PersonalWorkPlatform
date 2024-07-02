@@ -1,7 +1,7 @@
 package com.personalwork.dao;
 
 import com.personalwork.modal.entity.RecordMonthDo;
-import org.apache.ibatis.annotations.*;
+import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

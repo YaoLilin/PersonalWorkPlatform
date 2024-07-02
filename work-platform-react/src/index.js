@@ -14,6 +14,7 @@ import MonthList, {loader as monthListLoader} from "./screens/statistics/MonthLi
 import MonthForm, {loader as monthFormLoader} from "./screens/statistics/MonthForm";
 import WeekGoalList, {loader as weekGoalListLoader} from "./screens/goal/WeekGoalList";
 import MonthGoalList, {loader as monthGoalListLoader} from "./screens/goal/MonthGoalList";
+import ChartPage from "./screens/statistics/ChartPage";
 
 
 const router = createBrowserRouter([
@@ -59,6 +60,10 @@ const router = createBrowserRouter([
                 path: 'months',
                 element: <MonthList />,
                 loader:monthListLoader,
+            },
+            {
+                path:'chart',
+                element:<ChartPage />
             },
             {
                 path: 'months/form/:monthId',
