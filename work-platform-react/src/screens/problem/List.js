@@ -7,10 +7,15 @@ import ConditionPanel from "../../components/problems/ConditionPanel";
 import ProblemsTable from "../../components/problems/Table";
 import {MessageContext} from "../../provider/MessageProvider";
 import useProblemEditDialog from "./useProblemEditDialog";
+import handleLoaderError from "../../util/handleLoaderError";
 const {confirm} = Modal;
 
 export async function loader({params}) {
-    return await ProblemsApis.list(params);
+    try {
+        return await ProblemsApis.list(params);
+    } catch (e) {
+        handleLoaderError(e);
+    }
 }
 
 // 问题库页面

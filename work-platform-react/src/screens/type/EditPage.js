@@ -6,12 +6,17 @@ import {useContext, useState} from "react";
 import {MessageContext} from "../../provider/MessageProvider";
 import TypeAddDialogContent from "../../components/type/TypeAddDialogContent";
 import TypeEditDialogContent from "../../components/type/TypeEditDialogContent";
+import handleLoaderError from "../../util/handleLoaderError";
 
 
 const {confirm} = Modal;
 
 export async function loader({params}) {
-    return await getTypeTree(params);
+    try {
+        return await getTypeTree(params);
+    } catch (e) {
+        handleLoaderError(e);
+    }
 }
 
 const TypeEdit =  () => {

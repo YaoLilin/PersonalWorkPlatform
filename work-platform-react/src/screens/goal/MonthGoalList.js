@@ -6,9 +6,14 @@ import {Button} from "antd/lib";
 import {PlusOutlined} from "@ant-design/icons";
 import GoalList from "../../components/goal/List";
 import {MessageContext} from "../../provider/MessageProvider";
+import handleLoaderError from "../../util/handleLoaderError";
 
 export async function loader(){
-    return await GoalApi.getMonthGoals();
+    try {
+        return await GoalApi.getMonthGoals();
+    } catch (e) {
+        handleLoaderError(e);
+    }
 }
 
 const MonthGoalList = ()=>{

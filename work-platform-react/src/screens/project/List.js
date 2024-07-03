@@ -4,11 +4,16 @@ import {useLoaderData, useNavigate} from "react-router-dom";
 import {ProjectApi} from "../../request/projectApi";
 import {ExclamationCircleFilled} from "@ant-design/icons";
 import {MessageContext} from "../../provider/MessageProvider";
+import handleLoaderError from "../../util/handleLoaderError";
 
 const { confirm } = Modal;
 
 export async function loader({params}){
-    return await ProjectApi.getProjects(params);
+    try {
+        return await ProjectApi.getProjects(params);
+    } catch (e) {
+        handleLoaderError(e);
+    }
 }
 
 const ProjectList = () => {

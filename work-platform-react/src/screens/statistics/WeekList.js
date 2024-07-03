@@ -4,9 +4,14 @@ import WeekCard from "../../components/statistics/list/WeekCard";
 import {WeeksApi} from "../../request/weeksApi";
 import ListTitle from "../../components/ui/ListTitle";
 import {useMemo} from "react";
+import handleLoaderError from "../../util/handleLoaderError";
 
 export async function loader() {
-   return  await WeeksApi.getWeekList({});
+    try {
+        return await WeeksApi.getWeekList({});
+    } catch (e) {
+        handleLoaderError(e);
+    }
 }
 
 const WeekList =  () => {

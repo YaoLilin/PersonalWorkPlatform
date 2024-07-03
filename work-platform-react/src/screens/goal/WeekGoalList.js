@@ -6,9 +6,14 @@ import {PlusOutlined} from "@ant-design/icons";
 import dayjs from "dayjs";
 import {useContext, useState} from "react";
 import {MessageContext} from "../../provider/MessageProvider";
+import handleLoaderError from "../../util/handleLoaderError";
 
 export async function loader(){
-    return await GoalApi.getWeekGoals();
+    try {
+        return await GoalApi.getWeekGoals();
+    } catch (e) {
+        handleLoaderError(e);
+    }
 }
 
 const WeekGoalList = () => {

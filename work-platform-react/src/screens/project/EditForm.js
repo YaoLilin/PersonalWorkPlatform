@@ -3,10 +3,15 @@ import ProjectForm from "../../components/project/Form"
 import {useLoaderData} from "react-router-dom";
 import React, {useContext} from "react";
 import {MessageContext} from "../../provider/MessageProvider";
+import handleLoaderError from "../../util/handleLoaderError";
 
 
 export async function loader({params}){
-    return await ProjectApi.getProject(params.id);
+    try {
+        return await ProjectApi.getProject(params.id);
+    } catch (e) {
+        handleLoaderError(e);
+    }
 }
 
 const EditForm =  ()=>{

@@ -21,6 +21,7 @@ import useWeekFormSubmit from "./useWeekFormSubmit";
 import FullRow from "../../components/statistics/form/FullRow";
 import useDeleteDialog from "./useDeleteDialog";
 import useHeadMenus from "./useHeadMenus";
+import handleLoaderError from "../../util/handleLoaderError";
 
 function getYearAndWeekNumber(weekId, formData) {
     let year;
@@ -37,12 +38,16 @@ function getYearAndWeekNumber(weekId, formData) {
 }
 
 export async function loader({params}) {
-    const weekId = params.weekId;
-    const formData = weekId ? await WeeksApi.getForm(weekId) : {};
-    let {year, weekNumber} = getYearAndWeekNumber(weekId, formData);
-    const goalsResult = await GoalApi.getWeekGoals({year, weekNumber});
-    const goals = goalsResult.length > 0 ? goalsResult[0].goals : [];
-    return {formData,goals};
+    try {
+        const weekId = params.weekId;
+        const formData = weekId ? await WeeksApi.getForm(weekId) : {};
+        let {year, weekNumber} = getYearAndWeekNumber(weekId, formData);
+        const goalsResult = await GoalApi.getWeekGoals({year, weekNumber});
+        const goals = goalsResult.length > 0 ? goalsResult[0].goals : [];
+        return {formData, goals};
+    } catch (e) {
+        handleLoaderError(e);
+    }
 }
 
 const WeekForm = ({isFormCreate}) => {

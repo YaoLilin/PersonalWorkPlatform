@@ -13,13 +13,18 @@ import dayjs from "dayjs";
 import {MessageContext} from "../../provider/MessageProvider";
 import useHeadMenus from "./useHeadMenus";
 import SummaryTextArea from "../../components/statistics/form/SummaryTextArea";
+import handleLoaderError from "../../util/handleLoaderError";
 
 export async function loader({params}) {
-    const monthData =await MonthsApi.getMonth(params.monthId);
-    const startDate = monthData.year +'-'+monthData.month+'-01';
-    const endDate = dayjs(startDate).endOf("month").format("YYYY-MM-DD");
-    const problemList =await ProblemsApis.list({startDate,endDate});
-    return {monthData,problemList}
+    try {
+        const monthData = await MonthsApi.getMonth(params.monthId);
+        const startDate = monthData.year +'-'+monthData.month+'-01';
+        const endDate = dayjs(startDate).endOf("month").format("YYYY-MM-DD");
+        const problemList =await ProblemsApis.list({startDate,endDate});
+        return {monthData,problemList}
+    } catch (e) {
+        handleLoaderError(e);
+    }
 }
 
 const MonthForm = () => {

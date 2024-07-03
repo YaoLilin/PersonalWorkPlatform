@@ -15,12 +15,14 @@ import MonthForm, {loader as monthFormLoader} from "./screens/statistics/MonthFo
 import WeekGoalList, {loader as weekGoalListLoader} from "./screens/goal/WeekGoalList";
 import MonthGoalList, {loader as monthGoalListLoader} from "./screens/goal/MonthGoalList";
 import ChartPage from "./screens/statistics/ChartPage";
+import ErrorBoundary from "./components/ui/ErrorBoundary";
 
 
 const router = createBrowserRouter([
     {
         path: '/',
         element: <App/>,
+        errorElement:<ErrorBoundary />,
         children: [
             {
                 path: 'projects',
