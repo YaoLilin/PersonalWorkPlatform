@@ -17,7 +17,7 @@ const TypeSelector =  (props)=>{
         <TreeSelect {...props}
                     treeDefaultExpandAll
                     treeData={types}
-                    style={{...props.style}}/>
+                    style={{width:120,...props.style}}/>
     )
 }
 

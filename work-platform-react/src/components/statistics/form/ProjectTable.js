@@ -66,9 +66,10 @@ export default (props) => {
             render: (text, record) => {
                 if (isEdit){
                     return <BrowserInput style={{width: '140px'}}
-                                         value={{id:text.value,name:text.showName}}
-                                         onChange={(id,name)=>{
-                                            getDataItem(record.key).project ={value:id,showName:name};
+                                         value={text ? {id:text.value,name:text.showName} : null}
+                                         onChange={(obj)=>{
+                                            getDataItem(record.key).project =obj ? {value:obj.id,showName:obj.name}
+                                            : null;
                                             onChange(data);
                                          }
                                         }
@@ -124,7 +125,7 @@ export default (props) => {
     };
     const onAdd = () => {
         const newData = data.slice(0);
-        newData.push({key: ++rowKey, date: '', project: {value:null,showName: ''}, startTime: '', endTime: '', progress: ''})
+        newData.push({key: ++rowKey, date: '', startTime: '', endTime: '', progress: ''})
         onChange(newData);
     }
     const onCopy = () => {

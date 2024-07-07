@@ -18,11 +18,13 @@ const columns = [
     },
 ]
 
-const BrowserDialog =({onSelected,onCancel,onOk,visible}) => {
+const BrowserDialog =({onClickRow,onCancel,onOk,visible,isMultiple,selectedProjectIds,onSelectedKeysChange}) => {
     const [tableData, setTableData] = useState([]);
     const [totalProjectData, setTotalProjectData] = useState([]);
-    const messageApi = useContext(MessageContext);
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedData, setSelectedData] = useState([]);
+
+    const messageApi = useContext(MessageContext);
 
     useEffect(() => {
         ProjectApi.getProjects({}).then(result => {
@@ -44,9 +46,24 @@ const BrowserDialog =({onSelected,onCancel,onOk,visible}) => {
         setTableData(newData);
     }
 
+    const handleClickRow = !isMultiple ? (record) => {
+        return {
+            onClick: () => onClickRow(record.key, record.name)
+        }
+    } : null;
+
+    const rowSelection = isMultiple ? {
+        onChange: (selectedRowKeys) => {
+            onSelectedKeysChange(selectedRowKeys);
+            const selectedData = totalProjectData.filter(item => selectedRowKeys.includes(item.key));
+            setSelectedData(selectedData);
+        },
+        selectedRowKeys: selectedProjectIds,
+    } : null;
+
     return (
         <Modal title="选择项目"
-               onOk={onOk}
+               onOk={()=> onOk(selectedData)}
                open={visible}
                onCancel={onCancel}
                width={600}>
@@ -55,11 +72,9 @@ const BrowserDialog =({onSelected,onCancel,onOk,visible}) => {
                    dataSource={tableData}
                    pagination={{position: ['bottomRight']}}
                    isLoading={isLoading}
-                   onRow={(record) => {
-                       return {
-                           onClick: (event) => onSelected(record.key, record.name)
-                       };
-                   }}
+                   style={{paddingTop:10}}
+                   rowSelection={rowSelection}
+                   onRow={handleClickRow}
             />
         </Modal>
     )

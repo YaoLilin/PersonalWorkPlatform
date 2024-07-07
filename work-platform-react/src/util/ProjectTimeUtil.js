@@ -8,7 +8,7 @@ import getMinutes from "./TimeUtil";
 function merger(tableData) {
     const mergeData = new Map();
     tableData && tableData.forEach(item => {
-        if (item.project.value !== -1 && item.project.value !== null && item.project.value !== undefined) {
+        if (item.project) {
             if (!mergeData.has(item.project.value)) {
                 const rowData = {
                     project: item.project,

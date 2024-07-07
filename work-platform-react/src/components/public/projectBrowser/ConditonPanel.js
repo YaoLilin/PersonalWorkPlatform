@@ -1,4 +1,4 @@
-import {Col, Row} from "antd";
+import {Col, Input, Row} from "antd";
 import Search from "antd/es/input/Search";
 import TypeSelector from "../TypeSelector";
 import React, {useState} from "react";
@@ -11,17 +11,10 @@ const ConditionPanel = ({onSearch, onChange}) => {
     return <Row>
         <Col span={12}>
             <span style={{paddingRight: 20}}>名称</span>
-            <Search
-                onSearch={onSearch}
-                style={{
-                    width: 200,
-                }}
-                allowClear={true}
-                onChange={(e=>{
-                    setName(e.target.value);
-                    onChange(e.target.value, type);
-                })}
-            />
+            <Input style={{width: 200}} onChange={(e=>{
+                setName(e.target.value);
+                onChange(e.target.value, type);
+            })}/>
         </Col>
         <Col span={12}>
             <span style={{paddingRight: 20}}>类型</span>
