@@ -6,9 +6,6 @@ package com.personalwork.util;
  * @date 2024/1/23
  */
 public class TimeUtils {
-    private TimeUtils() {
-
-    }
 
     /**
      * 计算开始时间和结束时间之间的时间差

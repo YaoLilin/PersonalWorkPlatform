@@ -1,13 +1,19 @@
 package com.personalwork.controller;
 
+import com.personalwork.enu.CountType;
+import com.personalwork.modal.dto.WeekTimeCountDto;
+import com.personalwork.modal.query.WeekTimeCountParam;
+import com.personalwork.modal.vo.BarChartVo;
 import com.personalwork.modal.vo.PipeCountVo;
 import com.personalwork.service.ChartService;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,13 +31,31 @@ public class ChartController {
         this.chartService = chartService;
     }
 
-    @RequestMapping("/type-time-count-month")
+    @GetMapping("/type-time-count-month")
     public List<PipeCountVo> typeTimeCountOfMonth(@RequestParam Integer layer, @RequestParam @NotNull Integer monthId) {
         return chartService.typeTimeCountOfMonth(layer, monthId);
     }
 
-    @RequestMapping("/type-time-count-week")
+    @GetMapping("/type-time-count-week")
     public List<PipeCountVo> typeTimeCountOfWeek(@RequestParam Integer layer, @RequestParam @NotNull Integer weekId) {
         return chartService.typeTimeCountOfWeek(layer,weekId);
+    }
+
+    @GetMapping("/week-time-count")
+    public List<BarChartVo> weekTimeCount(WeekTimeCountParam param) {
+        List<BarChartVo> result = new ArrayList<>();
+        List<WeekTimeCountDto> weekTimeCountDtoList = chartService.weekTimeCount(param);
+        for (WeekTimeCountDto timeCount : weekTimeCountDtoList) {
+            BarChartVo vo = new BarChartVo();
+            vo.setXName(timeCount.getWeekDate());
+            if (param.getCountType() == CountType.PROJECT) {
+                vo.setType(timeCount.getProjectName());
+            }else {
+                vo.setType(timeCount.getTypeName());
+            }
+            vo.setValue(timeCount.getMinutes());
+            result.add(vo);
+        }
+        return result;
     }
 }

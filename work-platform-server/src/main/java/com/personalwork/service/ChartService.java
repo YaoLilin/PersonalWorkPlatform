@@ -1,20 +1,24 @@
 package com.personalwork.service;
 
-import com.personalwork.dao.MonthProjectCountMapper;
-import com.personalwork.dao.ProjectMapper;
-import com.personalwork.dao.TypeMapper;
-import com.personalwork.dao.WeekProjectTimeCountMapper;
+import com.personalwork.dao.*;
 import com.personalwork.exception.ChartCalculateException;
+import com.personalwork.exception.MethodParamInvalidException;
+import com.personalwork.modal.dto.WeekTimeCountDto;
 import com.personalwork.modal.entity.MonthProjectCountDo;
 import com.personalwork.modal.entity.ProjectDo;
 import com.personalwork.modal.entity.TypeDo;
 import com.personalwork.modal.entity.WeekProjectTimeCountDo;
+import com.personalwork.modal.query.WeekTimeCountParam;
 import com.personalwork.modal.vo.PipeCountVo;
+import com.personalwork.util.DateUtil;
 import com.personalwork.util.NumberUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author 姚礼林
@@ -27,14 +31,17 @@ public class ChartService {
     private final ProjectMapper projectMapper;
     private final TypeMapper typeMapper;
     private final WeekProjectTimeCountMapper weekProjectTimeCountMapper;
+    private final WeekTimeCountMapper weekTimeCountMapper;
 
     @Autowired
     public ChartService(MonthProjectCountMapper monthProjectCountMapper, ProjectMapper projectMapper,
-                        TypeMapper typeMapper, WeekProjectTimeCountMapper weekProjectTimeCountMapper) {
+                        TypeMapper typeMapper, WeekProjectTimeCountMapper weekProjectTimeCountMapper,
+                        WeekTimeCountMapper weekTimeCountMapper) {
         this.monthProjectCountMapper = monthProjectCountMapper;
         this.projectMapper = projectMapper;
         this.typeMapper = typeMapper;
         this.weekProjectTimeCountMapper = weekProjectTimeCountMapper;
+        this.weekTimeCountMapper = weekTimeCountMapper;
     }
 
     /**
@@ -61,10 +68,10 @@ public class ChartService {
         projectCountList.forEach(i -> {
             if (i.getMinute() == null || i.getMinute() == 0) {
                 throw new ChartCalculateException.TypeChartCalculateException("项目时间不允许为空或0，MonthProjectCountDo："
-                +i);
+                        + i);
             }
             if (i.getProjectId() == null) {
-                throw new ChartCalculateException.TypeChartCalculateException("项目id不允许为空，MonthProjectCountDo："+i);
+                throw new ChartCalculateException.TypeChartCalculateException("项目id不允许为空，MonthProjectCountDo：" + i);
             }
             ProjectTime projectTime = new ProjectTime();
             projectTime.minutes = i.getMinute();
@@ -73,6 +80,35 @@ public class ChartService {
         });
 
         return countProjectTypeTime(projectTimeList);
+    }
+
+    public List<WeekTimeCountDto> weekTimeCount(WeekTimeCountParam param) {
+        String[] dateRange = getDateRange(param);
+        String startDate = dateRange[0];
+        String endDate = dateRange[1];
+        return weekTimeCountMapper.listByDateRange(startDate, endDate);
+    }
+
+    private String[] getDateRange(WeekTimeCountParam param) {
+        String startDate;
+        String endDate;
+        String[] dateRange;
+        switch (param.getTimeRange()) {
+            case NEALY_FOUR_WEEK:
+                 dateRange = DateUtil.getDateRangeByWeekBaseMonday(DateUtil.getNowDate(), 4);
+            case NEALY_TWELVE_WEEK:
+                 dateRange = DateUtil.getDateRangeByWeekBaseMonday(DateUtil.getNowDate(), 12);
+            case NEALY_HALF_YEAR:
+                dateRange = DateUtil.getDateRangeByWeekBaseMonday(DateUtil.getNowDate(), 26);
+                startDate = dateRange[0];
+                endDate = dateRange[1];
+                break;
+            case CUSTOM :
+                startDate = param.getStartDate();
+                endDate = param.getEndDate();
+            default : throw new MethodParamInvalidException("找不到 TimeRange 枚举");
+        }
+        return new String[]{startDate, endDate};
     }
 
     /**
@@ -130,7 +166,7 @@ public class ChartService {
         return typeAndTimeMap;
     }
 
-    private  PipeCountVo buildPipeCountVo(int totalMinutes, TypeDo type, Integer time) {
+    private PipeCountVo buildPipeCountVo(int totalMinutes, TypeDo type, Integer time) {
         PipeCountVo countVo = new PipeCountVo();
         String typeName = type.getName();
         double percent;
@@ -139,7 +175,7 @@ public class ChartService {
                     0, true));
         } catch (NumberFormatException e) {
             throw new ChartCalculateException.TypeChartCalculateException("计算当前类型的时间占比出错，当前类型占用时间："
-                    + time + "，总时间：" + totalMinutes + "，类型：" + type,e);
+                    + time + "，总时间：" + totalMinutes + "，类型：" + type, e);
         }
         countVo.setName(typeName);
         countVo.setCount(time);
@@ -147,8 +183,8 @@ public class ChartService {
         return countVo;
     }
 
-    private Map<Integer,TypeDo> getProjectIdTypeMap(List<ProjectTime> projectTimeList) {
-        Map<Integer,TypeDo> projectIdTypeMap = new HashMap<>(10);
+    private Map<Integer, TypeDo> getProjectIdTypeMap(List<ProjectTime> projectTimeList) {
+        Map<Integer, TypeDo> projectIdTypeMap = new HashMap<>(10);
         for (ProjectTime projectTime : projectTimeList) {
             TypeDo type = getTypeByProjectTime(projectTime);
             projectIdTypeMap.computeIfAbsent(projectTime.projectId, id -> type);

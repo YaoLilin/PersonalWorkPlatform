@@ -5,7 +5,7 @@ spring:
     password: mysql123
     driver-class-name: com.mysql.cj.jdbc.Driver
 mybatis:
-  type-aliases-package: com.personalwork.modal.entity,com.personalwork.modal.query
+  type-aliases-package: com.personalwork.modal.entity,com.personalwork.modal.query,com.personalwork.modal.dto
   configuration:
     log-impl: org.apache.ibatis.logging.log4j2.Log4j2Impl
     map-underscore-to-camel-case: true
