@@ -1,6 +1,7 @@
 package com.personalwork.dao;
 
 import com.personalwork.modal.dto.WeekTimeCountDto;
+import com.personalwork.modal.query.WeekTimeCountParam;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
@@ -14,5 +15,5 @@ import java.util.List;
 @Repository
 @Mapper
 public interface WeekTimeCountMapper {
-    List<WeekTimeCountDto> listByDateRange(String startDate, String endDate);
+    List<WeekTimeCountDto> listByDateRange(WeekTimeCountParam param);
 }

@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.personalwork.modal.dto.ProjectDto;
 import com.personalwork.modal.query.ProjectParam;
 import com.personalwork.service.ProjectService;
-import com.personalwork.verify.ValidGroup;
+import com.personalwork.validation.ValidGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;

@@ -1,7 +1,6 @@
-package com.personalwork.verify;
+package com.personalwork.validation;
 
-import com.personalwork.annotaton.ValidDate;
-import com.personalwork.annotaton.ValidTime;
+import com.personalwork.validation.constraints.ValidTime;
 import com.personalwork.constants.RegularConstant;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

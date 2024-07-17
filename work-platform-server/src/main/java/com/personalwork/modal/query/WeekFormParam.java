@@ -1,7 +1,7 @@
 package com.personalwork.modal.query;
 
-import com.personalwork.annotaton.ValidDate;
-import com.personalwork.annotaton.ValidTime;
+import com.personalwork.validation.constraints.ValidDate;
+import com.personalwork.validation.constraints.ValidTime;
 import com.personalwork.enu.Mark;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -18,6 +18,7 @@ import java.util.List;
 @Data
 public class WeekFormParam {
     @ValidDate
+    @NotNull
     private String date;
     @NotNull(message = "评价不能为空")
     private Mark mark;
@@ -38,6 +39,7 @@ public class WeekFormParam {
     @Data
     public static class ProjectTime{
         @ValidDate
+        @NotNull
         private String date;
         @ValidTime(message = "开始时间格式错误")
         private String startTime;
@@ -72,6 +74,7 @@ public class WeekFormParam {
         private String resolve;
         private Integer level;
         @ValidDate(message = "周日期格式错误")
+        @NotNull
         private String weekDate;
     }
 }

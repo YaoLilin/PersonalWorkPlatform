@@ -1,6 +1,6 @@
 package com.personalwork.modal.query;
 
-import com.personalwork.annotaton.ValidDate;
+import com.personalwork.validation.constraints.ValidDate;
 import com.personalwork.enu.ProblemLevel;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,6 +14,7 @@ import lombok.Data;
 @Data
 public class ProblemAddQr {
     @ValidDate
+    @NotNull
     private String weekDate;
     private ProblemLevel level;
     private String resolve;

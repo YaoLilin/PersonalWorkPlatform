@@ -56,8 +56,10 @@ public class ControllerExceptionHandler {
                     .map(i -> String.format("[%s] %s",i.getObjectName(),i.getDefaultMessage()))
                     .collect(Collectors.joining("; "));
             resp = new ResponseEntity<>(new ErrorMsg(msg, ex.getClass().getSimpleName()), HttpStatus.NOT_FOUND);
+        }else {
+            resp = new ResponseEntity<>(new ErrorMsg(e.getMessage(), e.getClass().getSimpleName()), HttpStatus.NOT_FOUND);
         }
-        if (resp != null && resp.getBody() != null) {
+        if (resp.getBody() != null) {
             log.error("接口发生异常：" + resp.getBody().getMessage(), e);
         }
         return resp;

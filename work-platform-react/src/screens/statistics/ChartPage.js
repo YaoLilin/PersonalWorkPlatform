@@ -1,5 +1,6 @@
 import {Card,Flex} from "antd";
-import WeekTimeChart from "../../components/statistics/weekTimeChart/index";
+import WeekTimeChart from "../../components/statistics/charts/WeekTimeChart";
+import MonthTimeChart from "../../components/statistics/charts/MonthTimeChart";
 
 const ChartPage = () => {
 
@@ -10,6 +11,7 @@ const ChartPage = () => {
                 <WeekTimeChart />
             </Card>
             <Card style={{width:500}} title={'每月利用时间统计'}>
+                <MonthTimeChart />
             </Card>
             <Card style={{width:500}} title={'利用时间占比'}/>
         </Flex>

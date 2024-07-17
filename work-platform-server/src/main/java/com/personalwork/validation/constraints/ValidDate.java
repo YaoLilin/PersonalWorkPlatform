@@ -1,6 +1,6 @@
-package com.personalwork.annotaton;
+package com.personalwork.validation.constraints;
 
-import com.personalwork.verify.ValidDateValidator;
+import com.personalwork.validation.DateValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -13,10 +13,10 @@ import java.lang.annotation.*;
  */
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = ValidDateValidator.class) // 指定校验器类
+@Constraint(validatedBy = DateValidator.class) // 指定校验器类
 @Documented
-public @interface ValidTime {
-    String message() default "时间不能为空且格式应为mm:ss";
+public @interface ValidDate {
+    String message() default "日期不能为空且格式应为yyyy-MM-dd";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

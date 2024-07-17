@@ -8,10 +8,8 @@ import com.personalwork.modal.vo.PipeCountVo;
 import com.personalwork.service.ChartService;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,12 +40,12 @@ public class ChartController {
     }
 
     @GetMapping("/week-time-count")
-    public List<BarChartVo> weekTimeCount(WeekTimeCountParam param) {
+    public List<BarChartVo> weekTimeCount(@Validated WeekTimeCountParam param) {
         List<BarChartVo> result = new ArrayList<>();
         List<WeekTimeCountDto> weekTimeCountDtoList = chartService.weekTimeCount(param);
         for (WeekTimeCountDto timeCount : weekTimeCountDtoList) {
             BarChartVo vo = new BarChartVo();
-            vo.setXName(timeCount.getWeekDate());
+            vo.setXName(timeCount.getWeekDate().substring(5));
             if (param.getCountType() == CountType.PROJECT) {
                 vo.setType(timeCount.getProjectName());
             }else {

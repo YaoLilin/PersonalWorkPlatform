@@ -1,4 +1,4 @@
-package com.personalwork.verify;
+package com.personalwork.validation;
 
 
 import jakarta.validation.groups.Default;

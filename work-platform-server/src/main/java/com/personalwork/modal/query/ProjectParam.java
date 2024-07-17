@@ -1,8 +1,8 @@
 package com.personalwork.modal.query;
 
-import com.personalwork.annotaton.ValidDate;
+import com.personalwork.validation.constraints.ValidDate;
 import com.personalwork.enu.ProjectState;
-import com.personalwork.verify.ValidGroup;
+import com.personalwork.validation.ValidGroup;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -19,10 +19,10 @@ public class ProjectParam {
     @NotBlank
     private String name;
     @ValidDate(groups = ValidGroup.ProjectCreateValidGroup.class ,message = "开始日期不能为空")
-    @NotBlank(groups = ValidGroup.ProjectUpdateValidGroup.class ,message = "开始日期不能为空")
+    @NotNull
     private String startDate;
     @ValidDate(groups = ValidGroup.ProjectCreateValidGroup.class ,message = "结束日期不能为空")
-    @NotBlank(groups = ValidGroup.ProjectUpdateValidGroup.class ,message = "结束日期不能为空")
+    @NotNull
     private String endDate;
     private String closeDate;
     @NotNull(message = "类型不能为空")

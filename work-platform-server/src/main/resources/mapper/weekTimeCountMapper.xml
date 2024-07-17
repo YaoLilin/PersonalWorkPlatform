@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.personalwork.dao.WeekTimeCountMapper">
-    <select id="listByDateRange" resultType="WeekTimeCountDto">
+    <select id="listByDateRange" resultType="WeekTimeCountDto" parameterType="WeekTimeCountParam">
         select
             rw.date as weekDate,
             w.minutes,
@@ -13,8 +13,22 @@
         left join project p on w.project = p.id
         left join type t on p.type = t.id
         inner join record_week rw on w.week_id = rw.id
-        where rw.date between #{startDate} and #{endDate}
-        order by rw.date desc
+        <where>
+            rw.date between #{startDate} and #{endDate}
+            <if test="projects != null and projects.size() >0 and countType.getValue() eq 0">
+                and w.projects in
+                <foreach collection="projects" item="projects" open="(" separator="," close=")">
+                    #{projects}
+                </foreach>
+            </if>
+            <if test="types != null and types.size() >0 and countType.getValue() eq 1">
+                and p.type in
+                <foreach collection="types" item="type" open="(" separator="," close=")">
+                    #{type}
+                </foreach>
+            </if>
+        </where>
+        order by rw.date
     </select>
 
 </mapper>

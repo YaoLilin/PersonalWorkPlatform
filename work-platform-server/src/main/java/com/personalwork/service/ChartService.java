@@ -86,7 +86,9 @@ public class ChartService {
         String[] dateRange = getDateRange(param);
         String startDate = dateRange[0];
         String endDate = dateRange[1];
-        return weekTimeCountMapper.listByDateRange(startDate, endDate);
+        param.setStartDate(startDate);
+        param.setEndDate(endDate);
+        return weekTimeCountMapper.listByDateRange(param);
     }
 
     private String[] getDateRange(WeekTimeCountParam param) {
@@ -94,19 +96,26 @@ public class ChartService {
         String endDate;
         String[] dateRange;
         switch (param.getTimeRange()) {
-            case NEALY_FOUR_WEEK:
-                 dateRange = DateUtil.getDateRangeByWeekBaseMonday(DateUtil.getNowDate(), 4);
-            case NEALY_TWELVE_WEEK:
-                 dateRange = DateUtil.getDateRangeByWeekBaseMonday(DateUtil.getNowDate(), 12);
-            case NEALY_HALF_YEAR:
+            case NEALY_FOUR_WEEK -> {
+                dateRange = DateUtil.getDateRangeByWeekBaseMonday(DateUtil.getNowDate(), 4);
+                startDate = dateRange[0];
+                endDate = dateRange[1];
+            }
+            case NEALY_TWELVE_WEEK -> {
+                dateRange = DateUtil.getDateRangeByWeekBaseMonday(DateUtil.getNowDate(), 12);
+                startDate = dateRange[0];
+                endDate = dateRange[1];
+            }
+            case NEALY_HALF_YEAR -> {
                 dateRange = DateUtil.getDateRangeByWeekBaseMonday(DateUtil.getNowDate(), 26);
                 startDate = dateRange[0];
                 endDate = dateRange[1];
-                break;
-            case CUSTOM :
+            }
+            case CUSTOM -> {
                 startDate = param.getStartDate();
                 endDate = param.getEndDate();
-            default : throw new MethodParamInvalidException("找不到 TimeRange 枚举");
+            }
+            default -> throw new MethodParamInvalidException("找不到 TimeRange 枚举");
         }
         return new String[]{startDate, endDate};
     }

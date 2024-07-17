@@ -3,32 +3,31 @@ import {DatePicker, Select, Space} from "antd";
 import React, {useEffect, useState} from "react";
 import ProjectBrowser from "../../public/projectBrowser";
 import TypeSelector from "../../public/TypeSelector";
+import useCommonCondition from "./useCommonCondition";
 
-const ChartConditions = ({onChange}) => {
+const WeekTimeChartConditions = ({onChange}) => {
     const [selectedDateRange, setSelectedDateRange] = useState(0);
     const [customStartDate, setCustomStartDate] = useState(null);
     const [customEndDate, setCustomEndDate] = useState(null);
-    const [selectedCountType, setSelectedCountType] = useState(0);
-    const [selectedProject, setSelectedProject] = useState([]);
-    const [selectedType, setSelectedType] = useState([]);
+    const {commonConditionCom,selectedCountType,selectedProject,selectedType} = useCommonCondition();
 
     const handleConditionChange = ({
-                                       dateRangeType, startDate, endDate, countType, project,type
+                                           dateRangeType, startDate, endDate, countType,projects,types
                                    }) => {
         onChange({
             selectedDateRange : dateRangeType !== undefined ? dateRangeType : selectedDateRange,
             customStartDate : startDate !== undefined ? startDate : customStartDate,
             customEndDate: endDate !== undefined ? endDate : customEndDate,
             selectedCountType : countType !== undefined ? countType : selectedCountType,
-            selectedProject : project !== undefined ? project : selectedProject.map(i => i.id).join(','),
-            selectedType : type !== undefined ? type : selectedType
+            selectedProjects : projects !== undefined ? projects : selectedProject.map(i => i.key),
+            selectedTypes : types !== undefined ? types : selectedType.map(i => i.key)
         });
     }
 
     const handleDateChange = (value) => {
         if (value !== 3) {
             handleConditionChange({
-                selectedDateRange: value
+                dateRangeType: value
             });
         }
         setSelectedDateRange(value);
@@ -52,20 +51,6 @@ const ChartConditions = ({onChange}) => {
         }
     };
 
-    const handleCountTypeChange = (value) => {
-        setSelectedCountType(value);
-    }
-
-    const handleProjectChange = (data) => {
-        setSelectedProject(data);
-        handleConditionChange({project: data.map(i => i.id).join(',')});
-    }
-
-    const handleTypeChange = (value) => {
-        setSelectedType(value);
-        handleConditionChange({type: value});
-    }
-
     return (
         <div style={{display: 'flex', flexDirection: 'column', gap: 10, fontSize: 12}}>
             <div style={{display: 'flex', gap: 20}}>
@@ -88,35 +73,9 @@ const ChartConditions = ({onChange}) => {
                     </Space>
                 </FieldLabel>
             </div>
-            <div style={{display: 'flex', gap: 20}}>
-                <FieldLabel name={'统计纬度'}>
-                    <Select style={{width: '100px'}}
-                            size={"small"}
-                            value={selectedCountType}
-                            onChange={handleCountTypeChange}>
-                        <Select.Option value={0}>项目</Select.Option>
-                        <Select.Option value={1}>类型</Select.Option>
-                    </Select>
-                </FieldLabel>
-                {selectedCountType === 0 &&
-                    <FieldLabel name={'项目'}>
-                        <ProjectBrowser value={selectedProject}
-                                        multiple
-                                        onChange={handleProjectChange} />
-                    </FieldLabel>
-                }
-                {selectedCountType === 1 &&
-                    <FieldLabel name={'类型'}>
-                       <TypeSelector multiple
-                                     value={selectedType}
-                                     allowClear
-                                     style={{width:180}}
-                                     onChange={handleTypeChange}/>
-                    </FieldLabel>
-                }
-            </div>
+            {commonConditionCom}
         </div>
     )
 }
 
-export default ChartConditions;
+export default WeekTimeChartConditions;

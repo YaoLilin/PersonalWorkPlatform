@@ -21,7 +21,7 @@ const TimeCountChart = ({projectTime, weekId, monthId}) => {
         });
     }, [projectTime]);
     const [typeChartData, setTypeChartData] = useState([]);
-    const [chartType, setChartType] = useState('project');
+    const [chartType, setChartType] = useState('projects');
     const messageApi = useContext(MessageContext);
 
     const fetchWeekTypeCountData = (weekId) => {
@@ -71,12 +71,12 @@ const TimeCountChart = ({projectTime, weekId, monthId}) => {
         <div>
             <div>
                 <Radio.Group value={chartType} style={{padding: '20px 0 0'}} onChange={handleChartRadioChange}>
-                    <Radio.Button value="project">项目</Radio.Button>
+                    <Radio.Button value="projects">项目</Radio.Button>
                     <Radio.Button value="type">类型</Radio.Button>
                 </Radio.Group>
             </div>
             <div style={{padding: '10px 0'}}>
-                <PieChart style={{width: 600, height: 300}} data={chartType === 'project' ? projectChartData : typeChartData}/>
+                <PieChart style={{width: 600, height: 300}} data={chartType === 'projects' ? projectChartData : typeChartData}/>
             </div>
         </div>
     )
