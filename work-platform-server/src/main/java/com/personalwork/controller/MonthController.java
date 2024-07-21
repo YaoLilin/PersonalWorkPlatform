@@ -35,7 +35,7 @@ public class MonthController {
 
     @GetMapping
     public List<MonthVo> getMonths(){
-        List<MonthRecordDto> monthDtoList = monthRecordService.getWorkMonthList();
+        List<MonthRecordDto> monthDtoList = monthRecordService.getWorkMonthRecordList();
         List<MonthVo> months = new ArrayList<>();
         monthDtoList.forEach(o ->{
             MonthVo vo = getMonthVo(o);

@@ -1,8 +1,10 @@
 package com.personalwork.controller;
 
 import com.personalwork.enu.CountType;
+import com.personalwork.modal.dto.MonthTimeCountDto;
 import com.personalwork.modal.dto.WeekTimeCountDto;
-import com.personalwork.modal.query.WeekTimeCountParam;
+import com.personalwork.modal.entity.RecordMonthDo;
+import com.personalwork.modal.query.TimeCountChartParam;
 import com.personalwork.modal.vo.BarChartVo;
 import com.personalwork.modal.vo.PipeCountVo;
 import com.personalwork.service.ChartService;
@@ -16,7 +18,7 @@ import java.util.List;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 统计图接口
  * @date 2024/3/26
  */
 @RestController
@@ -40,9 +42,9 @@ public class ChartController {
     }
 
     @GetMapping("/week-time-count")
-    public List<BarChartVo> weekTimeCount(@Validated WeekTimeCountParam param) {
+    public List<BarChartVo> weekTimeCount(@Validated TimeCountChartParam param) {
         List<BarChartVo> result = new ArrayList<>();
-        List<WeekTimeCountDto> weekTimeCountDtoList = chartService.weekTimeCount(param);
+        List<WeekTimeCountDto> weekTimeCountDtoList = chartService.weekWorkTimeCount(param);
         for (WeekTimeCountDto timeCount : weekTimeCountDtoList) {
             BarChartVo vo = new BarChartVo();
             vo.setXName(timeCount.getWeekDate().substring(5));
@@ -52,6 +54,25 @@ public class ChartController {
                 vo.setType(timeCount.getTypeName());
             }
             vo.setValue(timeCount.getMinutes());
+            result.add(vo);
+        }
+        return result;
+    }
+
+    @GetMapping("/month-time-count")
+    public List<BarChartVo> monthTimeCount(@Validated TimeCountChartParam param) {
+        List<BarChartVo> result = new ArrayList<>();
+        List<MonthTimeCountDto> timeCountList = chartService.monthWorkTimeCount(param);
+        for (MonthTimeCountDto count : timeCountList) {
+            BarChartVo vo = new BarChartVo();
+            RecordMonthDo month = count.getMonth();
+            vo.setXName(month.getYear()+"-"+month.getMonth());
+            if (param.getCountType() == CountType.PROJECT) {
+                vo.setType(count.getProject().getName());
+            }else {
+                vo.setType(count.getType().getName());
+            }
+            vo.setValue(count.getMinutes());
             result.add(vo);
         }
         return result;

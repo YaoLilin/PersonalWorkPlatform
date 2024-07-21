@@ -4,7 +4,33 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.personalwork.dao.RecordMonthMapper">
     <select id="list" resultType="RecordMonthDo">
-        select id,year,month,mark,summary,work_time workTime,is_summarize from record_month order by year desc,month desc
+        select id,year,month,mark,summary,work_time workTime,is_summarize from record_month
+        order by year desc,month desc
+    </select>
+    <select id="listRange" resultType="RecordMonthDo">
+        select id, year, month, mark, summary, work_time workTime, is_summarize
+        from record_month
+        <where>
+            <!--查询xxxx年xx月以后的记录-->
+            <if test="startYear != null and startMonth != null and endYear == null and endMonth == null">
+                year = #{startYear} and month >= #{startMonth}
+                   or year > #{startYear}
+            </if>
+            <!--查询xxxx年xx月到xxxx年xx月之间的记录-->
+            <if test="startYear != null and startMonth != null and endYear != null and endMonth != null">
+                <if test="startYear == endYear">
+                    <!--如果开始年份和结束年份为同一年，则查找该年xx月到xx月之间的记录-->
+                    and year = #{startYear} and month >= #{startMonth} and year = #{endYear} and month &lt;= #{endMonth}
+                </if>
+                <if test="startYear != endYear">
+<!--                    如果开始年份和结束年份不是同一年，则先查找第一年的数据，再查找开始年份和结束年份之间的数据，最后查找结束年份的数据-->
+                    and year = #{startYear} and month >= #{startMonth}
+                       or year > #{startYear} and year &lt; #{endYear}
+                       or year = #{endYear} and month &lt;= #{endMonth}
+                </if>
+            </if>
+        </where>
+        order by year desc, month desc
     </select>
     <select id="getById" resultType="RecordMonthDo">
         select id,year,month,mark,summary,work_time workTime from record_month where id=#{id} order by year desc,month desc

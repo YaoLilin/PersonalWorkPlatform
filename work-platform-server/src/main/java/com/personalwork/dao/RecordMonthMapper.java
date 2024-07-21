@@ -2,6 +2,7 @@ package com.personalwork.dao;
 
 import com.personalwork.modal.entity.RecordMonthDo;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,12 +17,14 @@ import java.util.List;
 public interface RecordMonthMapper {
 
     List<RecordMonthDo> list();
+    List<RecordMonthDo> listRange(@Param("startYear") Integer startYear, @Param("startMonth") Integer startMonth,
+                                  @Param("endYear") Integer endYear, @Param("endMonth") Integer endMonth);
 
-    RecordMonthDo getById(int id);
+    RecordMonthDo getById(Integer id);
 
     boolean insert(RecordMonthDo recordMonth);
 
-    RecordMonthDo getByDate(int year,int month);
+    RecordMonthDo getByDate(@Param("year") Integer year,@Param("month") Integer month);
 
     boolean update(RecordMonthDo recordMonth);
 

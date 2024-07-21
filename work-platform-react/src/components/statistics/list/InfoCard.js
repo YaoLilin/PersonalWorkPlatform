@@ -2,8 +2,7 @@ import {Tag} from "antd";
 import {useNavigate} from "react-router-dom";
 import DateUtil from "../../../util/DateUtil";
 
-const InfoCard = (props) => {
-    const {data,title,onClick,bottomFlag} = props;
+const InfoCard = ({data,title,onClick,bottomFlag,style}) => {
     const {mark, hours,minutes, projectTime, summary,id} = data;
 
     const getMarkColor = (mark)=>{
@@ -33,13 +32,14 @@ const InfoCard = (props) => {
     return (
         <div style={{
             width: 350,
-            height: 400,
+            height: 350,
             backgroundColor: "white",
             borderRadius: "12px",
             padding: "20px",
             cursor: "pointer",
             marginRight:'40px',
-            position:"relative"
+            position:"relative",
+            ...style
         }} onClick={()=>onClick(id)}>
             <div>
                 {title}

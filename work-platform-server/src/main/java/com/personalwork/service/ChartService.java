@@ -1,24 +1,27 @@
 package com.personalwork.service;
 
 import com.personalwork.dao.*;
+import com.personalwork.enu.CountType;
+import com.personalwork.enu.TimeRange;
 import com.personalwork.exception.ChartCalculateException;
 import com.personalwork.exception.MethodParamInvalidException;
+import com.personalwork.modal.dto.MonthProjectCountDto;
+import com.personalwork.modal.dto.MonthRecordDto;
+import com.personalwork.modal.dto.MonthTimeCountDto;
 import com.personalwork.modal.dto.WeekTimeCountDto;
 import com.personalwork.modal.entity.MonthProjectCountDo;
 import com.personalwork.modal.entity.ProjectDo;
 import com.personalwork.modal.entity.TypeDo;
 import com.personalwork.modal.entity.WeekProjectTimeCountDo;
-import com.personalwork.modal.query.WeekTimeCountParam;
+import com.personalwork.modal.query.TimeCountChartParam;
 import com.personalwork.modal.vo.PipeCountVo;
 import com.personalwork.util.DateUtil;
 import com.personalwork.util.NumberUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.util.*;
 
 /**
  * @author 姚礼林
@@ -31,25 +34,19 @@ public class ChartService {
     private final ProjectMapper projectMapper;
     private final TypeMapper typeMapper;
     private final WeekProjectTimeCountMapper weekProjectTimeCountMapper;
-    private final WeekTimeCountMapper weekTimeCountMapper;
+    private final WorkTimeCountMapper workTimeCountMapper;
+    private final MonthRecordService monthRecordService;
 
     @Autowired
     public ChartService(MonthProjectCountMapper monthProjectCountMapper, ProjectMapper projectMapper,
                         TypeMapper typeMapper, WeekProjectTimeCountMapper weekProjectTimeCountMapper,
-                        WeekTimeCountMapper weekTimeCountMapper) {
+                        WorkTimeCountMapper workTimeCountMapper, MonthRecordService monthRecordService) {
         this.monthProjectCountMapper = monthProjectCountMapper;
         this.projectMapper = projectMapper;
         this.typeMapper = typeMapper;
         this.weekProjectTimeCountMapper = weekProjectTimeCountMapper;
-        this.weekTimeCountMapper = weekTimeCountMapper;
-    }
-
-    /**
-     * 通用类，在统计月份和周的项目类型时间占用时将项目时间实体类转换成此类，方便进行统计
-     */
-    private static class ProjectTime {
-        private Integer minutes;
-        private Integer projectId;
+        this.workTimeCountMapper = workTimeCountMapper;
+        this.monthRecordService = monthRecordService;
     }
 
     /**
@@ -82,44 +79,6 @@ public class ChartService {
         return countProjectTypeTime(projectTimeList);
     }
 
-    public List<WeekTimeCountDto> weekTimeCount(WeekTimeCountParam param) {
-        String[] dateRange = getDateRange(param);
-        String startDate = dateRange[0];
-        String endDate = dateRange[1];
-        param.setStartDate(startDate);
-        param.setEndDate(endDate);
-        return weekTimeCountMapper.listByDateRange(param);
-    }
-
-    private String[] getDateRange(WeekTimeCountParam param) {
-        String startDate;
-        String endDate;
-        String[] dateRange;
-        switch (param.getTimeRange()) {
-            case NEALY_FOUR_WEEK -> {
-                dateRange = DateUtil.getDateRangeByWeekBaseMonday(DateUtil.getNowDate(), 4);
-                startDate = dateRange[0];
-                endDate = dateRange[1];
-            }
-            case NEALY_TWELVE_WEEK -> {
-                dateRange = DateUtil.getDateRangeByWeekBaseMonday(DateUtil.getNowDate(), 12);
-                startDate = dateRange[0];
-                endDate = dateRange[1];
-            }
-            case NEALY_HALF_YEAR -> {
-                dateRange = DateUtil.getDateRangeByWeekBaseMonday(DateUtil.getNowDate(), 26);
-                startDate = dateRange[0];
-                endDate = dateRange[1];
-            }
-            case CUSTOM -> {
-                startDate = param.getStartDate();
-                endDate = param.getEndDate();
-            }
-            default -> throw new MethodParamInvalidException("找不到 TimeRange 枚举");
-        }
-        return new String[]{startDate, endDate};
-    }
-
     /**
      * 统计本周的各项目类型的时间
      *
@@ -140,6 +99,135 @@ public class ChartService {
             projectTimeList.add(projectTime);
         });
         return countProjectTypeTime(projectTimeList);
+    }
+
+    /**
+     * 统计每个项目（或类型）每周的工作时间
+     * @param param 条件参数
+     * @return 统计结果集合，每个集合元素代表一个项目（或类型）一周的工作时间，如 2024-07-01：java ,2024-07-01：c#
+     */
+    public List<WeekTimeCountDto> weekWorkTimeCount(TimeCountChartParam param) {
+        String[] dateRange = getDateRange(param);
+        String startDate = dateRange[0];
+        String endDate = dateRange[1];
+        param.setStartDate(startDate);
+        param.setEndDate(endDate);
+        return workTimeCountMapper.listByDateRange(param);
+    }
+
+    /**
+     * 统计每个项目（或类型）每月的工作时间
+     * @param param 条件参数
+     * @return 统计结果集合，每个集合元素代表一个项目（或类型）一个月的工作时间，如 2024-07：java ,2024-07：c#
+     */
+    public List<MonthTimeCountDto> monthWorkTimeCount(TimeCountChartParam param) {
+        List<MonthRecordDto> monthRecordList = getMonthRecordList(param);
+        monthRecordList.sort((i,i2) -> {
+            if (Objects.equals(i.getRecordMonthDo().getYear(), i2.getRecordMonthDo().getYear())) {
+                return i.getRecordMonthDo().getMonth() - i2.getRecordMonthDo().getMonth();
+            }
+            return i.getRecordMonthDo().getYear() - i2.getRecordMonthDo().getYear();
+        });
+        List<MonthTimeCountDto> result = new ArrayList<>();
+        for (MonthRecordDto month : monthRecordList) {
+            for (MonthProjectCountDto projectCount : month.getProjectCountList()) {
+                MonthTimeCountDto monthTimeCountDto = buildMonthTimeCountDto(param, month, projectCount);
+                if (monthTimeCountDto == null){
+                    continue;
+                }
+                result.add(monthTimeCountDto);
+            }
+        }
+        return result;
+    }
+
+    private MonthTimeCountDto buildMonthTimeCountDto(TimeCountChartParam param, MonthRecordDto month,
+                                                     MonthProjectCountDto projectCount) {
+        MonthTimeCountDto monthTimeCountDto = new MonthTimeCountDto();
+        monthTimeCountDto.setMonth(month.getRecordMonthDo());
+        ProjectDo projectDo = projectMapper.getProject(projectCount.getProjectId());
+        projectDo.setName(projectCount.getProjectName());
+        if (param.getCountType() == CountType.PROJECT) {
+            monthTimeCountDto.setProject(projectDo);
+            if (!inParamProjects(param, projectCount)) {
+                return null;
+            }
+        }else {
+            monthTimeCountDto.setType(projectDo.getType());
+            if (!inParamTypes(param, projectDo)){
+                return null;
+            }
+        }
+        monthTimeCountDto.setMinutes(projectCount.getMinute());
+        return monthTimeCountDto;
+    }
+
+    private  boolean inParamTypes(TimeCountChartParam param, ProjectDo projectDo) {
+        if (param.getTypes() != null && !param.getTypes().isEmpty()) {
+            return param.getTypes().contains(projectDo.getType().getId());
+        }
+        return true;
+    }
+
+    private boolean inParamProjects(TimeCountChartParam param, MonthProjectCountDto projectCount) {
+        if (param.getProjects() != null && !param.getProjects().isEmpty()) {
+            return param.getProjects().contains(projectCount.getProjectId());
+        }
+        return true;
+    }
+
+    private List<MonthRecordDto> getMonthRecordList(TimeCountChartParam param) {
+        LocalDate now = LocalDate.now();
+        int startYear;
+        int startMonth;
+        Integer endYear= null;
+        Integer endMonth= null;
+        if (param.getTimeRange() == TimeRange.CUSTOM) {
+            if (param.getStartDate() == null || param.getEndDate() == null) {
+                throw new MethodParamInvalidException("开始日期或结束如期为空");
+            }
+            String[] startDateSplit = param.getStartDate().split("-");
+            startYear = Integer.parseInt(startDateSplit[0]);
+            startMonth = Integer.parseInt(startDateSplit[1]);
+            String[] endDateSplit = param.getEndDate().split("-");
+            endYear = Integer.parseInt(endDateSplit[0]);
+            endMonth = Integer.parseInt(endDateSplit[1]);
+        }else {
+            LocalDate date;
+            switch (param.getTimeRange()) {
+                case NEALY_SIX_MONTH -> date = now.minusMonths(6);
+                case NEALY_TWELVE_MONTH -> date = now.minusMonths(12);
+                default -> throw new MethodParamInvalidException("日期范围类型不在范围内");
+            }
+            startYear = date.getYear();
+            startMonth = date.getMonthValue();
+        }
+        return monthRecordService.getWorkMonthRecordList(startYear, startMonth,endYear,endMonth);
+    }
+
+    private String[] getDateRange(TimeCountChartParam param) {
+        String startDate;
+        String endDate;
+        if (param.getTimeRange() != TimeRange.CUSTOM){
+            String[] dateRange;
+            switch (param.getTimeRange()) {
+                case NEALY_FOUR_WEEK -> dateRange = DateUtil.getDateRangeByWeekBaseMonday( 4);
+                case NEALY_TWELVE_WEEK -> dateRange = DateUtil.getDateRangeByWeekBaseMonday(12);
+                case NEALY_HALF_YEAR -> dateRange = DateUtil.getDateRangeByWeekBaseMonday( 26);
+                case NEALY_SIX_MONTH -> dateRange = DateUtil.getDateRangeByMonth(6);
+                case NEALY_TWELVE_MONTH -> dateRange = DateUtil.getDateRangeByMonth(12);
+                default -> throw new MethodParamInvalidException("找不到 TimeRange 枚举");
+            }
+            startDate = dateRange[0];
+            endDate = dateRange[1];
+        }else{
+            if (param.getStartDate() == null || param.getEndDate() == null) {
+                throw new MethodParamInvalidException("开始日期或结束如期为空");
+            }
+            startDate = param.getStartDate();
+            endDate = param.getEndDate();
+        }
+        return new String[]{startDate, endDate};
     }
 
     /**
@@ -205,6 +293,14 @@ public class ChartService {
         Integer projectId = projectTime.projectId;
         ProjectDo projectDo = projectMapper.getProject(projectId);
         return projectDo.getType();
+    }
+
+    /**
+     * 通用类，在统计月份和周的项目类型时间占用时将项目时间实体类转换成此类，方便进行统计
+     */
+    private static class ProjectTime {
+        private Integer minutes;
+        private Integer projectId;
     }
 
 

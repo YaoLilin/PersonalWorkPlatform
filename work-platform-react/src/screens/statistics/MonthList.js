@@ -15,7 +15,7 @@ export async function loader() {
     }
 }
 
-const MonthList = ()=>{
+const MonthList = () => {
     const data = useLoaderData();
     const navigate = useNavigate();
     const messageApi = useContext(MessageContext);
@@ -26,31 +26,32 @@ const MonthList = ()=>{
         if (cardMap.has(year)) {
             const monthList = cardMap.get(year);
             monthList.push(month);
-        }else {
+        } else {
             const monthList = [month];
             cardMap.set(year, monthList);
         }
     });
 
-    const bottomFlag =<Tag color={'red'}
-                           style={{position:'absolute',bottom:'30px',right:"20px",fontSize:'1em'}}>
-                            未总结
-                      </Tag>
+    const bottomFlag = <Tag color={'red'}
+                            style={{position: 'absolute', bottom: '30px', right: "20px", fontSize: '1em'}}>
+        未总结
+    </Tag>
 
     const getCards = (cardMap) => {
         const cards = [];
         cardMap.forEach((value, key) => {
             const box =
-                <div key={key}>
-                    <ListTitle title={key+'年'}/>
-                    <div style={{padding: "20px 0", display: "flex"}}>
+                <div key={key} style={{paddingTop: 20}}>
+                    <ListTitle title={key + '年'}/>
+                    <div style={{display: "flex", flexWrap: 'wrap'}}>
                         {
                             value.map(item => {
-                                return <InfoCard  key={item.id}
-                                                  title={<span style={{fontSize: "1.5em"}}>{item.month}月</span>}
-                                                  data={item}
-                                                  bottomFlag={!item.isSummarize ? bottomFlag : null}
-                                                  onClick={id => navigate('form/'+id)}
+                                return <InfoCard key={item.id}
+                                                 title={<span style={{fontSize: "1.5em"}}>{item.month}月</span>}
+                                                 data={item}
+                                                 style={{marginTop: 20}}
+                                                 bottomFlag={!item.isSummarize ? bottomFlag : null}
+                                                 onClick={id => navigate('form/' + id)}
                                 />
                             })
                         }
@@ -61,19 +62,19 @@ const MonthList = ()=>{
         return cards;
     }
 
-    const reCount =()=>{
-        MonthsApi.reCount().then(()=>{
-            messageApi.success("重新统计成功",5);
-            window.setTimeout(()=>window.location.reload(),1000);
-        }).catch(()=>{
-            messageApi.error("重新统计失败",5);
+    const reCount = () => {
+        MonthsApi.reCount().then(() => {
+            messageApi.success("重新统计成功", 5);
+            window.setTimeout(() => window.location.reload(), 1000);
+        }).catch(() => {
+            messageApi.error("重新统计失败", 5);
         })
     }
 
     return (
         <div>
             <Button style={{width: '100px', float: "right", marginRight: '5%'}}
-                    onClick={() => reCount()} >重新统计</Button>
+                    onClick={() => reCount()}>重新统计</Button>
             <div style={{paddingTop: 30}}>
                 {getCards(cardMap).map(item => item)}
             </div>

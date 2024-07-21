@@ -18,7 +18,7 @@ import java.util.*;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 月份记录业务类
  * @date 2024/1/22
  */
 @Service
@@ -39,12 +39,21 @@ public class MonthRecordService {
         this.projectMapper = projectMapper;
     }
 
-    public List<MonthRecordDto> getWorkMonthList() {
+    public List<MonthRecordDto> getWorkMonthRecordList() {
         List<RecordMonthDo> months = monthMapper.list();
+        return buildMonthRecordDtoList(months);
+    }
+
+    public List<MonthRecordDto> getWorkMonthRecordList(Integer startYear, Integer startMonth, Integer endYear, Integer endMonth){
+        List<RecordMonthDo> months = monthMapper.listRange(startYear,startMonth,endYear,endMonth);
+        return buildMonthRecordDtoList(months);
+    }
+
+    private List<MonthRecordDto> buildMonthRecordDtoList(List<RecordMonthDo> months) {
         List<MonthRecordDto> result = new ArrayList<>();
-        months.forEach(o ->{
-            List<MonthProjectCountDo> countList = monthProjectCountMapper.list(o.getId());
-            MonthRecordDto recordDto = getMonthRecordDto(o, countList);
+        months.forEach(month ->{
+            List<MonthProjectCountDo> countList = monthProjectCountMapper.list(month.getId());
+            MonthRecordDto recordDto = buildMonthRecordDto(month, countList);
             result.add(recordDto);
         });
         return result;
@@ -59,26 +68,27 @@ public class MonthRecordService {
         return monthMapper.update(recordMonthDo);
     }
 
-    private MonthRecordDto getMonthRecordDto(RecordMonthDo o, List<MonthProjectCountDo> countList) {
+    private MonthRecordDto buildMonthRecordDto(RecordMonthDo month, List<MonthProjectCountDo> monthProjectCountList) {
         MonthRecordDto recordDto = new MonthRecordDto();
-        recordDto.setRecordMonthDo(o);
+        recordDto.setRecordMonthDo(month);
         List<MonthProjectCountDto> countDtoList = new ArrayList<>();
-        countList.forEach(i ->{
-            MonthProjectCountDto countDto = new MonthProjectCountDto();
-            BeanUtils.copyProperties(i, countDto);
-            ProjectDo projectDo = projectMapper.getProject(i.getProjectId());
-            countDto.setProjectName(projectDo.getName());
-            countDtoList.add(countDto);
-        });
+        monthProjectCountList.forEach(i -> countDtoList.add(convertMonthProjectCountDto(i)));
         recordDto.setProjectCountList(countDtoList);
         return recordDto;
     }
 
+    private MonthProjectCountDto convertMonthProjectCountDto(MonthProjectCountDo countDo) {
+        MonthProjectCountDto countDto = new MonthProjectCountDto();
+        BeanUtils.copyProperties(countDo, countDto);
+        ProjectDo projectDo = projectMapper.getProject(countDo.getProjectId());
+        countDto.setProjectName(projectDo.getName());
+        return countDto;
+    }
 
     public MonthRecordDto getMonth(Integer monthId) {
         RecordMonthDo monthDo = monthMapper.getById(monthId);
         List<MonthProjectCountDo> countList = monthProjectCountMapper.list(monthDo.getId());
-        return getMonthRecordDto(monthDo, countList);
+        return buildMonthRecordDto(monthDo, countList);
 
     }
 }

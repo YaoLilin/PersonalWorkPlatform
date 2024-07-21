@@ -10,11 +10,11 @@ import java.util.List;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 工作时间统计图的查询条件
  * @date 2024/7/9
  */
 @Data
-public class WeekTimeCountParam {
+public class TimeCountChartParam {
     @NotNull(message = "日期范围类型不能为空或不在范围内")
     private TimeRange timeRange;
     @NotNull(message = "统计纬度不能为空或不在范围内")
