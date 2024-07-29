@@ -1,10 +1,9 @@
 import PropTypes from "prop-types";
 
-const ProjectCountItem = ({data, isBottom, allTime,cellStyle, borderColor}) => {
-    const border = isBottom ? {borderBottom: borderColor} : {};
+const ProjectCountItem = ({data, allTime,cellStyle, borderColor}) => {
     return (
         <div key={data.name}
-             style={border}>
+             style={{borderBottom: borderColor}}>
             <div style={{
                 ...cellStyle,
                 borderRight: borderColor
@@ -20,14 +19,15 @@ const ProjectCountItem = ({data, isBottom, allTime,cellStyle, borderColor}) => {
             <div style={{
                 ...cellStyle,
             }}>
-                {(data.minutes / allTime * 100).toFixed(0)}
+                {
+                    allTime ? (data.minutes / allTime * 100).toFixed(0) : 0
+                }
             </div>
         </div>
     );
 }
 
 ProjectCountItem.defaultProps = {
-    isBottom: false,
     allTime: 0,
     data: {
         name: '',
@@ -43,7 +43,6 @@ ProjectCountItem.defaultProps = {
 }
 ProjectCountItem.prototype={
     data:PropTypes.object.isRequired,
-    isBottom:PropTypes.bool.isRequired,
     allTime:PropTypes.number.isRequired,
 }
 export default ProjectCountItem;

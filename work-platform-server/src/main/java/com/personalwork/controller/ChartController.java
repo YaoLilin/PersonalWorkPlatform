@@ -2,16 +2,21 @@ package com.personalwork.controller;
 
 import com.personalwork.enu.CountType;
 import com.personalwork.modal.dto.MonthTimeCountDto;
+import com.personalwork.modal.dto.ProjectTimeCountDto;
 import com.personalwork.modal.dto.WeekTimeCountDto;
 import com.personalwork.modal.entity.RecordMonthDo;
 import com.personalwork.modal.query.TimeCountChartParam;
 import com.personalwork.modal.vo.BarChartVo;
 import com.personalwork.modal.vo.PipeCountVo;
 import com.personalwork.service.ChartService;
+import com.personalwork.util.NumberUtil;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,18 +48,18 @@ public class ChartController {
 
     @GetMapping("/week-time-count")
     public List<BarChartVo> weekTimeCount(@Validated TimeCountChartParam param) {
-        List<BarChartVo> result = new ArrayList<>();
         List<WeekTimeCountDto> weekTimeCountDtoList = chartService.weekWorkTimeCount(param);
-        for (WeekTimeCountDto timeCount : weekTimeCountDtoList) {
-            BarChartVo vo = new BarChartVo();
-            vo.setXName(timeCount.getWeekDate().substring(5));
-            if (param.getCountType() == CountType.PROJECT) {
-                vo.setType(timeCount.getProjectName());
-            }else {
-                vo.setType(timeCount.getTypeName());
-            }
-            vo.setValue(timeCount.getMinutes());
-            result.add(vo);
+        List<BarChartVo> result = new ArrayList<>();
+        for (WeekTimeCountDto weekTime : weekTimeCountDtoList) {
+            String date = weekTime.week().getDate().substring(5);
+            List<BarChartVo.Item> items = new ArrayList<>();
+            List<ProjectTimeCountDto> countDtoItems = weekTime.items();
+            countDtoItems.forEach(i ->{
+                String name = param.getCountType() == CountType.PROJECT ? i.project().getName()
+                        : i.project().getType().getName();
+                items.add(new BarChartVo.Item(name,(double)i.minutes()));
+            });
+            result.add(new BarChartVo(date,items));
         }
         return result;
     }
@@ -64,16 +69,16 @@ public class ChartController {
         List<BarChartVo> result = new ArrayList<>();
         List<MonthTimeCountDto> timeCountList = chartService.monthWorkTimeCount(param);
         for (MonthTimeCountDto count : timeCountList) {
-            BarChartVo vo = new BarChartVo();
-            RecordMonthDo month = count.getMonth();
-            vo.setXName(month.getYear()+"-"+month.getMonth());
-            if (param.getCountType() == CountType.PROJECT) {
-                vo.setType(count.getProject().getName());
-            }else {
-                vo.setType(count.getType().getName());
-            }
-            vo.setValue(count.getMinutes());
-            result.add(vo);
+            RecordMonthDo month = count.month();
+            String date = month.getYear() + "-" + month.getMonth();
+            List<BarChartVo.Item> items = new ArrayList<>();
+            count.items().forEach(i ->{
+                String name = param.getCountType() == CountType.PROJECT ? i.project().getName()
+                        : i.project().getType().getName();
+                double hours = Double.parseDouble(NumberUtil.round((double) i.minutes() / 60, 1, false));
+                items.add(new BarChartVo.Item(name,hours));
+            });
+            result.add(new BarChartVo(date,items));
         }
         return result;
     }

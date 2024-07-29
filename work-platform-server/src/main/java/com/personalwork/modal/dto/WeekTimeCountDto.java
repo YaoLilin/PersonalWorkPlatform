@@ -1,16 +1,8 @@
 package com.personalwork.modal.dto;
 
-import lombok.Data;
+import com.personalwork.modal.entity.RecordWeekDo;
 
-/**
- * @author 姚礼林
- * @desc TODO
- * @date 2024/7/9
- */
-@Data
-public class WeekTimeCountDto {
-    private String weekDate;
-    private String projectName;
-    private String typeName;
-    private Integer minutes;
+import java.util.List;
+
+public record WeekTimeCountDto (RecordWeekDo week,List<ProjectTimeCountDto> items){
 }

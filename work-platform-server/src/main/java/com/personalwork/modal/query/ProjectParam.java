@@ -22,7 +22,6 @@ public class ProjectParam {
     @NotNull
     private String startDate;
     @ValidDate(groups = ValidGroup.ProjectCreateValidGroup.class ,message = "结束日期不能为空")
-    @NotNull
     private String endDate;
     private String closeDate;
     @NotNull(message = "类型不能为空")

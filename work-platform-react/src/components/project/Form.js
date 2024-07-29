@@ -24,8 +24,8 @@ const ProjectForm =  ({data,onSubmit,type=TYPE_CREATE}) => {
             state: values.state,
             type: values.type,
             startDate: values.startDate.format('YYYY-MM-DD'),
-            endDate: values.endDate.format('YYYY-MM-DD'),
-            closeDate:values.closeDate ? values.closeDate.format('YYYY-MM-DD') : '',
+            endDate: values.endDate?.format('YYYY-MM-DD'),
+            closeDate:values.closeDate?.format('YYYY-MM-DD'),
             isStartDateOnly:endDateDisabled ? 1 : 0,
         }
         onSubmit(params);

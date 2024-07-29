@@ -83,14 +83,13 @@ const getSelectedKey = (pathname) => {
 }
 
 const App = () => {
-    const [collapsed, setCollapsed] = useState(false);
-    const [selectedKey, setSelectedKey] = useState();
-    const {token: {colorBgContainer}} = theme.useToken();
     const {pathname} = useLocation();
+    const [collapsed, setCollapsed] = useState(false);
+    const {token: {colorBgContainer}} = theme.useToken();
+    const selectedKey = getSelectedKey(pathname);
     useEffect(() => {
         document.title = "个人工作平台";
-        setSelectedKey(getSelectedKey(pathname));
-    }, [pathname])
+    }, []);
     const navigate = useNavigate();
 
     let defaultOpenKey;

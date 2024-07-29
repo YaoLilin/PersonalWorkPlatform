@@ -6,6 +6,7 @@ const ProjectCount = (props) => {
     const {data} = props;
     let allTime = 0;
     data?.forEach(item => allTime += item.minutes);
+    data?.sort((a, b) => b.minutes - a.minutes);
 
     const cellStyle = {
         height: '36px',

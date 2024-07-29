@@ -5,14 +5,8 @@ import com.personalwork.enu.CountType;
 import com.personalwork.enu.TimeRange;
 import com.personalwork.exception.ChartCalculateException;
 import com.personalwork.exception.MethodParamInvalidException;
-import com.personalwork.modal.dto.MonthProjectCountDto;
-import com.personalwork.modal.dto.MonthRecordDto;
-import com.personalwork.modal.dto.MonthTimeCountDto;
-import com.personalwork.modal.dto.WeekTimeCountDto;
-import com.personalwork.modal.entity.MonthProjectCountDo;
-import com.personalwork.modal.entity.ProjectDo;
-import com.personalwork.modal.entity.TypeDo;
-import com.personalwork.modal.entity.WeekProjectTimeCountDo;
+import com.personalwork.modal.dto.*;
+import com.personalwork.modal.entity.*;
 import com.personalwork.modal.query.TimeCountChartParam;
 import com.personalwork.modal.vo.PipeCountVo;
 import com.personalwork.util.DateUtil;
@@ -104,9 +98,20 @@ public class ChartService {
     /**
      * 统计每个项目（或类型）每周的工作时间
      * @param param 条件参数
-     * @return 统计结果集合，每个集合元素代表一个项目（或类型）一周的工作时间，如 2024-07-01：java ,2024-07-01：c#
+     * @return 统计结果集合
      */
     public List<WeekTimeCountDto> weekWorkTimeCount(TimeCountChartParam param) {
+        List<ProjectWeekTimeDto> projectWeekTimeList = getProjectWeekTimeList(param);
+        Map<RecordWeekDo, WeekTimeCountDto> weekTimeMap = new HashMap<>(10);
+        for (ProjectWeekTimeDto projectTime : projectWeekTimeList) {
+            ProjectTimeCountDto item = new ProjectTimeCountDto(projectTime.project(), projectTime.minutes());
+            weekTimeMap.computeIfAbsent(projectTime.week(),
+                    k -> new WeekTimeCountDto(projectTime.week(), new ArrayList<>())).items().add(item);
+        }
+        return new ArrayList<>(weekTimeMap.values());
+    }
+
+    private List<ProjectWeekTimeDto> getProjectWeekTimeList(TimeCountChartParam param) {
         String[] dateRange = getDateRange(param);
         String startDate = dateRange[0];
         String endDate = dateRange[1];
@@ -118,7 +123,7 @@ public class ChartService {
     /**
      * 统计每个项目（或类型）每月的工作时间
      * @param param 条件参数
-     * @return 统计结果集合，每个集合元素代表一个项目（或类型）一个月的工作时间，如 2024-07：java ,2024-07：c#
+     * @return 统计结果集合
      */
     public List<MonthTimeCountDto> monthWorkTimeCount(TimeCountChartParam param) {
         List<MonthRecordDto> monthRecordList = getMonthRecordList(param);
@@ -130,36 +135,27 @@ public class ChartService {
         });
         List<MonthTimeCountDto> result = new ArrayList<>();
         for (MonthRecordDto month : monthRecordList) {
-            for (MonthProjectCountDto projectCount : month.getProjectCountList()) {
-                MonthTimeCountDto monthTimeCountDto = buildMonthTimeCountDto(param, month, projectCount);
-                if (monthTimeCountDto == null){
-                    continue;
-                }
-                result.add(monthTimeCountDto);
-            }
+            List<MonthProjectCountDto> projectCountList = month.getProjectCountList();
+            result.add(buildMonthTimeCountDto(param, month, projectCountList));
         }
         return result;
     }
 
     private MonthTimeCountDto buildMonthTimeCountDto(TimeCountChartParam param, MonthRecordDto month,
-                                                     MonthProjectCountDto projectCount) {
-        MonthTimeCountDto monthTimeCountDto = new MonthTimeCountDto();
-        monthTimeCountDto.setMonth(month.getRecordMonthDo());
-        ProjectDo projectDo = projectMapper.getProject(projectCount.getProjectId());
-        projectDo.setName(projectCount.getProjectName());
-        if (param.getCountType() == CountType.PROJECT) {
-            monthTimeCountDto.setProject(projectDo);
-            if (!inParamProjects(param, projectCount)) {
-                return null;
+                                                     List<MonthProjectCountDto> projectCountList) {
+        List<ProjectTimeCountDto> items = new ArrayList<>();
+        for (MonthProjectCountDto projectCount : projectCountList) {
+            ProjectDo projectDo = projectMapper.getProject(projectCount.getProjectId());
+            if (param.getCountType() == CountType.PROJECT && !inParamProjects(param, projectDo)) {
+                continue;
             }
-        }else {
-            monthTimeCountDto.setType(projectDo.getType());
-            if (!inParamTypes(param, projectDo)){
-                return null;
+            if (param.getCountType() == CountType.TYPE && !inParamTypes(param, projectDo)) {
+                continue;
             }
+            ProjectTimeCountDto item = new ProjectTimeCountDto(projectDo, projectCount.getMinute());
+            items.add(item);
         }
-        monthTimeCountDto.setMinutes(projectCount.getMinute());
-        return monthTimeCountDto;
+        return new MonthTimeCountDto(month.getRecordMonthDo(),items);
     }
 
     private  boolean inParamTypes(TimeCountChartParam param, ProjectDo projectDo) {
@@ -169,9 +165,9 @@ public class ChartService {
         return true;
     }
 
-    private boolean inParamProjects(TimeCountChartParam param, MonthProjectCountDto projectCount) {
+    private boolean inParamProjects(TimeCountChartParam param, ProjectDo projectDo) {
         if (param.getProjects() != null && !param.getProjects().isEmpty()) {
-            return param.getProjects().contains(projectCount.getProjectId());
+            return param.getProjects().contains(projectDo.getId());
         }
         return true;
     }

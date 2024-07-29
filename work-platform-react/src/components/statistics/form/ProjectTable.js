@@ -55,7 +55,7 @@ export default (props) => {
                 }
                 return <span>{text}</span>
             },
-            sorter: (rowA, rowB) => new Date(rowA.date).getTime() - new Date(rowB.date).getTime(),
+            sorter: (rowA, rowB) => new Date(rowB.date).getTime() - new Date(rowA.date).getTime(),
             defaultSortOrder: 'descend',
         },
         {

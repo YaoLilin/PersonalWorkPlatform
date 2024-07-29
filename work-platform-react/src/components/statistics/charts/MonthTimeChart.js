@@ -1,15 +1,16 @@
-import WeekTimeChartConditions from "./WeekTimeChartConditions";
-import {useState} from "react";
-import useChartData from "./useChartData";
-import {Column} from "@ant-design/charts";
-import useBarChartConfig from "./useBarChartConfig";
+import React, {useState} from "react";
+import useChartApiData from "./useChartApiData";
+import useBarChartOption from "./useBarChartOption";
 import MonthTimeChartCondition from "./MonthTimeChartCondition";
 import {ChartApi} from "../../../request/chartApi";
+import useChartData from "./useChartData";
+import ReactECharts from "echarts-for-react";
 
 const MonthTimeChart = () => {
     const [condition, setCondition] = useState({dateRangeType:4});
-    const data = useChartData(condition,ChartApi.monthTimeCount);
-    const config = useBarChartConfig(data)
+    const apiData = useChartApiData(condition,ChartApi.monthTimeCount);
+    const {seriesData, xName,categories} = useChartData(apiData);
+    const option = useBarChartOption(seriesData,categories,xName,50,'小时');
 
     const handleConditionChange = (condition) => {
         setCondition(condition);
@@ -18,8 +19,8 @@ const MonthTimeChart = () => {
     return (
         <div>
             <MonthTimeChartCondition onChange={handleConditionChange}/>
-            <div style={{height: 300}}>
-                <Column {...config} />
+            <div style={{height: 300, paddingTop: 10}}>
+                <ReactECharts option={option} notMerge/>
             </div>
         </div>
     )

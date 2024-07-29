@@ -3,12 +3,12 @@
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.personalwork.dao.WorkTimeCountMapper">
-    <select id="listByDateRange" resultType="WeekTimeCountDto" parameterType="TimeCountChartParam">
+    <select id="listByDateRange" resultMap="weekTimeMap" parameterType="TimeCountChartParam">
         select
-            rw.date as weekDate,
+            rw.id as weekId,
             w.minutes,
-            p.name as projectName,
-            t.name as typeName
+            p.id as projectId,
+            t.id as typeId
         from week_project_time_count w
         left join project p on w.project = p.id
         left join type t on p.type = t.id
@@ -17,8 +17,8 @@
             rw.date between #{startDate} and #{endDate}
             <if test="projects != null and projects.size() >0 and countType.getValue() eq 0">
                 and w.project in
-                <foreach collection="projects" item="projects" open="(" separator="," close=")">
-                    #{projects}
+                <foreach collection="projects" item="project" open="(" separator="," close=")">
+                    #{project}
                 </foreach>
             </if>
             <if test="types != null and types.size() >0 and countType.getValue() eq 1">
@@ -30,5 +30,15 @@
         </where>
         order by rw.date
     </select>
+
+    <resultMap id="weekTimeMap" type="ProjectWeekTimeDto">
+        <constructor>
+            <arg column="weekId" name="week" javaType="com.personalwork.modal.entity.RecordWeekDo"
+                 select="com.personalwork.dao.RecordWeekMapper.getWorkWeekById"/>
+            <arg column="projectId" name="project" javaType="com.personalwork.modal.entity.ProjectDo"
+                 select="com.personalwork.dao.ProjectMapper.getProject"/>
+            <arg column="minutes" name="minutes" javaType="int"/>
+        </constructor>
+    </resultMap>
 
 </mapper>
