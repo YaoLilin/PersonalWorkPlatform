@@ -4,10 +4,11 @@ import com.personalwork.enu.CountType;
 import com.personalwork.modal.dto.MonthTimeCountDto;
 import com.personalwork.modal.dto.ProjectTimeCountDto;
 import com.personalwork.modal.dto.WeekTimeCountDto;
+import com.personalwork.modal.dto.WorkTimeProportionDto;
 import com.personalwork.modal.entity.RecordMonthDo;
 import com.personalwork.modal.query.TimeCountChartParam;
 import com.personalwork.modal.vo.BarChartVo;
-import com.personalwork.modal.vo.PipeCountVo;
+import com.personalwork.modal.vo.PieCountVo;
 import com.personalwork.service.ChartService;
 import com.personalwork.util.NumberUtil;
 import jakarta.validation.constraints.NotNull;
@@ -37,12 +38,12 @@ public class ChartController {
     }
 
     @GetMapping("/type-time-count-month")
-    public List<PipeCountVo> typeTimeCountOfMonth(@RequestParam Integer layer, @RequestParam @NotNull Integer monthId) {
+    public List<PieCountVo> typeTimeCountOfMonth(@RequestParam Integer layer, @RequestParam @NotNull Integer monthId) {
         return chartService.typeTimeCountOfMonth(layer, monthId);
     }
 
     @GetMapping("/type-time-count-week")
-    public List<PipeCountVo> typeTimeCountOfWeek(@RequestParam Integer layer, @RequestParam @NotNull Integer weekId) {
+    public List<PieCountVo> typeTimeCountOfWeek(@RequestParam Integer layer, @RequestParam @NotNull Integer weekId) {
         return chartService.typeTimeCountOfWeek(layer,weekId);
     }
 
@@ -79,6 +80,23 @@ public class ChartController {
                 items.add(new BarChartVo.Item(name,hours));
             });
             result.add(new BarChartVo(date,items));
+        }
+        return result;
+    }
+
+    @GetMapping("/work-time-proportion")
+    public List<PieCountVo> workTimeProportionCount(@Validated TimeCountChartParam param) {
+        List<WorkTimeProportionDto> proportionDtoList = chartService.workTimeProportionCount(param);
+        List<PieCountVo> result = new ArrayList<>();
+        for (WorkTimeProportionDto proportionDto : proportionDtoList) {
+            PieCountVo pieCountVo = new PieCountVo();
+            if (param.getCountType() == CountType.PROJECT) {
+                pieCountVo.setName(proportionDto.getProject().getName());
+            }else {
+                pieCountVo.setName(proportionDto.getType().getName());
+            }
+            pieCountVo.setCount(proportionDto.getMinutes());
+            result.add(pieCountVo);
         }
         return result;
     }

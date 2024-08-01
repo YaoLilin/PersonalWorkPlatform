@@ -4,6 +4,8 @@ import com.personalwork.enu.ProjectState;
 import lombok.Data;
 import lombok.ToString;
 
+import java.util.Objects;
+
 /**
  * @author 姚礼林
  * @desc TODO
@@ -22,4 +24,17 @@ public class ProjectDo {
     private ProjectState state;
     private Integer important;
     private Integer isStartDateOnly;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ProjectDo projectDo = (ProjectDo) o;
+        return Objects.equals(id, projectDo.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
 }

@@ -9,7 +9,7 @@ import com.personalwork.modal.entity.MonthProjectCountDo;
 import com.personalwork.modal.entity.ProjectDo;
 import com.personalwork.modal.entity.TypeDo;
 import com.personalwork.modal.entity.WeekProjectTimeCountDo;
-import com.personalwork.modal.vo.PipeCountVo;
+import com.personalwork.modal.vo.PieCountVo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -50,14 +50,14 @@ public class ChartServiceTest {
         ProjectDo projectDo2 = getProjectDo(2,2,"type2");
         when(projectMapper.getProject(1)).thenReturn(projectDo1);
         when(projectMapper.getProject(2)).thenReturn(projectDo2);
-        List<PipeCountVo> pipeCountVos = chartService.typeTimeCountOfMonth(1, 1);
-        assertEquals(2, pipeCountVos.size());
-        assertEquals(60, pipeCountVos.get(0).getCount());
-        assertEquals(120, pipeCountVos.get(1).getCount());
-        assertEquals("type1", pipeCountVos.get(0).getName());
-        assertEquals("type2", pipeCountVos.get(1).getName());
-        assertEquals(33, pipeCountVos.get(0).getPercent());
-        assertEquals(67, pipeCountVos.get(1).getPercent());
+        List<PieCountVo> pieCountVos = chartService.typeTimeCountOfMonth(1, 1);
+        assertEquals(2, pieCountVos.size());
+        assertEquals(60, pieCountVos.get(0).getCount());
+        assertEquals(120, pieCountVos.get(1).getCount());
+        assertEquals("type1", pieCountVos.get(0).getName());
+        assertEquals("type2", pieCountVos.get(1).getName());
+        assertEquals(33, pieCountVos.get(0).getPercent());
+        assertEquals(67, pieCountVos.get(1).getPercent());
     }
 
     @Test
@@ -69,14 +69,14 @@ public class ChartServiceTest {
         ProjectDo projectDo2 = getProjectDo(2,2,"type2");
         when(projectMapper.getProject(1)).thenReturn(projectDo1);
         when(projectMapper.getProject(2)).thenReturn(projectDo2);
-        List<PipeCountVo> pipeCountVos = chartService.typeTimeCountOfWeek(1, 1);
-        assertEquals(2, pipeCountVos.size());
-        assertEquals(60, pipeCountVos.get(0).getCount());
-        assertEquals(120, pipeCountVos.get(1).getCount());
-        assertEquals("type1", pipeCountVos.get(0).getName());
-        assertEquals("type2", pipeCountVos.get(1).getName());
-        assertEquals(33, pipeCountVos.get(0).getPercent());
-        assertEquals(67, pipeCountVos.get(1).getPercent());
+        List<PieCountVo> pieCountVos = chartService.typeTimeCountOfWeek(1, 1);
+        assertEquals(2, pieCountVos.size());
+        assertEquals(60, pieCountVos.get(0).getCount());
+        assertEquals(120, pieCountVos.get(1).getCount());
+        assertEquals("type1", pieCountVos.get(0).getName());
+        assertEquals("type2", pieCountVos.get(1).getName());
+        assertEquals(33, pieCountVos.get(0).getPercent());
+        assertEquals(67, pieCountVos.get(1).getPercent());
     }
 
     @Test

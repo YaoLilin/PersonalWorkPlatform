@@ -1,7 +1,7 @@
 import {Card,Flex} from "antd";
 import WeekTimeChart from "../../components/statistics/charts/WeekTimeChart";
 import MonthTimeChart from "../../components/statistics/charts/MonthTimeChart";
-import ChartDebug from "../../components/statistics/charts/ChartDebug";
+import WorkTimePieChart from "../../components/statistics/charts/WorkTimePieChart";
 
 const ChartPage = () => {
 
@@ -14,7 +14,7 @@ const ChartPage = () => {
                 <MonthTimeChart />
             </Card>
             <Card style={{width:500}} title={'利用时间占比'}>
-
+                <WorkTimePieChart />
             </Card>
         </Flex>
 

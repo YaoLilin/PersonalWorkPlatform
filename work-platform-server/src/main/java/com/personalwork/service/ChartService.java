@@ -8,13 +8,14 @@ import com.personalwork.exception.MethodParamInvalidException;
 import com.personalwork.modal.dto.*;
 import com.personalwork.modal.entity.*;
 import com.personalwork.modal.query.TimeCountChartParam;
-import com.personalwork.modal.vo.PipeCountVo;
+import com.personalwork.modal.vo.PieCountVo;
 import com.personalwork.util.DateUtil;
 import com.personalwork.util.NumberUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -50,7 +51,7 @@ public class ChartService {
      * @param monthId 月份id
      * @return 各项目类型的时间，包含占比
      */
-    public List<PipeCountVo> typeTimeCountOfMonth(Integer layer, Integer monthId) {
+    public List<PieCountVo> typeTimeCountOfMonth(Integer layer, Integer monthId) {
         List<MonthProjectCountDo> projectCountList = monthProjectCountMapper.list(monthId);
         if (projectCountList.isEmpty()) {
             return new ArrayList<>();
@@ -80,7 +81,7 @@ public class ChartService {
      * @param weekId 周id
      * @return 各项目类型的时间，包含占比
      */
-    public List<PipeCountVo> typeTimeCountOfWeek(Integer layer, Integer weekId) {
+    public List<PieCountVo> typeTimeCountOfWeek(Integer layer, Integer weekId) {
         List<WeekProjectTimeCountDo> projectCountList = weekProjectTimeCountMapper.listByWeekId(weekId);
         if (projectCountList.isEmpty()) {
             return new ArrayList<>();
@@ -101,23 +102,19 @@ public class ChartService {
      * @return 统计结果集合
      */
     public List<WeekTimeCountDto> weekWorkTimeCount(TimeCountChartParam param) {
-        List<ProjectWeekTimeDto> projectWeekTimeList = getProjectWeekTimeList(param);
-        Map<RecordWeekDo, WeekTimeCountDto> weekTimeMap = new HashMap<>(10);
+        String[] dateRange = getDateRange(param);
+        String startDate = dateRange[0];
+        String endDate = dateRange[1];
+        List<ProjectWeekTimeDto> projectWeekTimeList = getProjectWeekTimeList(param,startDate,endDate);
+        Map<RecordWeekDo, WeekTimeCountDto> weekTimeMap = new LinkedHashMap<>(10);
         for (ProjectWeekTimeDto projectTime : projectWeekTimeList) {
             ProjectTimeCountDto item = new ProjectTimeCountDto(projectTime.project(), projectTime.minutes());
             weekTimeMap.computeIfAbsent(projectTime.week(),
                     k -> new WeekTimeCountDto(projectTime.week(), new ArrayList<>())).items().add(item);
         }
-        return new ArrayList<>(weekTimeMap.values());
-    }
-
-    private List<ProjectWeekTimeDto> getProjectWeekTimeList(TimeCountChartParam param) {
-        String[] dateRange = getDateRange(param);
-        String startDate = dateRange[0];
-        String endDate = dateRange[1];
-        param.setStartDate(startDate);
-        param.setEndDate(endDate);
-        return workTimeCountMapper.listByDateRange(param);
+        List<WeekTimeCountDto> result = new ArrayList<>(weekTimeMap.values());
+        fillEmptyWeekTime(result,startDate,endDate);
+        return result;
     }
 
     /**
@@ -139,6 +136,76 @@ public class ChartService {
             result.add(buildMonthTimeCountDto(param, month, projectCountList));
         }
         return result;
+    }
+
+    /**
+     * 按月统计每个项目或类型的工作时间占比
+     * @param param 条件参数
+     * @return 工作时间占比，集合每个元素对应一个项目或类型的工作时间占比信息
+     */
+    public List<WorkTimeProportionDto> workTimeProportionCount(TimeCountChartParam param) {
+        Map<Integer, ProjectDo> projectDoMap = new HashMap<>();
+        List<MonthRecordDto> monthRecordList = getMonthRecordList(param);
+        Map<Integer, WorkTimeProportionDto> workTimeMap = new LinkedHashMap<>(10);
+        for (MonthRecordDto month : monthRecordList) {
+            for (MonthProjectCountDto projectCount : month.getProjectCountList()) {
+                ProjectDo projectDo = projectDoMap.computeIfAbsent(projectCount.getProjectId(),
+                        k -> projectMapper.getProject(projectCount.getProjectId()));
+                WorkTimeProportionDto workTime;
+                if (param.getCountType() == CountType.PROJECT) {
+                    if (!inParamProjects(param, projectDo)) {
+                        continue;
+                    }
+                    workTime = workTimeMap.computeIfAbsent(projectCount.getProjectId(),
+                            k -> new WorkTimeProportionDto(projectDo, null, projectCount.getMinute()));
+                }else {
+                    if (!inParamTypes(param, projectDo)) {
+                        continue;
+                    }
+                    workTime = workTimeMap.computeIfAbsent(projectDo.getType().getId(),
+                            k -> new WorkTimeProportionDto(null, projectDo.getType(), projectCount.getMinute()));
+                }
+                workTime.setMinutes(workTime.getMinutes() + projectCount.getMinute());
+            }
+        }
+        return new ArrayList<>(workTimeMap.values());
+    }
+
+    private List<ProjectWeekTimeDto> getProjectWeekTimeList(TimeCountChartParam param,String startDate,String endDate) {
+        param.setStartDate(startDate);
+        param.setEndDate(endDate);
+        return workTimeCountMapper.listByDateRange(param);
+    }
+
+    /**
+     * 对于没有记录在数据库的周数据，填充为工作时间为0的周数据
+     */
+    private void fillEmptyWeekTime(List<WeekTimeCountDto> weekTimeCountList,String startDate,String endDate) {
+        DateTimeFormatter formatter =  DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate weekDate = LocalDate.parse(endDate, formatter);
+        LocalDate startWeekDate = LocalDate.parse(startDate,formatter);
+        while (weekDate.isAfter(startWeekDate)) {
+            int previousWeekIndex = 0;
+            boolean isFind = false;
+            for (int i = weekTimeCountList.size() - 1; i >= 0; i--) {
+                LocalDate currentWeekDate = LocalDate.parse(weekTimeCountList.get(i).week().getDate(), formatter);
+                if (currentWeekDate.isEqual(weekDate)) {
+                    isFind= true;
+                    break;
+                }
+                if (currentWeekDate.isBefore(weekDate)) {
+                    previousWeekIndex = i;
+                    break;
+                }
+            }
+            if (!isFind) {
+                RecordWeekDo weekDo = new RecordWeekDo();
+                weekDo.setTime(0);
+                weekDo.setDate(formatter.format(weekDate));
+                weekTimeCountList.add(previousWeekIndex,new WeekTimeCountDto(weekDo,new ArrayList<>()));
+            }
+            weekDate = weekDate.minusWeeks(1);
+        }
     }
 
     private MonthTimeCountDto buildMonthTimeCountDto(TimeCountChartParam param, MonthRecordDto month,
@@ -232,15 +299,15 @@ public class ChartService {
      * @param projectTimeList 所有项目时间记录，从数据库中获取
      * @return 统计的各项目类型所占用的时间，包含占比
      */
-    private List<PipeCountVo> countProjectTypeTime(List<ProjectTime> projectTimeList) {
-        List<PipeCountVo> result = new ArrayList<>();
+    private List<PieCountVo> countProjectTypeTime(List<ProjectTime> projectTimeList) {
+        List<PieCountVo> result = new ArrayList<>();
         int sumTime = projectTimeList.stream().mapToInt(i -> i.minutes).sum();
         if (sumTime == 0) {
             throw new ChartCalculateException.TypeChartCalculateException("所有类型总时间不能为0");
         }
         Map<TypeDo, Integer> typeAndTimeMap = calculateEachTypeTime(projectTimeList);
         typeAndTimeMap.forEach((type, time) -> {
-            PipeCountVo countVo = buildPipeCountVo(sumTime, type, time);
+            PieCountVo countVo = buildPipeCountVo(sumTime, type, time);
             result.add(countVo);
         });
         return result;
@@ -259,8 +326,8 @@ public class ChartService {
         return typeAndTimeMap;
     }
 
-    private PipeCountVo buildPipeCountVo(int totalMinutes, TypeDo type, Integer time) {
-        PipeCountVo countVo = new PipeCountVo();
+    private PieCountVo buildPipeCountVo(int totalMinutes, TypeDo type, Integer time) {
+        PieCountVo countVo = new PieCountVo();
         String typeName = type.getName();
         double percent;
         try {

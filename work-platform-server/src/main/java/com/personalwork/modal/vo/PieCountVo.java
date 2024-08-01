@@ -8,7 +8,7 @@ import lombok.Data;
  * @date 2024/3/26
  */
 @Data
-public class PipeCountVo {
+public class PieCountVo {
     private String name;
     private Integer count;
     private Double percent;
