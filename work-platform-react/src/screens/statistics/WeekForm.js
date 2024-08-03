@@ -112,7 +112,8 @@ const WeekForm = ({isFormCreate}) => {
     return (
         <FormFrame backEvent={() => navigate('/weeks')}
                    dropMenu={dropMenu}
-                   buttons={headButtons}>
+                   buttons={headButtons}
+                   >
             {deleteDialog}
             <Form
                 name="basic"

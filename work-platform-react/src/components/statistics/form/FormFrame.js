@@ -1,13 +1,12 @@
 import {ArrowLeftOutlined, DashOutlined} from "@ant-design/icons";
-import {Button, Col, Dropdown, Row} from "antd";
-import FormTitle from "../../ui/FormTitle";
+import {Dropdown} from "antd";
 import React from "react";
 
 const FormFrame = (props)=>{
     const {backEvent,dropMenu,buttons} = props;
 
     return (
-        <div>
+        <div style={{height:'100%',overflowY:'auto'}}>
             <div style={{overflow:'hidden',padding:'10px 0'}}>
                 <ArrowLeftOutlined style={{
                     margin: '10px 20px', fontSize: '2em', color: 'grey', cursor: 'pointer'

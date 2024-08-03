@@ -3,8 +3,8 @@ import {Select, Space,DatePicker} from "antd";
 import {useState} from "react";
 import CommonCondition from "./CommonCondition";
 
-const MonthTimeChartCondition = ({onChange}) => {
-    const [selectedDateRange, setSelectedDateRange] = useState(4);
+const MonthTimeChartCondition = ({onChange,defaultMonth = 4,monthItems = []}) => {
+    const [selectedDateRange, setSelectedDateRange] = useState(defaultMonth);
     const [selectedStartMonth, setSelectedStartMonth] = useState(null);
     const [selectedEndMonth, setSelectedEndMonth] = useState(null);
     const [selectedCountType, setSelectedCountType] = useState(0);
@@ -48,6 +48,17 @@ const MonthTimeChartCondition = ({onChange}) => {
         }
     }
 
+    const monthAllOptions = [
+        {value: 6, label: '近1月'},
+        {value: 7, label: '近2月'},
+        {value: 8, label: '近3月'},
+        {value: 4, label: '近6月'},
+        {value: 5, label: '近12月'},
+        {value: 3, label: '自定义'}
+    ];
+    const monthOptions = monthItems.length > 0 ?
+        monthAllOptions.filter(i => monthItems.includes(i.value)) : monthAllOptions;
+
     return (
         <div style={{display: 'flex', flexDirection: 'column', gap: 10, fontSize: 12}}>
             <div style={{display: 'flex', gap: 20}}>
@@ -55,9 +66,11 @@ const MonthTimeChartCondition = ({onChange}) => {
                     <Space direction="horizontal" size={12}>
                         <Select value={selectedDateRange} onChange={handleDateRangeChange} size={"small"}
                                 style={{width: 100}}>
-                            <Select.Option value={4}>近6月</Select.Option>
-                            <Select.Option value={5}>近12月</Select.Option>
-                            <Select.Option value={3}>自定义</Select.Option>
+                            {
+                                monthOptions.map(i => (
+                                    <Select.Option key={i.value} value={i.value}>{i.label}</Select.Option>
+                                ))
+                            }
                         </Select>
                         {selectedDateRange === 3 && (
                             <DatePicker.RangePicker
@@ -71,7 +84,7 @@ const MonthTimeChartCondition = ({onChange}) => {
             </div>
             <CommonCondition onChange={handleCommonConditionChange}/>
         </div>
-    )
+    );
 }
 
 export default MonthTimeChartCondition;

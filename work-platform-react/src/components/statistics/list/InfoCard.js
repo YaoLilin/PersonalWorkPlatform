@@ -61,10 +61,10 @@ const InfoCard = ({data,title,onClick,bottomFlag,style}) => {
                 {projectTime.map((item,index) =>{
                     return (
                         <div style={{display: "flex", paddingTop: 4}} key={index}>
-                            <div style={{width: "150px", overflow: "hidden"}}>{item.projectName}</div>
-                            <div style={{width: "80px"}}>{item.minutes}min</div>
-                            <div style={{width: "40px"}}>{item.hours}h</div>
-                            <div style={{width: "40px"}}>{item.percent}%</div>
+                            <div style={{flex:2, overflow: "hidden"}}>{item.projectName}</div>
+                            <div style={{flex:1}}>{item.minutes}min</div>
+                            <div style={{flex:1}}>{item.hours}h</div>
+                            <div style={{flex:1}}>{item.percent}%</div>
                         </div>
                     )
                 })}

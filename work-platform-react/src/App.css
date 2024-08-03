@@ -15,18 +15,9 @@
 
 body{
   margin: 0;
+  height: 100%;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
 
 .App-link {
   color: #61dafb;
@@ -41,15 +32,8 @@ body{
   }
 }
 
-.ant-layout-sider-trigger{
-  background: #67b3fb !important;
-}
-
 #root .ant-layout-sider-children .ant-menu-inline {
   border-inline-end:0 ;
-}
-.site-layout{
-  padding: 20px;
 }
 
 .form-card{

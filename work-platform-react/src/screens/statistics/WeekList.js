@@ -1,9 +1,9 @@
 import {Button} from "antd";
-import {useLoaderData, useNavigate} from "react-router-dom";
+import {useLoaderData, useLocation, useNavigate} from "react-router-dom";
 import WeekCard from "../../components/statistics/list/WeekCard";
 import {WeeksApi} from "../../request/weeksApi";
 import ListTitle from "../../components/ui/ListTitle";
-import {useMemo} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import handleLoaderError from "../../util/handleLoaderError";
 
 export async function loader() {
@@ -55,7 +55,7 @@ const WeekList =  () => {
     }
 
     return (
-        <div>
+        <div style={{height:'100%',overflowY:'auto'}}>
             <Button type={"primary"} onClick={() => {
                 navigate("form/add")
             }} style={{width: '100px', float: "right", marginRight: '5%'}}>添加</Button>

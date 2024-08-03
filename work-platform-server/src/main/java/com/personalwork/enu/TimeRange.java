@@ -20,6 +20,9 @@ public enum TimeRange implements EnumValue{
      * 近半年
      */
     NEALY_HALF_YEAR(2),
+    NEALY_ONE_MONTH(6),
+    NEALY_TWO_MONTH(7),
+    NEALY_THREE_MONTH(8),
     /**
      * 近6个月
      */

@@ -1,4 +1,4 @@
-import {useNavigate} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import DateUtil from "../../../util/DateUtil";
 import InfoCard from "./InfoCard";
 import dayjs from "dayjs";

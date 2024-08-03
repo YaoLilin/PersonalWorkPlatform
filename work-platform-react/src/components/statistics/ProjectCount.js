@@ -7,7 +7,6 @@ const ProjectCount = (props) => {
     let allTime = 0;
     data?.forEach(item => allTime += item.minutes);
     data?.sort((a, b) => b.minutes - a.minutes);
-
     const cellStyle = {
         height: '36px',
         lineHeight: '36px',
@@ -21,12 +20,9 @@ const ProjectCount = (props) => {
         let index = 0;
         const count = data.length;
         data?.forEach((item) => {
-            if (item.projectId == null) {
-                return;
-            }
             index++;
             content.push(<ProjectCountItem data={item}
-                                           key={item.projectId}
+                                           key={index}
                                            isBottom={count === index}
                                            allTime={allTime}
                                            cellStyle={cellStyle}

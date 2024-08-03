@@ -8,12 +8,12 @@ import ProjectCount from "../../components/statistics/ProjectCount";
 import MarkTag from "../../components/statistics/form/MarkTag";
 import {ProblemsApis} from "../../request/problemApi";
 import ProblemList from "../../components/statistics/form/ProblemList";
-import TimeCountChart from "../../components/statistics/form/TimeCountChart";
 import dayjs from "dayjs";
 import {MessageContext} from "../../provider/MessageProvider";
 import useHeadMenus from "./useHeadMenus";
 import SummaryTextArea from "../../components/statistics/form/SummaryTextArea";
 import handleLoaderError from "../../util/handleLoaderError";
+import WorkTimePieChart from "../../components/statistics/charts/WorkTimePieChart";
 
 export async function loader({params}) {
     try {
@@ -76,6 +76,15 @@ const MonthForm = () => {
         })
     }
 
+    const getChartCondition = ()=>{
+        const date = dayjs().year(monthData.year).month(monthData.month-1);
+        return {
+            dateRangeType: 3,
+            startDate: date.startOf('month').format('YYYY-MM-DD'),
+            endDate: date.endOf('month').format('YYYY-MM-DD')
+        }
+    }
+
     return (
         <Form
             name="basic"
@@ -117,7 +126,9 @@ const MonthForm = () => {
                     {
                         projectTime.length > 0 &&
                         <Row>
-                            <TimeCountChart projectTime={projectTime} monthId={monthId}/>
+                            <div style={{width:500,height:300}}>
+                                <WorkTimePieChart showCondition={false} showLegend={false} defaultCondition={getChartCondition}/>
+                            </div>
                         </Row>
                     }
                     <FormTitle name='问题'/>

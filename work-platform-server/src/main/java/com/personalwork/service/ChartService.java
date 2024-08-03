@@ -258,8 +258,11 @@ public class ChartService {
         }else {
             LocalDate date;
             switch (param.getTimeRange()) {
-                case NEALY_SIX_MONTH -> date = now.minusMonths(6);
-                case NEALY_TWELVE_MONTH -> date = now.minusMonths(12);
+                case NEALY_ONE_MONTH -> date = now;
+                case NEALY_TWO_MONTH -> date = now.minusMonths(1);
+                case NEALY_THREE_MONTH -> date = now.minusMonths(2);
+                case NEALY_SIX_MONTH -> date = now.minusMonths(5);
+                case NEALY_TWELVE_MONTH -> date = now.minusMonths(11);
                 default -> throw new MethodParamInvalidException("日期范围类型不在范围内");
             }
             startYear = date.getYear();

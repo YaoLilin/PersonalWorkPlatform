@@ -8,14 +8,15 @@ import {
 import {ConfigProvider, Layout, Menu, theme} from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import 'moment/locale/zh-cn';
-import {useEffect, useState} from 'react';
-import {Outlet, useLocation, useNavigate} from "react-router-dom";
+import React, {useEffect, useState} from 'react';
+import {Outlet, ScrollRestoration, useLocation, useNavigate} from "react-router-dom";
 import './App.css';
 import dayjs from "dayjs";
 import 'dayjs/locale/zh-cn';
 import updateLocale from 'dayjs/plugin/updateLocale';
 import {MessageProvider} from "./provider/MessageProvider";
 import {ThemProvider} from "./provider/ThemProvider";
+import {Content} from "antd/lib/layout/layout";
 
 const weekday = require('dayjs/plugin/weekday')
 dayjs.extend(weekday)
@@ -86,6 +87,7 @@ const App = () => {
     const {pathname} = useLocation();
     const [collapsed, setCollapsed] = useState(false);
     const {token: {colorBgContainer}} = theme.useToken();
+    const [paddingLeft, setPaddingLeft] = useState(200);
     const selectedKey = getSelectedKey(pathname);
     useEffect(() => {
         document.title = "个人工作平台";
@@ -101,18 +103,33 @@ const App = () => {
     }
 
     return (
-        <>
-            <ConfigProvider locale={zhCN}>
+        <div>
+            <ConfigProvider locale={zhCN}
+                            theme={{
+                                components: {
+                                    Layout: {
+                                        siderBg:'#fff',
+                                        triggerBg:'#67b3fb'
+                                    },
+                                },
+                            }}>
                 <ThemProvider>
                     <MessageProvider>
-                        <Layout
-                            style={{
-                                minHeight: '100vh',
-                            }}
-                        >
+                        <Layout >
                             {/*左侧导航栏*/}
-                            <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}
-                                   style={{background: "#fff", paddingTop: "20px"}}>
+                            <Sider collapsible collapsed={collapsed} onCollapse={(value) => {
+                                setCollapsed(value);
+                                setPaddingLeft(value ? 80 : 200);
+                            }}
+                                   style={{
+                                       paddingTop: "20px",
+                                       overflow: 'auto',
+                                       height: '100vh',
+                                       position: 'fixed',
+                                       left: 0,
+                                       top: 0,
+                                       bottom: 0,
+                                   }}>
                                 <Menu theme="light"
                                       style={{borderInlineEnd: ''}}
                                       selectedKeys={[selectedKey]}
@@ -121,14 +138,19 @@ const App = () => {
                                       items={items}
                                       onClick={({key}) => navigate(key)}/>
                             </Sider>
-                            <Layout className="site-layout">
+                            <Content style={{padding: 20, minHeight: '100vh', marginLeft: paddingLeft}} key={pathname}>
                                 <Outlet/>
-                            </Layout>
+                            </Content>
                         </Layout>
                     </MessageProvider>
                 </ThemProvider>
             </ConfigProvider>
-        </>
+            <ScrollRestoration
+                getKey={(location, matches) => {
+                    return location.pathname;
+                }}
+            />
+        </div>
     );
 };
 

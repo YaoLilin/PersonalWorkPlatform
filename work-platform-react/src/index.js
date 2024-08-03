@@ -1,7 +1,7 @@
 import './App.css';
 import ReactDOM from "react-dom/client";
 import React from "react";
-import {createBrowserRouter, RouterProvider} from "react-router-dom";
+import {createBrowserRouter, RouterProvider, ScrollRestoration} from "react-router-dom";
 import App from "./app";
 import ProjectList, {loader as projectsLoader} from "./screens/project/List";
 import  {loader as typeLoader,TypeEditPage} from "./screens/type/EditPage";
@@ -98,7 +98,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
-        <RouterProvider router={router}/>
+        <RouterProvider router={router} >
+        </RouterProvider>
     </React.StrictMode>
 );
 

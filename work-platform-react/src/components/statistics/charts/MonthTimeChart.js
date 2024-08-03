@@ -18,7 +18,7 @@ const MonthTimeChart = () => {
 
     return (
         <div>
-            <MonthTimeChartCondition onChange={handleConditionChange}/>
+            <MonthTimeChartCondition onChange={handleConditionChange} monthItems={[4,5,3]} />
             <div style={{height: 300, paddingTop: 10}}>
                 <ReactECharts option={option} notMerge/>
             </div>
