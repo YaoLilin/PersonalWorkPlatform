@@ -13,6 +13,7 @@
                 and week_number = #{weekNumber}
             </if>
         </where>
+        order by year,week_number desc
     </select>
     <insert id="insert" parameterType="com.personalwork.modal.query.WeekGoalParam">
         insert into week_goal (project_id, content, is_done, year, week_number) value (#{projectId},#{content},#{isDone}

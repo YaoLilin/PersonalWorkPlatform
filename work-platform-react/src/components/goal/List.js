@@ -64,7 +64,7 @@ const GoalList = ({weekNumber=1,month=1,year,goalType ='week',data=[],
     const handleBatchDelete = async () => {
         try {
             let ids = selectedIds.join(',');
-            let result = await GoalApi.batchWeekGoalDelete(ids);
+            let result = goalType ==='week' ? await GoalApi.batchWeekGoalDelete(ids) : await GoalApi.batchMonthGoalDelete(ids);
             if (!result) {
                 messageApi.error('删除失败', 5);
                 return;

@@ -31,8 +31,7 @@ const MonthGoalList = ()=>{
                 return;
             }
         }
-        const newData = list.slice();
-        newData.push({year,month,goals:[]});
+        const newData = [{year,month,goals:[]},...list];
         setList(newData);
     }
 
@@ -44,15 +43,21 @@ const MonthGoalList = ()=>{
             {
                 list.map((item,index)=>{
                     return(
-                        <GoalList data={item.goals} month={item.month} year={item.year} goalType={'month'} key={index} onChange={(newData) => {
-                            const newList = list.slice();
-                            newList.forEach(i => {
-                                if (i.year === item.year && i.month === item.month) {
-                                    i.goals = newData;
-                                }
-                            });
-                            setList(newList);
-                        }}/>
+                        <GoalList data={item.goals}
+                                  month={item.month}
+                                  year={item.year}
+                                  goalType={'month'}
+                                  style={{paddingTop:10}}
+                                  key={index}
+                                  onChange={(newData) => {
+                                        const newList = list.slice();
+                                        newList.forEach(i => {
+                                            if (i.year === item.year && i.month === item.month) {
+                                                i.goals = newData;
+                                            }
+                                        });
+                                        setList(newList);
+                         }}/>
                     )
                 })
             }

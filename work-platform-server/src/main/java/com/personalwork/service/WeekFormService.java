@@ -31,7 +31,7 @@ public class WeekFormService {
     private final WeekProjectTimeCountMapper countMapper;
 
     private final ProblemMapper problemMapper;
-    private MonthCountService monthCountService;
+    private final MonthCountService monthCountService;
 
     @Autowired
     public WeekFormService(ProjectTimeMapper projectTimeMapper, ProjectMapper projectMapper, RecordWeekMapper recordWeekMapper,

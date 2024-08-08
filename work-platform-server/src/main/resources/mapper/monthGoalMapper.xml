@@ -13,6 +13,7 @@
                 and month = #{month}
             </if>
         </where>
+        order by year,month desc
     </select>
     <insert id="insert" parameterType="MonthGoalParam">
         insert into month_goal (project_id, content, is_done, year, month) value (#{projectId},#{content},#{isDone}

@@ -14,14 +14,19 @@ import useHeadMenus from "./useHeadMenus";
 import SummaryTextArea from "../../components/statistics/form/SummaryTextArea";
 import handleLoaderError from "../../util/handleLoaderError";
 import WorkTimePieChart from "../../components/statistics/charts/WorkTimePieChart";
+import GoalList from "../../components/goal/List";
+import FullRow from "../../components/statistics/form/FullRow";
+import GoalApi from "../../request/goalApi";
 
 export async function loader({params}) {
     try {
         const monthData = await MonthsApi.getMonth(params.monthId);
         const startDate = monthData.year +'-'+monthData.month+'-01';
         const endDate = dayjs(startDate).endOf("month").format("YYYY-MM-DD");
-        const problemList =await ProblemsApis.list({startDate,endDate});
-        return {monthData,problemList}
+        const problemList = await ProblemsApis.list({startDate,endDate});
+        const goalsResult = await GoalApi.getMonthGoals({year:monthData.year,month: monthData.month});
+        const goalList = goalsResult.length > 0 ? goalsResult[0].goals : [];
+        return {monthData,problemList,goalList}
     } catch (e) {
         handleLoaderError(e);
     }
@@ -29,12 +34,12 @@ export async function loader({params}) {
 
 const MonthForm = () => {
     const navigate = useNavigate();
-    const {monthData,problemList : problems} = useLoaderData();
+    const {monthData,problemList : problems,goalList} = useLoaderData();
     const {monthId} = useParams();
     const [problemList,setProblemList] = useState(problems);
+    const [goals, setGoals] = useState(goalList);
     const [formInstance] = Form.useForm();
     const messageApi = useContext(MessageContext);
-    // projectTime item :{projectName:text,minutes:number}
     const {month,mark, summary,year, projectTime} = monthData;
     const countData = [];
     projectTime?.forEach(item => {
@@ -131,6 +136,15 @@ const MonthForm = () => {
                             </div>
                         </Row>
                     }
+                    <FormTitle name='目标'/>
+                    <FullRow>
+                        <GoalList data={goals}
+                                  showTitle={false}
+                                  goalType={'month'}
+                                  month={monthData.month}
+                                  year={monthData.year}
+                                  onChange={(data) => setGoals(data)}/>
+                    </FullRow>
                     <FormTitle name='问题'/>
                     <Row>
                         <ProblemList data={problemList} onChange={(newData) => setProblemList(newData)}/>
