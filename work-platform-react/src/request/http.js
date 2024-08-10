@@ -1,7 +1,6 @@
 import axios from "axios";
 
 // 默认请求地址前缀
-axios.defaults.baseURL ='http://localhost:8080';
 // 超时时间
 axios.defaults.timeout =10000;
 // 默认post请求头参数

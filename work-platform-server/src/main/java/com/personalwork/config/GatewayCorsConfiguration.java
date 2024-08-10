@@ -11,7 +11,7 @@ import org.springframework.web.filter.CorsFilter;
  * @desc 允许前端跨域请求
  * @date 2024/3/13
  */
-@Configuration
+//@Configuration
 public class GatewayCorsConfiguration {
     @Bean
     public CorsFilter corsFilter(){
