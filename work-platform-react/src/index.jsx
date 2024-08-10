@@ -16,6 +16,7 @@ import WeekGoalList, {loader as weekGoalListLoader} from "./screens/goal/WeekGoa
 import MonthGoalList, {loader as monthGoalListLoader} from "./screens/goal/MonthGoalList";
 import ChartPage from "./screens/statistics/ChartPage";
 import ErrorBoundary from "./components/ui/ErrorBoundary";
+import LoginPage from "./screens/login/LoginPage";
 
 
 const router = createBrowserRouter([
@@ -93,6 +94,11 @@ const router = createBrowserRouter([
                 loader:monthGoalListLoader
             }
         ]
+    },
+    {
+        path:'/login',
+        element:<LoginPage />,
+        errorElement:<ErrorBoundary />
     }
 ]);
 

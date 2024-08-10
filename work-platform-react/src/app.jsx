@@ -17,8 +17,8 @@ import updateLocale from 'dayjs/plugin/updateLocale';
 import {MessageProvider} from "./provider/MessageProvider";
 import {ThemProvider} from "./provider/ThemProvider";
 import {Content} from "antd/lib/layout/layout";
+import weekday from 'dayjs/plugin/weekday';
 
-const weekday = require('dayjs/plugin/weekday')
 dayjs.extend(weekday)
 dayjs.extend(updateLocale);
 dayjs.updateLocale('zh-cn', {
