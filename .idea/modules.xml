@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/work-platform-server/PersonalWorkPlatform.iml" filepath="$PROJECT_DIR$/work-platform-server/PersonalWorkPlatform.iml" />
       <module fileurl="file://$PROJECT_DIR$/work-platform-react/work-platform-react.iml" filepath="$PROJECT_DIR$/work-platform-react/work-platform-react.iml" />
       <module fileurl="file://$PROJECT_DIR$/work-platform-react-test.iml" filepath="$PROJECT_DIR$/work-platform-react-test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/work-platform-server/work-platform-server.iml" filepath="$PROJECT_DIR$/work-platform-server/work-platform-server.iml" />
     </modules>
   </component>
 </project>

@@ -2,6 +2,11 @@ import {useRouteError} from "react-router-dom";
 
 function ErrorBoundary() {
     let error = useRouteError();
+    const status = error?.message?.status;
+    // 接口返回未授权错误不处理，交给接口拦截去处理
+    if (status === 401 || status === 403 ) {
+        return;
+    }
     console.error(error);
     // Uncaught ReferenceError: path is not defined
     const renderStackMessage = (stack)=>{
@@ -10,7 +15,6 @@ function ErrorBoundary() {
         }
         return null;
     }
-
 
     return (
         <div style={{color: '#4d2723', padding: 20}}>

@@ -4,7 +4,7 @@ import React from "react";
 import {createBrowserRouter, RouterProvider, ScrollRestoration} from "react-router-dom";
 import App from "./app";
 import ProjectList, {loader as projectsLoader} from "./screens/project/List";
-import  {loader as typeLoader,TypeEditPage} from "./screens/type/EditPage";
+import {loader as typeLoader, TypeEditPage} from "./screens/type/EditPage";
 import WeekList, {loader as weekListLoader} from "./screens/statistics/WeekList";
 import WeekForm, {loader as stFormLoader} from "./screens/statistics/WeekForm";
 import ProjectCreate from "./screens/project/CreateForm";
@@ -16,14 +16,18 @@ import WeekGoalList, {loader as weekGoalListLoader} from "./screens/goal/WeekGoa
 import MonthGoalList, {loader as monthGoalListLoader} from "./screens/goal/MonthGoalList";
 import ChartPage from "./screens/statistics/ChartPage";
 import ErrorBoundary from "./components/ui/ErrorBoundary";
-import LoginPage from "./screens/login/LoginPage";
+import LoginPage, {loader as userLoader} from "./screens/login/LoginPage";
+import zhCN from "antd/locale/zh_CN";
+import {ConfigProvider} from "antd";
+import {ThemProvider} from "./provider/ThemProvider";
+import {MessageProvider} from "./provider/MessageProvider";
 
 
 const router = createBrowserRouter([
     {
         path: '/',
         element: <App/>,
-        errorElement:<ErrorBoundary />,
+        errorElement: <ErrorBoundary/>,
         children: [
             {
                 path: 'projects',
@@ -42,8 +46,8 @@ const router = createBrowserRouter([
             },
             {
                 path: 'problems',
-                element: <ProblemLib />,
-                loader:problemLoader,
+                element: <ProblemLib/>,
+                loader: problemLoader,
             },
             {
                 path: 'addProject',
@@ -57,55 +61,69 @@ const router = createBrowserRouter([
             {
                 path: 'weeks',
                 element: <WeekList/>,
-                loader:weekListLoader,
+                loader: weekListLoader,
             },
             {
                 path: 'months',
-                element: <MonthList />,
-                loader:monthListLoader,
+                element: <MonthList/>,
+                loader: monthListLoader,
             },
             {
-                path:'chart',
-                element:<ChartPage />
+                path: 'chart',
+                element: <ChartPage/>
             },
             {
                 path: 'months/form/:monthId',
-                element: <MonthForm />,
-                loader:monthFormLoader,
+                element: <MonthForm/>,
+                loader: monthFormLoader,
             },
             {
                 path: 'weeks/form/add',
                 element: <WeekForm isFormCreate/>,
-                loader:stFormLoader,
+                loader: stFormLoader,
             },
             {
                 path: 'weeks/form/:weekId',
-                element: <WeekForm />,
-                loader:stFormLoader,
+                element: <WeekForm/>,
+                loader: stFormLoader,
             },
             {
-                path:'goal/weeks',
-                element:<WeekGoalList />,
-                loader:weekGoalListLoader
+                path: 'goal/weeks',
+                element: <WeekGoalList/>,
+                loader: weekGoalListLoader
             },
             {
-                path:'goal/months',
-                element:<MonthGoalList />,
-                loader:monthGoalListLoader
+                path: 'goal/months',
+                element: <MonthGoalList/>,
+                loader: monthGoalListLoader
             }
         ]
     },
     {
-        path:'/login',
-        element:<LoginPage />,
-        errorElement:<ErrorBoundary />
+        path: '/login',
+        element: <LoginPage/>,
+        errorElement: <ErrorBoundary/>,
+        loader: userLoader
     }
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
-        <RouterProvider router={router} >
-        </RouterProvider>
+        <ConfigProvider locale={zhCN}
+                        theme={{
+                            components: {
+                                Layout: {
+                                    siderBg: '#fff',
+                                    triggerBg: '#67b3fb'
+                                },
+                            },
+                        }}>
+            <ThemProvider>
+                <MessageProvider>
+                    <RouterProvider router={router}/>
+                </MessageProvider>
+            </ThemProvider>
+        </ConfigProvider>
     </React.StrictMode>
 );
 

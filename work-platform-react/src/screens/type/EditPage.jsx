@@ -1,5 +1,5 @@
 import {Button, Tree, Modal, Input} from "antd";
-import {addType, deleteType, getTypeTree, updateType} from "../../request/typeApi";
+import {TypeApi} from "../../request/typeApi";
 import {useLoaderData, useNavigate} from "react-router-dom";
 import {ExclamationCircleFilled, FormOutlined, PlusCircleOutlined} from "@ant-design/icons";
 import {useContext, useState} from "react";
@@ -7,7 +7,7 @@ import {MessageContext} from "../../provider/MessageProvider";
 import TypeAddDialogContent from "../../components/type/TypeAddDialogContent";
 import TypeEditDialogContent from "../../components/type/TypeEditDialogContent";
 import handleLoaderError from "../../util/handleLoaderError";
-
+const {addType, deleteType, getTypeTree, updateType} = TypeApi
 
 const {confirm} = Modal;
 

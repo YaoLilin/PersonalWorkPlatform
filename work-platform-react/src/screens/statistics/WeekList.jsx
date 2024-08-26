@@ -8,7 +8,8 @@ import handleLoaderError from "../../util/handleLoaderError";
 
 export async function loader() {
     try {
-        return await WeeksApi.getWeekList({});
+        const result = await WeeksApi.getWeekList({});
+        return result;
     } catch (e) {
         handleLoaderError(e);
     }

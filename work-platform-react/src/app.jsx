@@ -5,8 +5,7 @@ import {
     ProjectOutlined,
     SisternodeOutlined
 } from '@ant-design/icons';
-import {ConfigProvider, Layout, Menu, theme} from 'antd';
-import zhCN from 'antd/locale/zh_CN';
+import {Layout, Menu, theme} from 'antd';
 import 'moment/locale/zh-cn';
 import React, {useEffect, useState} from 'react';
 import {Outlet, ScrollRestoration, useLocation, useNavigate} from "react-router-dom";
@@ -14,8 +13,6 @@ import './App.css';
 import dayjs from "dayjs";
 import 'dayjs/locale/zh-cn';
 import updateLocale from 'dayjs/plugin/updateLocale';
-import {MessageProvider} from "./provider/MessageProvider";
-import {ThemProvider} from "./provider/ThemProvider";
 import {Content} from "antd/lib/layout/layout";
 import weekday from 'dayjs/plugin/weekday';
 
@@ -104,47 +101,33 @@ const App = () => {
 
     return (
         <div>
-            <ConfigProvider locale={zhCN}
-                            theme={{
-                                components: {
-                                    Layout: {
-                                        siderBg:'#fff',
-                                        triggerBg:'#67b3fb'
-                                    },
-                                },
-                            }}>
-                <ThemProvider>
-                    <MessageProvider>
-                        <Layout >
-                            {/*左侧导航栏*/}
-                            <Sider collapsible collapsed={collapsed} onCollapse={(value) => {
-                                setCollapsed(value);
-                                setPaddingLeft(value ? 80 : 200);
-                            }}
-                                   style={{
-                                       paddingTop: "20px",
-                                       overflow: 'auto',
-                                       height: '100vh',
-                                       position: 'fixed',
-                                       left: 0,
-                                       top: 0,
-                                       bottom: 0,
-                                   }}>
-                                <Menu theme="light"
-                                      style={{borderInlineEnd: ''}}
-                                      selectedKeys={[selectedKey]}
-                                      defaultOpenKeys={[defaultOpenKey]}
-                                      mode="inline"
-                                      items={items}
-                                      onClick={({key}) => navigate(key)}/>
-                            </Sider>
-                            <Content style={{padding: 20, minHeight: '100vh', marginLeft: paddingLeft}} key={pathname}>
-                                <Outlet/>
-                            </Content>
-                        </Layout>
-                    </MessageProvider>
-                </ThemProvider>
-            </ConfigProvider>
+            <Layout >
+                {/*左侧导航栏*/}
+                <Sider collapsible collapsed={collapsed} onCollapse={(value) => {
+                    setCollapsed(value);
+                    setPaddingLeft(value ? 80 : 200);
+                }}
+                       style={{
+                           paddingTop: "20px",
+                           overflow: 'auto',
+                           height: '100vh',
+                           position: 'fixed',
+                           left: 0,
+                           top: 0,
+                           bottom: 0,
+                       }}>
+                    <Menu theme="light"
+                          style={{borderInlineEnd: ''}}
+                          selectedKeys={[selectedKey]}
+                          defaultOpenKeys={[defaultOpenKey]}
+                          mode="inline"
+                          items={items}
+                          onClick={({key}) => navigate(key)}/>
+                </Sider>
+                <Content style={{padding: 20, minHeight: '100vh', marginLeft: paddingLeft}} key={pathname}>
+                    <Outlet/>
+                </Content>
+            </Layout>
             <ScrollRestoration
                 getKey={(location, matches) => {
                     return location.pathname;

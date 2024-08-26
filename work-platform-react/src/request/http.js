@@ -6,6 +6,49 @@ axios.defaults.timeout =10000;
 // 默认post请求头参数
 axios.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8';
 
+// 拦截接口请求
+axios.interceptors.request.use(
+    (config) => {
+        if (config.url.includes("/auth/login") || config.url.includes("/auth/register")
+            || config.url.includes("/auth/rsa")) {
+            return config;
+        }
+        // 向请求中添加授权token
+        config.headers.token = localStorage.getItem('authToken');
+        return config;
+    },
+    (error) => {
+        // 对请求错误做些什么
+        return Promise.reject(error);
+    }
+);
+
+// 接口返回未授权拦截，跳转到登录页面
+axios.interceptors.response.use(
+    (response) => {
+        // 对响应数据做点什么
+        return response;
+    },
+    (error) => {
+        if (error.response) {
+            // 如果请求被服务器处理了，但返回了错误状态码
+            switch (error.response.status) {
+                case 401:
+                case 403:
+                    // 重定向到登录页面
+                    window.location.href = '/login';
+                    break;
+                default:
+                    // 其他错误处理
+                    return Promise.reject(error);
+            }
+        } else {
+            // 处理请求未被服务器处理的情况
+            return Promise.reject(error);
+        }
+    }
+);
+
 export function get(url,resourceId,params){
     url = replaceResIdToUrl(url,resourceId);
     return new Promise((resolve,reject)=>{

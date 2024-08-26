@@ -28,7 +28,7 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorMsg> handleException(Exception e) {
-        log.error("接口发生异常：" + e.getMessage(), e);
+        log.error("接口发生异常：{}", e.getMessage(), e);
         return new ResponseEntity<>(new ErrorMsg(e.getMessage(), e.getClass().getSimpleName()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
