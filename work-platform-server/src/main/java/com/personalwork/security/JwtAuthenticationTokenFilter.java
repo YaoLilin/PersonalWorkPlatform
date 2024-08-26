@@ -20,7 +20,7 @@ import java.io.IOException;
 
 /**
  * @author yaolilin
- * @desc todo
+ * @desc 认证过滤器，使用JWT进行认证校验
  * @date 2024/8/18
  **/
 @Component

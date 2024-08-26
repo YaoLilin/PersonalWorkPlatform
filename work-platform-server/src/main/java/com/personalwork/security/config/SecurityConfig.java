@@ -18,7 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 /**
  * @author yaolilin
- * @desc todo
+ * @desc SpringSecurity配置类
  * @date 2024/8/17
  **/
 @Configuration

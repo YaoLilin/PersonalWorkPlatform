@@ -1,6 +1,5 @@
 package com.personalwork.security;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -13,7 +12,7 @@ import java.io.IOException;
 
 /**
  * @author yaolilin
- * @desc todo
+ * @desc 处理认证失败和授权失败
  * @date 2024/8/18
  **/
 
@@ -26,7 +25,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint,
     }
 
     @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
+    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
         // 未授权的情况
         response.sendError(HttpStatus.FORBIDDEN.value(), "Forbidden");
     }
