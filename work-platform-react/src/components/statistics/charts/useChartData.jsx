@@ -52,7 +52,7 @@ const useChartData = (apiData =[])=>{
                 for (let i = 0; i < seriesData.length - 1; i++) {
                     total += seriesData[i].data[index];
                 }
-                return total; // 返回总和
+                return total.toFixed(1); // 返回总和
             }
         }
     });

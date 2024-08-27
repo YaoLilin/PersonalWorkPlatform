@@ -11,7 +11,7 @@ const WeekTimeChart = () => {
     const [condition, setCondition] = useState({});
     const apiData = useChartApiData(condition,ChartApi.weekTimeCount);
     const {seriesData, xName,categories} = useChartData(apiData);
-    const option = useBarChartOption(seriesData,categories,xName,1200,'分钟');
+    const option = useBarChartOption(seriesData,categories,xName,25,'小时');
     const handleConditionChange = (condition) => {
         setCondition(condition);
     }

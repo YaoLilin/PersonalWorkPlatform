@@ -2,7 +2,6 @@ package com.personalwork.service;
 
 import com.personalwork.dao.MonthProjectCountMapper;
 import com.personalwork.dao.ProjectMapper;
-import com.personalwork.dao.ProjectTimeMapper;
 import com.personalwork.dao.RecordMonthMapper;
 import com.personalwork.modal.dto.MonthProjectCountDto;
 import com.personalwork.modal.dto.MonthRecordDto;
@@ -14,7 +13,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author 姚礼林
@@ -25,16 +25,14 @@ import java.util.*;
 public class MonthRecordService {
 
     private final RecordMonthMapper monthMapper;
-    private final ProjectTimeMapper projectTimeMapper;
     private final MonthProjectCountMapper monthProjectCountMapper;
     private final ProjectMapper projectMapper;
 
 
     @Autowired
-    public MonthRecordService(RecordMonthMapper monthMapper, ProjectTimeMapper projectTimeMapper, MonthProjectCountMapper monthProjectCountMapper
+    public MonthRecordService(RecordMonthMapper monthMapper, MonthProjectCountMapper monthProjectCountMapper
     , ProjectMapper projectMapper) {
         this.monthMapper = monthMapper;
-        this.projectTimeMapper = projectTimeMapper;
         this.monthProjectCountMapper = monthProjectCountMapper;
         this.projectMapper = projectMapper;
     }

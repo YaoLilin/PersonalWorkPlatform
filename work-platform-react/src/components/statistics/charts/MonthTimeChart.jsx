@@ -10,7 +10,7 @@ const MonthTimeChart = () => {
     const [condition, setCondition] = useState({dateRangeType:4});
     const apiData = useChartApiData(condition,ChartApi.monthTimeCount);
     const {seriesData, xName,categories} = useChartData(apiData);
-    const option = useBarChartOption(seriesData,categories,xName,50,'小时');
+    const option = useBarChartOption(seriesData,categories,xName,70,'小时');
 
     const handleConditionChange = (condition) => {
         setCondition(condition);

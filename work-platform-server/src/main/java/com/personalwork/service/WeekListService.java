@@ -72,8 +72,8 @@ public class WeekListService {
     private WeekProjectTimeVo buildWeekProjectTimeVo(DecimalFormat df2, int weekUseMinutes, WeekProjectTimeCountDo count) {
         WeekProjectTimeVo weekProjectTimeVo = new WeekProjectTimeVo();
         ProjectDo project = projectMapper.getProject(count.getProject());
-        double projectHours = Double.parseDouble(NumberUtil.round((double) count.getMinutes() / 60,
-                2,true));
+        double projectHours = NumberUtil.round((double) count.getMinutes() / 60,
+                2,true);
         double percent = Math.round((double) count.getMinutes() / weekUseMinutes * 100) ;
         weekProjectTimeVo.setProjectName(project.getName());
         weekProjectTimeVo.setMinutes(count.getMinutes());
