@@ -3,7 +3,6 @@ import {useRouteError} from "react-router-dom";
 function ErrorBoundary() {
     let error = useRouteError();
     const status = error?.status;
-    debugger
     // 接口返回未授权错误不处理，交给接口拦截去处理
     if (status === 401 || status === 403 ) {
         return;

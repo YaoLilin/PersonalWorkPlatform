@@ -40,12 +40,14 @@ const WeekList =  () => {
         const cards = [];
         cardMap.forEach((value, key) => {
             const box =
-                <div key={key}>
+                <div key={key} style={{marginTop:20}}>
                     <ListTitle title={key.substring(4, 6)+'月'} littleTitle={key.substring(0, 4)+'年'}/>
-                    <div style={{padding: "20px 0", display: "flex"}}>
+                    <div style={{display: "flex",flexFlow:'row wrap'}}>
                         {
                             value.map(item => {
-                                return <WeekCard data={item} key={item.id}/>
+                                return (<div style={{marginTop:'20px'}}>
+                                    <WeekCard data={item} key={item.id}/>
+                                </div>)
                             })
                         }
                     </div>

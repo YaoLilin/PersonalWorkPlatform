@@ -45,9 +45,14 @@ export default (props) => {
                     if (text !== '') {
                         startDate = dayjs(text, 'YYYY-MM-DD');
                     }
+                    let defaultPickerValue = "";
+                    if (week){
+                        defaultPickerValue = dayjs(week.format('YYYY-MM-DD'));
+                    }
                     return <DatePicker style={{width: '140px'}}
                                        disabledDate={disabledDate}
                                        defaultValue={startDate}
+                                       defaultPickerValue={defaultPickerValue}
                                        onChange={(e) => {
                                            getDataItem(record.key).date =e ? e.format('YYYY-MM-DD') :'';
                                            onChange(data);

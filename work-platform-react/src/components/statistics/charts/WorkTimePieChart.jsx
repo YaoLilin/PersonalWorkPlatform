@@ -1,6 +1,6 @@
 import ReactECharts from "echarts-for-react";
 import MonthTimeChartCondition from "./MonthTimeChartCondition";
-import React, {useMemo, useState} from "react";
+import React, {useState} from "react";
 import useChartApiData from "./useChartApiData";
 import {ChartApi} from "../../../request/chartApi";
 
@@ -24,7 +24,7 @@ const WorkTimePieChart = ({showCondition=true ,defaultCondition= {dateRangeType:
         } : null,
         series: [
             {
-                name: 'work time',
+                name: '工作时间统计',
                 type: 'pie',
                 radius: '60%',
                 center: ['50%', showLegend ? '60%' : '50%'],

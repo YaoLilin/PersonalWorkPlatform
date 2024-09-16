@@ -21,6 +21,7 @@ import zhCN from "antd/locale/zh_CN";
 import {ConfigProvider} from "antd";
 import {ThemProvider} from "./provider/ThemProvider";
 import {MessageProvider} from "./provider/MessageProvider";
+import {UserProvider} from "./provider/UserProvider";
 
 
 const router = createBrowserRouter([
@@ -120,7 +121,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                         }}>
             <ThemProvider>
                 <MessageProvider>
-                    <RouterProvider router={router}/>
+                    <UserProvider>
+                        <RouterProvider router={router}/>
+                    </UserProvider>
                 </MessageProvider>
             </ThemProvider>
         </ConfigProvider>

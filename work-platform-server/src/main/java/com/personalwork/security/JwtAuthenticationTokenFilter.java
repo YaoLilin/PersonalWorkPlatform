@@ -1,5 +1,6 @@
 package com.personalwork.security;
 
+import com.personalwork.constants.SessionAttrNames;
 import com.personalwork.security.bean.UserDetail;
 import com.personalwork.util.JwtUtil;
 import jakarta.servlet.FilterChain;
@@ -38,9 +39,13 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        //解析token
+        // 解析token
         if (!JwtUtil.verify(token)) {
-            response.sendError(HttpStatus.UNAUTHORIZED.value(), "Unauthorized");
+            unauthorizedError(response);
+            return;
+        }
+        if (request.getSession().getAttribute(SessionAttrNames.LOGIN_USER) == null) {
+            unauthorizedError(response);
             return;
         }
         String username = JwtUtil.getUserName(token);
@@ -51,11 +56,14 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    private void unauthorizedError(HttpServletResponse response) throws IOException {
+        response.sendError(HttpStatus.UNAUTHORIZED.value(), "Unauthorized");
+    }
+
     private void setUserContext(HttpServletRequest request, String username) {
         Object loginUser = request.getSession().getAttribute("loginUser");
         if (loginUser == null) {
             loginUser = userDetailsService.loadUserByUsername(username);
-            request.getSession().setAttribute("loginUser", loginUser);
         }
         UserDetail userDetails = (UserDetail) loginUser;
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

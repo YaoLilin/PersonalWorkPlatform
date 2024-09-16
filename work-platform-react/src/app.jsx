@@ -3,18 +3,20 @@ import {
     FundViewOutlined,
     InfoCircleOutlined,
     ProjectOutlined,
-    SisternodeOutlined
+    SisternodeOutlined, UserOutlined
 } from '@ant-design/icons';
-import {Layout, Menu, theme} from 'antd';
+import {Avatar, Button, Dropdown, Layout, Menu, Popover, theme} from 'antd';
 import 'moment/locale/zh-cn';
-import React, {useEffect, useState} from 'react';
-import {Outlet, ScrollRestoration, useLocation, useNavigate} from "react-router-dom";
+import React, {useContext, useEffect, useState} from 'react';
+import {Link, Outlet, ScrollRestoration, useLocation, useNavigate} from "react-router-dom";
 import './App.css';
 import dayjs from "dayjs";
 import 'dayjs/locale/zh-cn';
 import updateLocale from 'dayjs/plugin/updateLocale';
 import {Content} from "antd/lib/layout/layout";
 import weekday from 'dayjs/plugin/weekday';
+import {UserContext} from "./provider/UserProvider";
+import HeadImage from "./components/user/HeadImage";
 
 dayjs.extend(weekday)
 dayjs.extend(updateLocale);
@@ -101,7 +103,7 @@ const App = () => {
 
     return (
         <div>
-            <Layout >
+            <Layout>
                 {/*左侧导航栏*/}
                 <Sider collapsible collapsed={collapsed} onCollapse={(value) => {
                     setCollapsed(value);
@@ -116,7 +118,9 @@ const App = () => {
                            top: 0,
                            bottom: 0,
                        }}>
+                    <HeadImage size={collapsed ? 40 : 55}/>
                     <Menu theme="light"
+                          className={'mt-2'}
                           style={{borderInlineEnd: ''}}
                           selectedKeys={[selectedKey]}
                           defaultOpenKeys={[defaultOpenKey]}

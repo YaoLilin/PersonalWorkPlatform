@@ -4,6 +4,8 @@ import {Link, useLoaderData, useNavigate} from "react-router-dom";
 import {AuthApi} from "../../request/authApi";
 import JSEncrypt from 'jsencrypt';
 import {MessageContext, MessageProvider} from "../../provider/MessageProvider";
+import {UserContext} from "../../provider/UserProvider";
+import UserUtil from "../../util/UserUtil";
 
 const encryptor = new JSEncrypt();
 
@@ -15,9 +17,8 @@ export async function loader(params) {
 function LoginPage() {
     const publicKey = useLoaderData();
     encryptor.setPublicKey(publicKey);
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const {setUser} = useContext(UserContext);
     const navigate = useNavigate();
     const messageApi = useContext(MessageContext);
 
@@ -29,8 +30,9 @@ function LoginPage() {
         }
         AuthApi.login(params).then(data => {
             setLoading(false);
-            const {token} = data;
-            localStorage.setItem('authToken', token);
+            const {token,user} = data;
+            UserUtil.setUserLocalData(JSON.stringify(user), token);
+            setUser(user);
             navigate('/');
         }).catch(e => {
             setLoading(false);

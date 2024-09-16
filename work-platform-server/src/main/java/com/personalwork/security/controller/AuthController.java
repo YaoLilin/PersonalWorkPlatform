@@ -2,10 +2,13 @@ package com.personalwork.security.controller;
 
 import com.personalwork.enu.LoginResultType;
 import com.personalwork.modal.query.UserParam;
-import com.personalwork.modal.vo.LoginResult;
+import com.personalwork.modal.dto.LoginResultDto;
+import com.personalwork.modal.vo.LoginResultVo;
+import com.personalwork.modal.vo.UserVo;
 import com.personalwork.security.service.AuthService;
 import com.personalwork.util.RSAUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,12 +32,25 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResult> login(@Validated @RequestBody UserParam param, HttpServletRequest request) {
-        LoginResult login = authService.login(param,request);
-        if (login.getType() != LoginResultType.SUCCESS) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(login);
+    public ResponseEntity<LoginResultVo> login(@Validated @RequestBody UserParam param, HttpServletRequest request) {
+        LoginResultDto resultDto = authService.login(param,request);
+        LoginResultVo result = new LoginResultVo();
+        result.setToken(resultDto.getToken());
+        result.setType(resultDto.getType());
+        if (resultDto.getUser() != null) {
+            UserVo userVo = new UserVo();
+            BeanUtils.copyProperties(resultDto.getUser(), userVo);
+            result.setUser(userVo);
         }
-        return ResponseEntity.ok(login);
+        if (resultDto.getType() != LoginResultType.SUCCESS) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/logout")
+    public void logout(HttpServletRequest request) {
+        authService.logout(request);
     }
 
 }
