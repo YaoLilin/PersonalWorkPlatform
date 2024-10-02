@@ -3,6 +3,7 @@ package com.personalwork.controller;
 import com.personalwork.modal.dto.WeekGoalDto;
 import com.personalwork.modal.query.WeekGoalParam;
 import com.personalwork.modal.query.WeekGoalQueryParam;
+import com.personalwork.modal.vo.GoalVo;
 import com.personalwork.modal.vo.WeekGoalVo;
 import com.personalwork.service.impl.WeekGoalServiceImpl;
 import org.springframework.beans.BeanUtils;
@@ -16,7 +17,7 @@ import java.util.Optional;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 周目标相关接口
  * @date 2024/5/3
  */
 @RestController
@@ -40,7 +41,7 @@ public class WeekGoalController extends GoalController{
                     .findAny();
             if (opt.isPresent()) {
                 WeekGoalVo weekGoalVo = opt.get();
-                WeekGoalVo.GoalItem item = new WeekGoalVo.GoalItem();
+                GoalVo.GoalItem item = new WeekGoalVo.GoalItem();
                 BeanUtils.copyProperties(i, item);
                 item.setProjectId(i.getProject().getId());
                 item.setProjectName(i.getProject().getName());
@@ -49,8 +50,8 @@ public class WeekGoalController extends GoalController{
                 WeekGoalVo vo = new WeekGoalVo();
                 vo.setYear(i.getYear());
                 vo.setWeekNumber(i.getWeekNumber());
-                List<WeekGoalVo.GoalItem> itemList = new ArrayList<>();
-                WeekGoalVo.GoalItem item = new WeekGoalVo.GoalItem();
+                List<GoalVo.GoalItem> itemList = new ArrayList<>();
+                GoalVo.GoalItem item = new WeekGoalVo.GoalItem();
                 BeanUtils.copyProperties(i, item);
                 item.setProjectId(i.getProject().getId());
                 item.setProjectName(i.getProject().getName());

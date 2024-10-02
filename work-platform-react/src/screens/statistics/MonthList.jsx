@@ -5,14 +5,9 @@ import InfoCard from "../../components/statistics/list/InfoCard";
 import ListTitle from "../../components/ui/ListTitle";
 import {useContext} from "react";
 import {MessageContext} from "../../provider/MessageProvider";
-import handleLoaderError from "../../util/handleLoaderError";
 
 export async function loader() {
-    try {
-        return await MonthsApi.getMonthList({});
-    } catch (e) {
-        handleLoaderError(e);
-    }
+    return await MonthsApi.getMonthList({});
 }
 
 const MonthList = () => {

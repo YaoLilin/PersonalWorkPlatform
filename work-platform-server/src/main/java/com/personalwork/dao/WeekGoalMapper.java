@@ -1,5 +1,7 @@
 package com.personalwork.dao;
 
+import com.personalwork.modal.entity.WeekGoalDo;
+import com.personalwork.modal.query.GoalQueryParam;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
@@ -13,5 +15,5 @@ import java.util.List;
 @Repository
 @Mapper
 public interface WeekGoalMapper extends GoalMapper{
-
+    List<WeekGoalDo> list(GoalQueryParam param);
 }

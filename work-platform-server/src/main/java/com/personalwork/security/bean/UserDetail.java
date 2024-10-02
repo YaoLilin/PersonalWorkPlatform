@@ -17,7 +17,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class UserDetail implements UserDetails {
-    private UserDo user;
+    private final UserDo user;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

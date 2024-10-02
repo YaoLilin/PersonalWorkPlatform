@@ -1,6 +1,6 @@
 package com.personalwork.dao;
 
-import com.personalwork.enu.ProjectState;
+import com.personalwork.constants.ProjectState;
 import com.personalwork.modal.entity.ProjectDo;
 import com.personalwork.modal.entity.TypeDo;
 import org.junit.jupiter.api.Test;
@@ -23,8 +23,8 @@ class ProjectMapperTest {
     private ProjectMapper projectMapper;
 
     @Test
-    void getAll() {
-        assertTrue(projectMapper.getAll().size() > 0);
+    void listByUser() {
+        assertTrue(projectMapper.listByUser(1).size() > 0);
     }
 
     @Test

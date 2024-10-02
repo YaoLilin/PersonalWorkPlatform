@@ -1,7 +1,7 @@
 package com.personalwork.modal.query;
 
-import com.personalwork.enu.ProblemLevel;
-import com.personalwork.enu.ProblemState;
+import com.personalwork.constants.ProblemLevel;
+import com.personalwork.constants.ProblemState;
 import lombok.Data;
 import lombok.ToString;
 
@@ -18,5 +18,5 @@ public class ProblemQr {
     private String endDate;
     private ProblemState state;
     private ProblemLevel level;
-
+    private Integer userId;
 }

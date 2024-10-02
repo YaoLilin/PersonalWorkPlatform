@@ -1,6 +1,5 @@
 package com.personalwork.modal.entity;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.ToString;
 
@@ -15,4 +14,5 @@ public class TypeDo {
     private Integer id;
     private String name;
     private Integer parentId ;
+    private Integer userId;
 }

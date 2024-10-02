@@ -21,7 +21,7 @@ class TypeMapperTest {
 
     @Test
     void getTypes() {
-        assertTrue(typeMapper.getTypes().size()>0);
+        assertFalse(typeMapper.getTypes(1).isEmpty());
     }
 
     @Test

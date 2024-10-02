@@ -12,7 +12,7 @@
         from week_project_time_count w
         left join project p on w.project = p.id
         left join type t on p.type = t.id
-        inner join record_week rw on w.week_id = rw.id
+        inner join record_week rw on w.week_id = rw.id and p.user_id=#{userId}
         <where>
             rw.date between #{startDate} and #{endDate}
             <if test="projects != null and projects.size() >0 and countType.getValue() eq 0">

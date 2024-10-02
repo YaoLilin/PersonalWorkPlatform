@@ -1,11 +1,13 @@
 package com.personalwork.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.Cipher;
 import java.security.*;
 
+@Slf4j
 public class RSAUtils {
     private static final KeyPair KEY_PAIR = initKey();
 

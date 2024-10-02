@@ -9,6 +9,7 @@ import com.personalwork.modal.entity.MonthProjectCountDo;
 import com.personalwork.modal.entity.ProjectDo;
 import com.personalwork.modal.entity.RecordMonthDo;
 import com.personalwork.modal.query.MonthFormParam;
+import com.personalwork.util.UserUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,12 +39,12 @@ public class MonthRecordService {
     }
 
     public List<MonthRecordDto> getWorkMonthRecordList() {
-        List<RecordMonthDo> months = monthMapper.list();
+        List<RecordMonthDo> months = monthMapper.list(UserUtil.getLoginUserId());
         return buildMonthRecordDtoList(months);
     }
 
     public List<MonthRecordDto> getWorkMonthRecordList(Integer startYear, Integer startMonth, Integer endYear, Integer endMonth){
-        List<RecordMonthDo> months = monthMapper.listRange(startYear,startMonth,endYear,endMonth);
+        List<RecordMonthDo> months = monthMapper.listRange(startYear,startMonth,endYear,endMonth,UserUtil.getLoginUserId());
         return buildMonthRecordDtoList(months);
     }
 
@@ -66,6 +67,13 @@ public class MonthRecordService {
         return monthMapper.update(recordMonthDo);
     }
 
+    public MonthRecordDto getMonth(Integer monthId) {
+        RecordMonthDo monthDo = monthMapper.getById(monthId);
+        List<MonthProjectCountDo> countList = monthProjectCountMapper.list(monthDo.getId());
+        return buildMonthRecordDto(monthDo, countList);
+
+    }
+
     private MonthRecordDto buildMonthRecordDto(RecordMonthDo month, List<MonthProjectCountDo> monthProjectCountList) {
         MonthRecordDto recordDto = new MonthRecordDto();
         recordDto.setRecordMonthDo(month);
@@ -83,10 +91,4 @@ public class MonthRecordService {
         return countDto;
     }
 
-    public MonthRecordDto getMonth(Integer monthId) {
-        RecordMonthDo monthDo = monthMapper.getById(monthId);
-        List<MonthProjectCountDo> countList = monthProjectCountMapper.list(monthDo.getId());
-        return buildMonthRecordDto(monthDo, countList);
-
-    }
 }

@@ -2,10 +2,10 @@ package com.personalwork.service.impl;
 
 import com.personalwork.dao.ProjectMapper;
 import com.personalwork.dao.WeekGoalMapper;
-import com.personalwork.enu.ProjectState;
-import com.personalwork.modal.entity.GoalDo;
+import com.personalwork.constants.ProjectState;
 import com.personalwork.modal.entity.ProjectDo;
 import com.personalwork.modal.entity.TypeDo;
+import com.personalwork.modal.entity.WeekGoalDo;
 import com.personalwork.modal.query.GoalQueryParam;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +15,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -28,7 +27,7 @@ import static org.mockito.Mockito.*;
  */
 @ContextConfiguration(classes = {WeekGoalServiceImpl.class})
 @ExtendWith(SpringExtension.class)
-class WeekGoalServiceImplTest {
+class WeekBaseGoalServiceImplTest {
 
     @MockBean
     private ProjectMapper projectMapper;
@@ -48,12 +47,12 @@ class WeekGoalServiceImplTest {
      */
     @Test
     void testGetGoals() {
-        when((List<GoalDo>) weekGoalMapper.list((GoalQueryParam) any())).thenReturn(new ArrayList<>());
+        when( weekGoalMapper.list(any())).thenReturn(new ArrayList<>());
 
         GoalQueryParam goalQueryParam = new GoalQueryParam();
         goalQueryParam.setYear(1);
         assertTrue(weekGoalServiceImpl.getGoals(goalQueryParam).isEmpty());
-        verify(weekGoalMapper).list((GoalQueryParam) any());
+        verify(weekGoalMapper).list(any());
     }
 
     /**
@@ -61,16 +60,16 @@ class WeekGoalServiceImplTest {
      */
     @Test
     void testGetGoals2() {
-        GoalDo goalDo = new GoalDo();
+        WeekGoalDo goalDo = new WeekGoalDo();
         goalDo.setContent("Not all who wander are lost");
         goalDo.setId(1);
         goalDo.setIsDone(1);
         goalDo.setProjectId(1);
         goalDo.setYear(1);
 
-        ArrayList<GoalDo> goalDoList = new ArrayList<>();
+        ArrayList<WeekGoalDo> goalDoList = new ArrayList<>();
         goalDoList.add(goalDo);
-        when((List<GoalDo>) weekGoalMapper.list((GoalQueryParam) any())).thenReturn(goalDoList);
+        when(weekGoalMapper.list(any())).thenReturn(goalDoList);
 
         TypeDo typeDo = new TypeDo();
         typeDo.setId(1);
@@ -102,24 +101,24 @@ class WeekGoalServiceImplTest {
      */
     @Test
     void testGetGoals3() {
-        GoalDo goalDo = new GoalDo();
+        WeekGoalDo goalDo = new WeekGoalDo();
         goalDo.setContent("Not all who wander are lost");
         goalDo.setId(1);
         goalDo.setIsDone(1);
         goalDo.setProjectId(1);
         goalDo.setYear(1);
 
-        GoalDo goalDo1 = new GoalDo();
+        WeekGoalDo goalDo1 = new WeekGoalDo();
         goalDo1.setContent("Content");
         goalDo1.setId(2);
         goalDo1.setIsDone(0);
         goalDo1.setProjectId(2);
         goalDo1.setYear(0);
 
-        ArrayList<GoalDo> goalDoList = new ArrayList<>();
+        ArrayList<WeekGoalDo> goalDoList = new ArrayList<>();
         goalDoList.add(goalDo1);
         goalDoList.add(goalDo);
-        when((List<GoalDo>) weekGoalMapper.list((GoalQueryParam) any())).thenReturn(goalDoList);
+        when(weekGoalMapper.list( any())).thenReturn(goalDoList);
 
         TypeDo typeDo = new TypeDo();
         typeDo.setId(1);

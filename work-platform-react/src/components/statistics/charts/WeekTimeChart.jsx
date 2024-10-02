@@ -6,12 +6,14 @@ import {ChartApi} from "../../../request/chartApi";
 import ReactECharts from 'echarts-for-react';
 import useChartData from "./useChartData";
 import useBarChartOption from "./useBarChartOption";
+import useDefaultMaxValue from "./useDedefaultMaxValue";
 
 const WeekTimeChart = () => {
     const [condition, setCondition] = useState({});
     const apiData = useChartApiData(condition,ChartApi.weekTimeCount);
     const {seriesData, xName,categories} = useChartData(apiData);
-    const option = useBarChartOption(seriesData,categories,xName,25,'小时');
+    const defaultMaxValue = useDefaultMaxValue(apiData,25);
+    const option = useBarChartOption(seriesData,categories,xName,defaultMaxValue,'小时');
     const handleConditionChange = (condition) => {
         setCondition(condition);
     }

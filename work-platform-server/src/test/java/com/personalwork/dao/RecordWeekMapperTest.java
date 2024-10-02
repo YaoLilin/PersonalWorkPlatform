@@ -1,6 +1,6 @@
 package com.personalwork.dao;
 
-import com.personalwork.enu.Mark;
+import com.personalwork.constants.Mark;
 import com.personalwork.modal.entity.RecordWeekDo;
 import org.junit.jupiter.api.Test;
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
@@ -22,7 +22,7 @@ class RecordWeekMapperTest {
 
     @Test
     void getWorkWeekByDate() {
-        assertNotNull(mapper.getWorkWeekByDate("2024-03-04"));
+        assertNotNull(mapper.getWorkWeekByDate("2024-03-04",1));
     }
 
     @Test
@@ -37,7 +37,7 @@ class RecordWeekMapperTest {
 
     @Test
     void getWorkWeekList() {
-        assertTrue(mapper.getWorkWeekList().size()>0);
+        assertTrue(mapper.getWorkWeekList(1).size()>0);
     }
 
     @Test

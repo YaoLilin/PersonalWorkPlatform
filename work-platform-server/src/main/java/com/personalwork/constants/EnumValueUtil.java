@@ -1,4 +1,4 @@
-package com.personalwork.enu;
+package com.personalwork.constants;
 
 /**
  * @author 姚礼林

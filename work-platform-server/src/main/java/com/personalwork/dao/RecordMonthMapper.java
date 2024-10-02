@@ -16,15 +16,16 @@ import java.util.List;
 @Mapper
 public interface RecordMonthMapper {
 
-    List<RecordMonthDo> list();
+    List<RecordMonthDo> list(Integer userId);
     List<RecordMonthDo> listRange(@Param("startYear") Integer startYear, @Param("startMonth") Integer startMonth,
-                                  @Param("endYear") Integer endYear, @Param("endMonth") Integer endMonth);
+                                  @Param("endYear") Integer endYear, @Param("endMonth") Integer endMonth,
+                                  @Param("userId") Integer userId);
 
     RecordMonthDo getById(Integer id);
 
     boolean insert(RecordMonthDo recordMonth);
 
-    RecordMonthDo getByDate(@Param("year") Integer year,@Param("month") Integer month);
+    RecordMonthDo getByDate(@Param("year") Integer year,@Param("month") Integer month,Integer userId);
 
     boolean update(RecordMonthDo recordMonth);
 

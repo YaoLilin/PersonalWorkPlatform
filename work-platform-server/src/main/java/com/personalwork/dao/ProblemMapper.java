@@ -17,13 +17,13 @@ import java.util.List;
 public interface ProblemMapper {
     List<ProblemDo> getProblems(ProblemQr problemQr);
 
-    List<ProblemDo> getProblemsByWeekDate(String weekDate);
-    List<ProblemDo> getProblemsExceptThisWeek(Integer weekId);
+    List<ProblemDo> getProblemsByWeekDate(String weekDate,Integer userId);
+    List<ProblemDo> getProblemsExceptThisWeek(Integer weekId,Integer userId);
     ProblemDo getProblemById(int id);
     boolean add(ProblemDo problemDo);
     boolean update(ProblemDo problemDo);
     boolean delete(int id);
-    ProblemDo getOpenProblemByName(String name);
+    ProblemDo getOpenProblemByName(String name,Integer userId);
     boolean done(int id);
     boolean callback(int id);
 

@@ -1,7 +1,7 @@
 package com.personalwork.modal.query;
 
 import com.personalwork.validation.constraints.ValidDate;
-import com.personalwork.enu.ProblemLevel;
+import com.personalwork.constants.ProblemLevel;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;

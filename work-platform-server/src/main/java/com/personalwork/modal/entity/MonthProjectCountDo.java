@@ -1,12 +1,11 @@
 package com.personalwork.modal.entity;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.ToString;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 项目的月时间统计
  * @date 2024/3/22
  */
 @Data

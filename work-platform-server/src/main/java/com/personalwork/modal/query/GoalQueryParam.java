@@ -10,4 +10,5 @@ import lombok.Data;
 @Data
 public  class GoalQueryParam {
     private Integer year;
+    private Integer userId;
 }

@@ -19,4 +19,5 @@ public class GoalParam {
     @NotNull(message = "年份不能为空")
     private Integer year;
     private Integer isDone;
+    private Integer userId;
 }

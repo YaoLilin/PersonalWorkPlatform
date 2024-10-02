@@ -1,19 +1,22 @@
 package com.personalwork.service;
 
 import com.personalwork.dao.ProblemMapper;
-import com.personalwork.enu.ProblemLevel;
-import com.personalwork.enu.ProblemState;
+import com.personalwork.constants.ProblemLevel;
+import com.personalwork.constants.ProblemState;
 import com.personalwork.exception.ProblemAddException;
 import com.personalwork.modal.entity.ProblemDo;
 import com.personalwork.modal.query.ProblemAddQr;
 import com.personalwork.modal.query.ProblemQr;
 import com.personalwork.modal.vo.ProblemInFormVo;
+import com.personalwork.security.bean.UserDetail;
+import com.personalwork.util.UserUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author 姚礼林
@@ -30,6 +33,8 @@ public class ProblemsService {
     }
 
     public List<ProblemDo> getProblems(ProblemQr problemQr) {
+        UserDetail loginUser = getLoginUser();
+        problemQr.setUserId(loginUser.getUser().getId());
         return problemMapper.getProblems(problemQr);
     }
 
@@ -39,7 +44,12 @@ public class ProblemsService {
      * @return 问题列表
      */
     public List<ProblemDo> getProblemsExceptThisWeek(Integer weekId){
-        return problemMapper.getProblemsExceptThisWeek(weekId);
+        UserDetail loginUser = getLoginUser();
+        return problemMapper.getProblemsExceptThisWeek(weekId,loginUser.getUser().getId());
+    }
+
+    private static UserDetail getLoginUser() {
+        return Objects.requireNonNull(UserUtil.getLoginUser());
     }
 
     public ProblemDo getProblemById(int id) {
@@ -51,8 +61,10 @@ public class ProblemsService {
         if (isExists(problemQr.getTitle())){
             throw new ProblemAddException("已有相同问题，不能重复添加");
         }
+        UserDetail loginUser = getLoginUser();
         ProblemDo problemDo = new ProblemDo();
         BeanUtils.copyProperties(problemQr, problemDo);
+        problemDo.setUserId(loginUser.getUser().getId());
         problemDo.setState(ProblemState.UN_RESOLVE);
         if (problemDo.getLevel() == null) {
             problemDo.setLevel(ProblemLevel.NORMAL);
@@ -60,14 +72,14 @@ public class ProblemsService {
         if (!problemMapper.add(problemDo)){
             throw new ProblemAddException("添加问题出错");
         }
-        ProblemDo newProblemDo = problemMapper.getOpenProblemByName(problemQr.getTitle());
+        ProblemDo newProblemDo = problemMapper.getOpenProblemByName(problemQr.getTitle(),getLoginUser().getUser().getId());
         ProblemInFormVo vo = new ProblemInFormVo();
         BeanUtils.copyProperties(newProblemDo,vo);
         return vo;
     }
 
     public boolean update(ProblemAddQr problemAddQr,Integer id) throws ProblemAddException {
-        ProblemDo pro = problemMapper.getOpenProblemByName(problemAddQr.getTitle());
+        ProblemDo pro = problemMapper.getOpenProblemByName(problemAddQr.getTitle(),getLoginUser().getUser().getId());
         if (pro != null && !pro.getId().equals(id)){
             throw new ProblemAddException("已存在相同问题");
         }
@@ -86,7 +98,7 @@ public class ProblemsService {
     }
 
     public boolean isExists(String name) {
-        ProblemDo problem = problemMapper.getOpenProblemByName(name);
+        ProblemDo problem = problemMapper.getOpenProblemByName(name,getLoginUser().getUser().getId());
         return problem != null;
     }
 

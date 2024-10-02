@@ -24,6 +24,7 @@
             </entry>
           </map>
         </option>
+        <option name="typeAliasPackages" value="com.personalwork.modal.entity;com.personalwork.modal.query;com.personalwork.modal.dto" />
       </ProjectProfile>
     </option>
   </component>

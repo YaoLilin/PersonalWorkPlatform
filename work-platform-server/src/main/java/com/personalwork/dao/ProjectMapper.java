@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 @Mapper
 public interface ProjectMapper {
-    List<ProjectDo> getAll();
+    List<ProjectDo> listByUser(int userId);
     ProjectDo getProject(int id);
     boolean addProject(ProjectDo project);
 

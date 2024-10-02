@@ -22,6 +22,6 @@ public interface ProjectTimeMapper {
     List<ProjectTimeDo> getProjectTimeByDate(Integer projectId, String date);
     List<ProjectTimeDo> getProjectTimeByProjectId(int projectId);
     List<ProjectTimeDo> getProjectTimeByWeek(Integer weekId);
-    List<ProjectTimeDo> getAllProjectTime();
-    List<ProjectTimeDo> getProjectTimesByRange(String startDate,String endDate);
+    List<ProjectTimeDo> list(Integer userId);
+    List<ProjectTimeDo> getProjectTimesByRange(String startDate,String endDate,Integer userId);
 }

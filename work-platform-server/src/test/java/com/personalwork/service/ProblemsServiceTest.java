@@ -62,14 +62,14 @@ class ProblemsServiceTest {
     @Test
     void addShouldThrowProblemAddExceptionWhenProblemExists() {
         problemAddQr.setTitle("Existing Problem");
-        when(problemMapper.getOpenProblemByName(anyString())).thenReturn(problemDo);
+        when(problemMapper.getOpenProblemByName(anyString(),anyInt())).thenReturn(problemDo);
         assertThrows(ProblemAddException.class, () -> problemsService.add(problemAddQr));
     }
 
     @Test
     void addShouldReturnProblemInFormVoWhenProblemAddedSuccessfully() {
         problemAddQr.setTitle("New Problem");
-        when(problemMapper.getOpenProblemByName(anyString())).thenReturn(null).thenReturn(problemDo);
+        when(problemMapper.getOpenProblemByName(anyString(),anyInt())).thenReturn(null).thenReturn(problemDo);
         when(problemMapper.add(any(ProblemDo.class))).thenReturn(true);
         ProblemInFormVo result = problemsService.add(problemAddQr);
         assertNotNull(result);
@@ -79,14 +79,14 @@ class ProblemsServiceTest {
     void updateShouldThrowProblemAddExceptionWhenSameProblemExists() {
         problemAddQr.setTitle("Existing Problem");
         problemDo.setId(1);
-        when(problemMapper.getOpenProblemByName(anyString())).thenReturn(problemDo);
+        when(problemMapper.getOpenProblemByName(anyString(),anyInt())).thenReturn(problemDo);
         assertThrows(ProblemAddException.class, () -> problemsService.update(problemAddQr, 2));
     }
 
     @Test
     void updateShouldReturnTrueWhenProblemUpdatedSuccessfully() {
         problemAddQr.setTitle("Update Problem");
-        when(problemMapper.getOpenProblemByName(anyString())).thenReturn(null);
+        when(problemMapper.getOpenProblemByName(anyString(),anyInt())).thenReturn(null);
         when(problemMapper.update(any(ProblemDo.class))).thenReturn(true);
         boolean result = problemsService.update(problemAddQr, 1);
         assertTrue(result);
@@ -101,14 +101,14 @@ class ProblemsServiceTest {
 
     @Test
     void isExistsShouldReturnFalseWhenProblemDoesNotExist() {
-        when(problemMapper.getOpenProblemByName(anyString())).thenReturn(null);
+        when(problemMapper.getOpenProblemByName(anyString(),anyInt())).thenReturn(null);
         boolean result = problemsService.isExists("NonExisting Problem");
         assertFalse(result);
     }
 
     @Test
     void isExistsShouldReturnTrueWhenProblemExists() {
-        when(problemMapper.getOpenProblemByName(anyString())).thenReturn(problemDo);
+        when(problemMapper.getOpenProblemByName(anyString(),anyInt())).thenReturn(problemDo);
         boolean result = problemsService.isExists("Existing Problem");
         assertTrue(result);
     }

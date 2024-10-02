@@ -1,6 +1,6 @@
 package com.personalwork.modal.dto;
 
-import com.personalwork.enu.ProjectState;
+import com.personalwork.constants.ProjectState;
 import lombok.Data;
 
 /**

@@ -5,12 +5,14 @@ import MonthTimeChartCondition from "./MonthTimeChartCondition";
 import {ChartApi} from "../../../request/chartApi";
 import useChartData from "./useChartData";
 import ReactECharts from "echarts-for-react";
+import useDefaultMaxValue from "./useDedefaultMaxValue";
 
 const MonthTimeChart = () => {
     const [condition, setCondition] = useState({dateRangeType:4});
     const apiData = useChartApiData(condition,ChartApi.monthTimeCount);
     const {seriesData, xName,categories} = useChartData(apiData);
-    const option = useBarChartOption(seriesData,categories,xName,70,'小时');
+    const defaultMaxValue = useDefaultMaxValue(apiData, 70);
+    const option = useBarChartOption(seriesData,categories,xName,defaultMaxValue,'小时');
 
     const handleConditionChange = (condition) => {
         setCondition(condition);

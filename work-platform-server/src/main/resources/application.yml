@@ -10,4 +10,6 @@ mybatis:
     log-impl: org.apache.ibatis.logging.log4j2.Log4j2Impl
     map-underscore-to-camel-case: true
   mapper-locations: classpath:mapper/*
-  type-handlers-package: com.personalwork.enu
+  type-handlers-package: com.personalwork.constants
+secret:
+  jwt-secret: token123

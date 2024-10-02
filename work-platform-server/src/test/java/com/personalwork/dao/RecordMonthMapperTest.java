@@ -1,6 +1,6 @@
 package com.personalwork.dao;
 
-import com.personalwork.enu.Mark;
+import com.personalwork.constants.Mark;
 import com.personalwork.modal.entity.RecordMonthDo;
 import org.junit.jupiter.api.Test;
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
@@ -22,7 +22,7 @@ class RecordMonthMapperTest {
 
     @Test
     void list() {
-        assertTrue(recordMonthMapper.list().size()>0);
+        assertTrue(recordMonthMapper.list(1).size()>0);
     }
 
     @Test
@@ -44,7 +44,7 @@ class RecordMonthMapperTest {
 
     @Test
     void getByDate() {
-        assertNotNull(recordMonthMapper.getByDate(2024,4));
+        assertNotNull(recordMonthMapper.getByDate(2024,4,1));
     }
 
     @Test

@@ -1,6 +1,6 @@
 package com.personalwork.controller;
 
-import com.personalwork.enu.CountType;
+import com.personalwork.constants.CountType;
 import com.personalwork.modal.dto.MonthTimeCountDto;
 import com.personalwork.modal.dto.ProjectTimeCountDto;
 import com.personalwork.modal.dto.WeekTimeCountDto;

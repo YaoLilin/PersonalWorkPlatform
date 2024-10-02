@@ -1,6 +1,6 @@
 package com.personalwork.validation.constraints;
 
-import com.personalwork.enu.EnumValue;
+import com.personalwork.constants.EnumValue;
 import com.personalwork.validation.IncludesEnumValueValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

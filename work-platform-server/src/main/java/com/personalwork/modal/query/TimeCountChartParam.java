@@ -1,7 +1,7 @@
 package com.personalwork.modal.query;
 
-import com.personalwork.enu.CountType;
-import com.personalwork.enu.TimeRange;
+import com.personalwork.constants.CountType;
+import com.personalwork.constants.TimeRange;
 import com.personalwork.validation.constraints.ValidDate;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -25,4 +25,5 @@ public class TimeCountChartParam {
     private String startDate;
     @ValidDate(message = "结束日期格式错误")
     private String endDate;
+    private Integer userId;
 }

@@ -1,4 +1,4 @@
-package com.personalwork.enu;
+package com.personalwork.constants;
 
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;

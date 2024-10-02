@@ -1,18 +1,21 @@
 package com.personalwork.service;
 
 import com.personalwork.dao.*;
-import com.personalwork.enu.ProblemLevel;
-import com.personalwork.enu.ProblemState;
+import com.personalwork.constants.ProblemLevel;
+import com.personalwork.constants.ProblemState;
 import com.personalwork.exception.ProblemAddException;
 import com.personalwork.modal.dto.WeekFormDto;
 import com.personalwork.modal.entity.*;
 import com.personalwork.modal.query.WeekFormParam;
+import com.personalwork.security.bean.UserDetail;
+import com.personalwork.util.UserUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author 姚礼林
@@ -46,10 +49,8 @@ public class WeekFormService {
 
     @Transactional(rollbackFor = Exception.class)
     public Integer createForm(WeekFormParam param) {
-        RecordWeekDo recordWeekDo = convertToRecordWeekDo(param);
-        recordWeekMapper.addWorkWeek(recordWeekDo);
-        RecordWeekDo returnWeek = recordWeekMapper.getWorkWeekByDate(param.getDate());
-
+        insertRecordWeek(param);
+        RecordWeekDo returnWeek = recordWeekMapper.getWorkWeekByDate(param.getDate(),getLoginUser().getUser().getId());
         insertProjectTimeCount(returnWeek.getId(), param);
         insertProjectTime(returnWeek.getId(), param);
         insertProblems(param.getProblems());
@@ -83,13 +84,15 @@ public class WeekFormService {
     }
 
     private void insertProblems(List<WeekFormParam.Problem> problems) {
+        UserDetail loginUser = getLoginUser();
         problems.forEach(i -> {
-            if (problemMapper.getOpenProblemByName(i.getTitle()) != null) {
+            if (problemMapper.getOpenProblemByName(i.getTitle(),loginUser.getUser().getId()) != null) {
                 throw new ProblemAddException("已存在相同的问题，问题：" + i.getTitle());
             }
             ProblemDo problemDo = new ProblemDo();
             BeanUtils.copyProperties(i, problemDo);
             problemDo.setState(ProblemState.UN_RESOLVE);
+            problemDo.setUserId(loginUser.getUser().getId());
             if (problemDo.getLevel() == null) {
                 problemDo.setLevel(ProblemLevel.NORMAL);
             }
@@ -100,17 +103,17 @@ public class WeekFormService {
     public WeekFormDto getWeekForm(Integer weekId) {
         RecordWeekDo recordWeekDo = recordWeekMapper.getWorkWeekById(weekId);
         List<ProjectTimeDo> projectTimeDoList = projectTimeMapper.getProjectTimeByWeek(weekId);
-        List<ProblemDo> problemDos = problemMapper.getProblemsByWeekDate(recordWeekDo.getDate());
+        List<ProblemDo> problemDos = problemMapper.getProblemsByWeekDate(recordWeekDo.getDate()
+            ,getLoginUser().getUser().getId());
         WeekFormDto weekFormDto = new WeekFormDto();
         weekFormDto.setWeekDo(recordWeekDo);
         weekFormDto.setProblemDos(problemDos);
         weekFormDto.setProjectTimeDos(projectTimeDoList);
-
         return weekFormDto;
     }
 
     public boolean isExist(String date) {
-        RecordWeekDo recordWeekDo = recordWeekMapper.getWorkWeekByDate(date);
+        RecordWeekDo recordWeekDo = recordWeekMapper.getWorkWeekByDate(date,getLoginUser().getUser().getId());
         return recordWeekDo != null;
     }
 
@@ -120,6 +123,17 @@ public class WeekFormService {
         countMapper.deleteByWeek(weekId);
         recordWeekMapper.deleteWorkWeek(weekId);
         return true;
+    }
+
+    private void insertRecordWeek(WeekFormParam param) {
+        UserDetail loginUser = getLoginUser();
+        RecordWeekDo recordWeekDo = convertToRecordWeekDo(param);
+        recordWeekDo.setUserId(loginUser.getUser().getId());
+        recordWeekMapper.addWorkWeek(recordWeekDo);
+    }
+
+    private  UserDetail getLoginUser() {
+        return Objects.requireNonNull(UserUtil.getLoginUser());
     }
 
     private void insertProjectTime(int weekId, WeekFormParam param) {

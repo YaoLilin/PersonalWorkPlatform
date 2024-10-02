@@ -7,7 +7,9 @@ import com.personalwork.exception.MethodParamInvalidException;
 import com.personalwork.modal.entity.MonthProjectCountDo;
 import com.personalwork.modal.entity.ProjectTimeDo;
 import com.personalwork.modal.entity.RecordMonthDo;
+import com.personalwork.security.bean.UserDetail;
 import com.personalwork.util.TimeUtils;
+import com.personalwork.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +50,19 @@ public class MonthCountService {
         countMonthProjectTime(year, month, projectTimeDoList);
     }
 
+    /**
+     * 重新统计所有月份的项目时间
+     */
+    public void reCountAll(){
+        List<ProjectTimeDo> projectTimeDoList = projectTimeMapper.list(UserUtil.getLoginUserId());
+        Map<String, List<ProjectTimeDo>> projectTimeMap = groupProjectTimeByMonth(projectTimeDoList);
+        projectTimeMap.forEach((k, v) -> {
+            int year = Integer.parseInt(k.split("-")[0]);
+            int month = Integer.parseInt(k.split("-")[1]);
+            countMonthProjectTime(year, month, v);
+        });
+    }
+
     private void countMonthProjectTime(int year, int month,List<ProjectTimeDo> projectTimeDoList) {
         if (projectTimeDoList.isEmpty()) {
             return;
@@ -68,19 +83,6 @@ public class MonthCountService {
         if (month < 1 || month > 12) {
             throw new MethodParamInvalidException("月份参数错误，月份：" + month);
         }
-    }
-
-    /**
-     * 重新统计所有月份的项目时间
-     */
-    public void reCountAll(){
-        List<ProjectTimeDo> projectTimeDoList = projectTimeMapper.getAllProjectTime();
-        Map<String, List<ProjectTimeDo>> projectTimeMap = groupProjectTimeByMonth(projectTimeDoList);
-        projectTimeMap.forEach((k, v) -> {
-            int year = Integer.parseInt(k.split("-")[0]);
-            int month = Integer.parseInt(k.split("-")[1]);
-            countMonthProjectTime(year, month, v);
-        });
     }
 
     private Map<String, List<ProjectTimeDo>> groupProjectTimeByMonth(List<ProjectTimeDo> projectTimeDoList) {
@@ -126,11 +128,13 @@ public class MonthCountService {
     }
 
     private RecordMonthDo alterDbRecordMonth(int year, int month, int totalMinute) {
-        RecordMonthDo recordMonthDo = monthMapper.getByDate(year, month);
+        UserDetail loginUser = getLoginUser();
+        Integer userId = loginUser.getUser().getId();
+        RecordMonthDo recordMonthDo = monthMapper.getByDate(year, month,userId);
         if (recordMonthDo == null) {
             recordMonthDo = buildRecordMonthDo(year, month, totalMinute);
             monthMapper.insert(recordMonthDo);
-            recordMonthDo = monthMapper.getByDate(year, month);
+            recordMonthDo = monthMapper.getByDate(year, month,userId);
         } else {
             recordMonthDo.setWorkTime(totalMinute);
             monthMapper.update(recordMonthDo);
@@ -139,13 +143,19 @@ public class MonthCountService {
     }
 
     private  RecordMonthDo buildRecordMonthDo(int year, int month, int totalMinute) {
+        UserDetail loginUser = getLoginUser();
         RecordMonthDo recordMonthDo;
         recordMonthDo = new RecordMonthDo();
         recordMonthDo.setYear(year);
         recordMonthDo.setMonth(month);
         recordMonthDo.setWorkTime(totalMinute);
         recordMonthDo.setIsSummarize(0);
+        recordMonthDo.setUserId(loginUser.getUser().getId());
         return recordMonthDo;
+    }
+
+    private static UserDetail getLoginUser() {
+        return Objects.requireNonNull(UserUtil.getLoginUser());
     }
 
     private  Map<Integer, Integer> computeEachProjectTime(List<ProjectTimeDo> projectTimeDoList) {
@@ -168,7 +178,8 @@ public class MonthCountService {
         String startDate = dateFormat.format(calendar.getTime());
         calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
         String endDate = dateFormat.format(calendar.getTime());
-        return projectTimeMapper.getProjectTimesByRange(startDate, endDate);
+        UserDetail loginUser = getLoginUser();
+        return projectTimeMapper.getProjectTimesByRange(startDate, endDate,loginUser.getUser().getId());
     }
 
 

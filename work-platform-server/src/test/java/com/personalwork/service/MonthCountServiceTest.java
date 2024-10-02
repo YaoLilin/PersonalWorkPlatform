@@ -1,22 +1,10 @@
 package com.personalwork.service;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
-
 import com.personalwork.dao.MonthProjectCountMapper;
 import com.personalwork.dao.ProjectTimeMapper;
 import com.personalwork.dao.RecordMonthMapper;
 import com.personalwork.exception.MethodParamInvalidException;
-import com.personalwork.exception.MonthCountException;
 import com.personalwork.modal.entity.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
-
-import org.junit.jupiter.api.Disabled;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.util.ArrayList;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 
 @ContextConfiguration(classes = {MonthCountService.class})
 @ExtendWith(SpringExtension.class)
@@ -55,9 +50,9 @@ class MonthCountServiceTest {
     @DisplayName("测试重新统计所有月份，没有任务数据，将不会进行统计")
     @Test
     void testReCountAll() {
-        when(projectTimeMapper.getAllProjectTime()).thenReturn(new ArrayList<>());
+        when(projectTimeMapper.list(anyInt())).thenReturn(new ArrayList<>());
         monthCountService.reCountAll();
-        verify(projectTimeMapper).getAllProjectTime();
+        verify(projectTimeMapper).list(anyInt());
     }
 
     /**
@@ -85,11 +80,11 @@ class MonthCountServiceTest {
 
         ArrayList<ProjectTimeDo> projectTimeDoList = new ArrayList<>();
         projectTimeDoList.add(projectTimeDo);
-        when(projectTimeMapper.getAllProjectTime()).thenReturn(projectTimeDoList);
-        when(recordMonthMapper.getByDate(anyInt(),anyInt())).thenReturn(null)
+        when(projectTimeMapper.list(anyInt())).thenReturn(projectTimeDoList);
+        when(recordMonthMapper.getByDate(anyInt(),anyInt(),anyInt())).thenReturn(null)
                 .thenReturn(recordMonthDo);
         monthCountService.reCountAll();
-        verify(projectTimeMapper).getAllProjectTime();
+        verify(projectTimeMapper).list(anyInt());
         verify(recordMonthMapper, times(1)).insert(argThat(arg -> arg.getMonth() == 3
                 && arg.getYear() == 2020 && arg.getWorkTime().equals(60)));
         verify(monthProjectCountMapper, times(1)).insert(argThat( arg ->
@@ -135,11 +130,11 @@ class MonthCountServiceTest {
         ArrayList<ProjectTimeDo> projectTimeDoList = new ArrayList<>();
         projectTimeDoList.add(projectTimeDo);
         projectTimeDoList.add(projectTimeDo2);
-        when(projectTimeMapper.getAllProjectTime()).thenReturn(projectTimeDoList);
-        when(recordMonthMapper.getByDate(anyInt(),anyInt())).thenReturn(null)
+        when(projectTimeMapper.list(anyInt())).thenReturn(projectTimeDoList);
+        when(recordMonthMapper.getByDate(anyInt(),anyInt(),anyInt())).thenReturn(null)
                 .thenReturn(recordMonthDo);
         monthCountService.reCountAll();
-        verify(projectTimeMapper).getAllProjectTime();
+        verify(projectTimeMapper).list(anyInt());
         verify(recordMonthMapper, times(1)).insert(argThat(arg -> arg.getMonth() == 3
                 && arg.getYear() == 2020 && arg.getWorkTime().equals(120)));
         verify(monthProjectCountMapper, times(1)).insert(argThat( arg ->
@@ -176,11 +171,11 @@ class MonthCountServiceTest {
         ArrayList<ProjectTimeDo> projectTimeDoList = new ArrayList<>();
         projectTimeDoList.add(projectTimeDo);
         projectTimeDoList.add(projectTimeDo2);
-        when(projectTimeMapper.getAllProjectTime()).thenReturn(projectTimeDoList);
-        when(recordMonthMapper.getByDate(anyInt(),anyInt())).thenReturn(null)
+        when(projectTimeMapper.list(anyInt())).thenReturn(projectTimeDoList);
+        when(recordMonthMapper.getByDate(anyInt(),anyInt(),anyInt())).thenReturn(null)
                 .thenReturn(recordMonthDo);
         monthCountService.reCountAll();
-        verify(projectTimeMapper).getAllProjectTime();
+        verify(projectTimeMapper).list(anyInt());
         verify(recordMonthMapper, times(1)).insert(argThat(arg -> arg.getMonth() == 3
                 && arg.getYear() == 2020 && arg.getWorkTime().equals(120)));
         verify(monthProjectCountMapper,times(1)).insert(argThat( arg ->
@@ -219,12 +214,12 @@ class MonthCountServiceTest {
 
         ArrayList<ProjectTimeDo> projectTimeDoList = new ArrayList<>();
         projectTimeDoList.add(projectTimeDo);
-        when(projectTimeMapper.getAllProjectTime()).thenReturn(projectTimeDoList);
-        when(recordMonthMapper.getByDate(anyInt(),anyInt())).thenReturn(null)
+        when(projectTimeMapper.list(anyInt())).thenReturn(projectTimeDoList);
+        when(recordMonthMapper.getByDate(anyInt(),anyInt(),anyInt())).thenReturn(null)
                 .thenReturn(recordMonthDo);
         when(monthProjectCountMapper.list(anyInt())).thenReturn(Stream.of(monthProjectCountDo).toList());
         monthCountService.reCountAll();
-        verify(projectTimeMapper).getAllProjectTime();
+        verify(projectTimeMapper).list(anyInt());
         verify(recordMonthMapper, times(1)).insert(argThat(arg -> arg.getMonth() == 3
                 && arg.getYear() == 2020 && arg.getWorkTime().equals(60)));
         verify(monthProjectCountMapper,times(1)).update(argThat( arg ->
@@ -259,13 +254,13 @@ class MonthCountServiceTest {
         monthProjectCountDo.setMinute(20);
         monthProjectCountDo.setProjectId(1);
 
-        when(projectTimeMapper.getProjectTimesByRange(eq("2020-03-01"),eq("2020-03-31")))
+        when(projectTimeMapper.getProjectTimesByRange(eq("2020-03-01"),eq("2020-03-31"),anyInt()))
                 .thenReturn(Stream.of(projectTimeDo).toList());
-        when(recordMonthMapper.getByDate(anyInt(),anyInt())).thenReturn(null)
+        when(recordMonthMapper.getByDate(anyInt(),anyInt(),anyInt())).thenReturn(null)
                 .thenReturn(recordMonthDo);
         when(monthProjectCountMapper.list(anyInt())).thenReturn(Stream.of(monthProjectCountDo).toList());
         monthCountService.countMonthProjectTime(2020,3);
-        verify(projectTimeMapper).getProjectTimesByRange(eq("2020-03-01"),eq("2020-03-31"));
+        verify(projectTimeMapper).getProjectTimesByRange(eq("2020-03-01"),eq("2020-03-31"),anyInt());
         verify(recordMonthMapper, times(1)).insert(argThat(arg -> arg.getMonth() == 3
                 && arg.getYear() == 2020 && arg.getWorkTime().equals(60)));
         verify(monthProjectCountMapper,times(1)).update(argThat( arg ->

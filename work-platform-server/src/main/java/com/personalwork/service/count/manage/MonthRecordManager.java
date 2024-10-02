@@ -1,6 +1,6 @@
 package com.personalwork.service.count.manage;
 
-import com.personalwork.enu.TimeRange;
+import com.personalwork.constants.TimeRange;
 import com.personalwork.exception.MethodParamInvalidException;
 import com.personalwork.modal.dto.MonthRecordDto;
 import com.personalwork.modal.query.TimeCountChartParam;

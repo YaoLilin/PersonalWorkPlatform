@@ -1,6 +1,6 @@
 package com.personalwork.modal.vo;
 
-import com.personalwork.enu.ProblemLevel;
+import com.personalwork.constants.ProblemLevel;
 import lombok.Data;
 
 /**

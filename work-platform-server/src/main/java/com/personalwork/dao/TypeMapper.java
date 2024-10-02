@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 @Mapper
 public interface TypeMapper {
-    List<TypeDo> getTypes();
+    List<TypeDo> getTypes(int userId);
 
     TypeDo getType(Integer id);
     boolean addType(TypeDo type);

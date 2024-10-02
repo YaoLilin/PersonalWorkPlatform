@@ -15,5 +15,10 @@ import java.util.List;
 @Repository
 @Mapper
 public interface WorkTimeCountMapper {
+    /**
+     * 按时间范围获取项目的每周时间统计
+     * @param param 条件参数
+     * @return 项目的每周时间统计集合
+     */
     List<ProjectWeekTimeDto> listByDateRange(TimeCountChartParam param);
 }

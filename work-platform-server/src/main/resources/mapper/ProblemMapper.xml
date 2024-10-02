@@ -22,6 +22,7 @@
             <if test="level != null">
                 and level=#{level}
             </if>
+            and user_id=#{userId}
         </where>
         order by state asc,week_date desc
     </select>
@@ -29,34 +30,35 @@
         select id, title, resolve, state, level, week_date weekDate
         from problem
         where week_date != (select date from record_week where id = #{weekId})
-          and state = 0
+          and state = 0 and  user_id=#{userId}
     </select>
 
     <select id="getProblemsByWeekDate" resultType="ProblemDo">
         select id, title, resolve, state, level, week_date weekDate
         from problem
-        where week_date = #{weekDate}
+        where week_date = #{weekDate} and user_id=#{userId}
     </select>
     <select id="getProblemById" resultType="com.personalwork.modal.entity.ProblemDo">
-        select id, title, resolve, state, level, week_date weekdDate
+        select id, title, resolve, state, level, week_date weekDate
         from problem
         where id = #{id}
     </select>
     <select id="getProblemByName" resultType="com.personalwork.modal.entity.ProblemDo">
-        select id, title, resolve, state, level, week_date weekdDate
+        select id, title, resolve, state, level, week_date weekDate
         from problem
         where title = #{title}
     </select>
     <select id="getOpenProblemByName" resultType="com.personalwork.modal.entity.ProblemDo">
         select id, title, resolve, state, level, week_date weekDate
         from problem
-        where title = #{title}
+        where title = #{name}
           and state = 0
+          and user_id=#{userId}
     </select>
     <insert id="add" parameterType="com.personalwork.modal.entity.ProblemDo">
-        insert into problem (title, resolve, state, level, week_date)
+        insert into problem (title, resolve, state, level, week_date,user_id)
         values (#{title}, #{resolve},
-                #{state}, #{level}, #{weekDate})
+                #{state}, #{level}, #{weekDate},#{userId})
     </insert>
     <update id="update" parameterType="com.personalwork.modal.entity.ProblemDo">
         update problem

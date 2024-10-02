@@ -1,6 +1,6 @@
 package com.personalwork.modal.dto;
 
-import com.personalwork.enu.LoginResultType;
+import com.personalwork.constants.LoginResultType;
 import com.personalwork.modal.entity.UserDo;
 import lombok.AllArgsConstructor;
 import lombok.Data;

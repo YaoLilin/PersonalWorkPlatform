@@ -2,7 +2,7 @@ package com.personalwork.modal.query;
 
 import com.personalwork.validation.constraints.ValidDate;
 import com.personalwork.validation.constraints.ValidTime;
-import com.personalwork.enu.Mark;
+import com.personalwork.constants.Mark;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -8,7 +8,9 @@ import com.personalwork.modal.vo.WeeksVo;
 import com.personalwork.dao.WeekProjectTimeCountMapper;
 import com.personalwork.modal.entity.WeekProjectTimeCountDo;
 import com.personalwork.modal.vo.WeekProjectTimeVo;
+import com.personalwork.security.bean.UserDetail;
 import com.personalwork.util.NumberUtil;
+import com.personalwork.util.UserUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author 姚礼林
@@ -39,8 +42,9 @@ public class WeekListService {
     }
 
     public List<WeeksVo> getCardList() {
+        UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
         List<WeeksVo> result = new ArrayList<>();
-        List<RecordWeekDo> weekList = recordWeekMapper.getWorkWeekList();
+        List<RecordWeekDo> weekList = recordWeekMapper.getWorkWeekList(loginUser.getUser().getId());
         DecimalFormat df = new DecimalFormat("0.00");
         DecimalFormat df2 = new DecimalFormat("0");
         for (RecordWeekDo recordWeekDo : weekList) {

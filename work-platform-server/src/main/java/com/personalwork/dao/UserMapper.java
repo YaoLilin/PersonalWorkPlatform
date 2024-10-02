@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 @Mapper
 public interface UserMapper {
     UserDo getById(Integer id);
-    UserDo getByName(String name);
+    UserDo getByLoginName(String name);
     boolean insert(UserDo userDo);
     boolean update(UserDo userDo);
     boolean delete(Integer id);

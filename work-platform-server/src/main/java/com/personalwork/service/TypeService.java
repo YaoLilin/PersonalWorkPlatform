@@ -4,12 +4,15 @@ import com.personalwork.dao.TypeMapper;
 import com.personalwork.modal.dto.TypeTreeNode;
 import com.personalwork.modal.entity.TypeDo;
 import com.personalwork.modal.query.TypeQr;
+import com.personalwork.security.bean.UserDetail;
+import com.personalwork.util.UserUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author 姚礼林
@@ -26,12 +29,15 @@ public class TypeService {
     }
 
     public List<TypeDo> getTypes() {
-        return mapper.getTypes();
+        UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
+        return mapper.getTypes(loginUser.getUser().getId());
     }
 
     public boolean addType(TypeQr type) {
+        UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
         TypeDo typeDo = new TypeDo();
         BeanUtils.copyProperties(type, typeDo);
+        typeDo.setUserId(loginUser.getUser().getId());
         return mapper.addType(typeDo);
     }
 
@@ -53,7 +59,8 @@ public class TypeService {
      * @return 类型树
      */
     public List<TypeTreeNode> getTypeTree() {
-        List<TypeDo> typeList = mapper.getTypes();
+        UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
+        List<TypeDo> typeList = mapper.getTypes(loginUser.getUser().getId());
         List<TypeTreeNode> parentNodes = new ArrayList<>();
         for (TypeDo item :typeList){
             if (item.getParentId() == null){

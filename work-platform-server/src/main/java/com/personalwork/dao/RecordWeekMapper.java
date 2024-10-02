@@ -14,10 +14,10 @@ import java.util.List;
 @Repository
 @Mapper
 public interface RecordWeekMapper {
-    RecordWeekDo getWorkWeekByDate(String  date);
+    RecordWeekDo getWorkWeekByDate(String  date,Integer userId);
     RecordWeekDo getWorkWeekById(Integer  id);
     List<RecordWeekDo> getWorkWeekByYear(int year);
-    List<RecordWeekDo> getWorkWeekList();
+    List<RecordWeekDo> getWorkWeekList(Integer userId);
 
     boolean addWorkWeek(RecordWeekDo recordWeekDo);
     boolean deleteWorkWeek(Integer  id);

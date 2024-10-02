@@ -1,7 +1,7 @@
 package com.personalwork.service;
 
 import com.personalwork.dao.*;
-import com.personalwork.enu.Mark;
+import com.personalwork.constants.Mark;
 import com.personalwork.exception.ProblemAddException;
 import com.personalwork.modal.dto.WeekFormDto;
 import com.personalwork.modal.entity.ProblemDo;
@@ -49,14 +49,14 @@ public class WeekFormServiceTest {
     public void testCreateForm() {
         WeekFormParam param = getWeekFormParam();
         RecordWeekDo recordWeekDo = getRecordWeekDo();
-        when(recordWeekMapper.getWorkWeekByDate(param.getDate())).thenReturn(recordWeekDo);
+        when(recordWeekMapper.getWorkWeekByDate(param.getDate(),anyInt())).thenReturn(recordWeekDo);
         when(recordWeekMapper.addWorkWeek(any(RecordWeekDo.class))).thenReturn(true);
-        when(problemMapper.getOpenProblemByName(anyString())).thenReturn(null);
+        when(problemMapper.getOpenProblemByName(anyString(),anyInt())).thenReturn(null);
 
         Integer id = weekFormService.createForm(param);
 
         verify(recordWeekMapper, times(1)).addWorkWeek(any(RecordWeekDo.class));
-        verify(problemMapper, times(1)).getOpenProblemByName(anyString());
+        verify(problemMapper, times(1)).getOpenProblemByName(anyString(),anyInt());
         verify(monthCountService, times(1)).countMonthProjectTime(anyInt(), anyInt());
         assertNotNull(id);
     }
@@ -67,8 +67,8 @@ public class WeekFormServiceTest {
         weekDo.setId(1);
 
         WeekFormParam param = getWeekFormParam();
-        when(problemMapper.getOpenProblemByName(param.getProblems().get(0).getTitle())).thenReturn(new ProblemDo());
-        when(recordWeekMapper.getWorkWeekByDate(any())).thenReturn(weekDo);
+        when(problemMapper.getOpenProblemByName(param.getProblems().get(0).getTitle(),anyInt())).thenReturn(new ProblemDo());
+        when(recordWeekMapper.getWorkWeekByDate(any(),anyInt())).thenReturn(weekDo);
 
         assertThrows(ProblemAddException.class, () -> weekFormService.createForm(param));
     }
@@ -88,7 +88,7 @@ public class WeekFormServiceTest {
     public void testSaveFormWithExistingProblem() {
         Integer id = 1;
         WeekFormParam param = getWeekFormParam();
-        when(problemMapper.getOpenProblemByName(param.getAddProblems().get(0).getTitle())).thenReturn(new ProblemDo());
+        when(problemMapper.getOpenProblemByName(param.getAddProblems().get(0).getTitle(),anyInt())).thenReturn(new ProblemDo());
 
         assertThrows(ProblemAddException.class, () -> weekFormService.saveForm(id, param));
     }
@@ -101,7 +101,7 @@ public class WeekFormServiceTest {
         List<ProblemDo> problemDos = Collections.emptyList();
         when(recordWeekMapper.getWorkWeekById(weekId)).thenReturn(recordWeekDo);
         when(projectTimeMapper.getProjectTimeByWeek(weekId)).thenReturn(projectTimeDoList);
-        when(problemMapper.getProblemsByWeekDate(anyString())).thenReturn(problemDos);
+        when(problemMapper.getProblemsByWeekDate(anyString(),anyInt())).thenReturn(problemDos);
 
         WeekFormDto weekFormDto = weekFormService.getWeekForm(weekId);
 
@@ -115,11 +115,11 @@ public class WeekFormServiceTest {
     @Test
     public void testIsExist() {
         String date = "2023-08-26";
-        when(recordWeekMapper.getWorkWeekByDate(date)).thenReturn(new RecordWeekDo());
+        when(recordWeekMapper.getWorkWeekByDate(date,anyInt())).thenReturn(new RecordWeekDo());
 
         boolean result = weekFormService.isExist(date);
 
-        verify(recordWeekMapper, times(1)).getWorkWeekByDate(date);
+        verify(recordWeekMapper, times(1)).getWorkWeekByDate(date,anyInt());
         assertTrue(result);
     }
 

@@ -1,6 +1,6 @@
 package com.personalwork.modal.entity;
 
-import com.personalwork.enu.ProjectState;
+import com.personalwork.constants.ProjectState;
 import lombok.Data;
 import lombok.ToString;
 
@@ -24,6 +24,7 @@ public class ProjectDo {
     private ProjectState state;
     private Integer important;
     private Integer isStartDateOnly;
+    private Integer userId;
 
     @Override
     public boolean equals(Object o) {

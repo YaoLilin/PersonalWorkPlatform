@@ -18,7 +18,7 @@
     <delete id="deleteByProjectId">
         delete from project_time where project_id=#{projectId}
     </delete>
-    
+
     <select id="getProjectTimeByDate" resultMap="projectTimeMap">
         select * from project_time where project_id=#{projectId} and date = #{date}
     </select>
@@ -30,8 +30,9 @@
     <select id="getProjectTimeByWeek" resultMap="projectTimeMap">
         select * from project_time where week_id=#{weekId}
     </select>
-    <select id="getAllProjectTime" resultMap="projectTimeMap">
-        select * from project_time
+    <select id="list" resultMap="projectTimeMap">
+        select p.* from project_time p join record_week w on p.week_id = w.id
+        where user_id = #{userId}
     </select>
 
     <resultMap id="projectTimeMap" type="com.personalwork.modal.entity.ProjectTimeDo">
@@ -46,7 +47,11 @@
     </select>
 
     <select id="getProjectTimesByRange"  resultMap="projectTimeMap">
-        select * from project_time where date >= #{startDate} and date &lt;= #{endDate}
+        select a.*
+        from project_time a
+                 join record_week b on a.week_id = b.id and b.user_id = #{userId}
+        where a.date >= #{startDate}
+          and a.date &lt;= #{endDate}
     </select>
 
 </mapper>

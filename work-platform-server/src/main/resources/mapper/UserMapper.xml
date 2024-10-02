@@ -6,11 +6,11 @@
     <select id="getById" resultType="UserDo">
         select id, name, email, password  from user where is_deleted = 0 and id = #{id};
     </select>
-    <select id="getByName" resultType="UserDo">
-        select id, name, email, password  from user where is_deleted = 0 and name = #{name};
+    <select id="getByLoginName" resultType="UserDo">
+        select id, name, email, password  from user where is_deleted = 0 and login_name = #{name};
     </select>
     <insert id="insert" parameterType="UserDo">
-        insert into user (name, email, password,gmt_create) values (#{name}, #{email}, #{password},now());
+        insert into user (name,login_name, email, password) values (#{name},#{loginName}, #{email}, #{password});
     </insert>
     <update id="update" parameterType="UserDo">
         update user
@@ -24,7 +24,6 @@
             <if test="password != null">
                 password = #{password},
             </if>
-            gmt_modified = now()
         </set>
         where id = #{id};
     </update>

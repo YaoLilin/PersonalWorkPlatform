@@ -7,6 +7,8 @@ import com.personalwork.dao.WeekProjectTimeCountMapper;
 import com.personalwork.modal.dto.ProjectDto;
 import com.personalwork.modal.entity.*;
 import com.personalwork.modal.query.ProjectParam;
+import com.personalwork.security.bean.UserDetail;
+import com.personalwork.util.UserUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author 姚礼林
@@ -39,7 +42,8 @@ public class ProjectService {
 
 
     public List<ProjectDto> getAll() {
-        List<ProjectDo> projectsList = projectMapper.getAll();
+        UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
+        List<ProjectDo> projectsList = projectMapper.listByUser(loginUser.getUser().getId());
         List<ProjectDto> data = new ArrayList<>();
         for (ProjectDo project : projectsList) {
             data.add(toProjectDto(project));
@@ -60,8 +64,10 @@ public class ProjectService {
     }
 
     private ProjectDo qrToProject(ProjectParam projectParam) {
+        UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
         ProjectDo project = new ProjectDo();
         BeanUtils.copyProperties(projectParam,project);
+        project.setUserId(loginUser.getUser().getId());
         if ("".equals(projectParam.getEndDate())) {
             project.setEndDate(null);
         }

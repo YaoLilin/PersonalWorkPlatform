@@ -1,6 +1,6 @@
 package com.personalwork.modal.entity;
 
-import com.personalwork.enu.Mark;
+import com.personalwork.constants.Mark;
 import lombok.Data;
 import lombok.ToString;
 
@@ -26,5 +26,6 @@ public class RecordMonthDo {
      */
     private Integer workTime;
     private Integer isSummarize;
+    private Integer userId;
 
 }

@@ -1,18 +1,12 @@
 import {Button} from "antd";
-import {useLoaderData, useLocation, useNavigate} from "react-router-dom";
+import {useLoaderData, useNavigate} from "react-router-dom";
 import WeekCard from "../../components/statistics/list/WeekCard";
 import {WeeksApi} from "../../request/weeksApi";
 import ListTitle from "../../components/ui/ListTitle";
-import {useEffect, useMemo, useRef, useState} from "react";
-import handleLoaderError from "../../util/handleLoaderError";
+import {useMemo} from "react";
 
 export async function loader() {
-    try {
-        const result = await WeeksApi.getWeekList({});
-        return result;
-    } catch (e) {
-        handleLoaderError(e);
-    }
+    return await WeeksApi.getWeekList({});
 }
 
 const WeekList =  () => {

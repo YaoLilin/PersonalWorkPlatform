@@ -1,6 +1,6 @@
 package com.personalwork.modal.vo;
 
-import com.personalwork.enu.LoginResultType;
+import com.personalwork.constants.LoginResultType;
 import lombok.Data;
 
 /**

@@ -6,24 +6,21 @@ import com.personalwork.dao.WeekProjectTimeCountMapper;
 import com.personalwork.modal.entity.ProjectDo;
 import com.personalwork.modal.entity.RecordWeekDo;
 import com.personalwork.modal.entity.WeekProjectTimeCountDo;
-import com.personalwork.modal.vo.WeeksVo;
 import com.personalwork.modal.vo.WeekProjectTimeVo;
-import com.personalwork.util.NumberUtil;
-import org.assertj.core.api.Assert;
+import com.personalwork.modal.vo.WeeksVo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyInt;
 
 @ExtendWith(MockitoExtension.class)
 public class WeekListServiceTest {
@@ -67,7 +64,7 @@ public class WeekListServiceTest {
         projectDo2.setId(2);
 
         // Setup mock behavior
-        Mockito.when(recordWeekMapper.getWorkWeekList()).thenReturn(recordWeekDoList);
+        Mockito.when(recordWeekMapper.getWorkWeekList(anyInt())).thenReturn(recordWeekDoList);
         Mockito.when(projectTimeCountMapper.listByWeekId(Mockito.anyInt())).thenReturn(weekProjectTimeCountDoList);
         Mockito.when(projectMapper.getProject(Mockito.eq(1))).thenReturn(projectDo);
         Mockito.when(projectMapper.getProject(Mockito.eq(2))).thenReturn(projectDo2);

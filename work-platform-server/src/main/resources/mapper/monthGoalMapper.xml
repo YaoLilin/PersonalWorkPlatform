@@ -12,12 +12,13 @@
             <if test="month != null">
                 and month = #{month}
             </if>
+            and user_id = #{userId}
         </where>
         order by year,month desc
     </select>
     <insert id="insert" parameterType="MonthGoalParam">
-        insert into month_goal (project_id, content, is_done, year, month) value (#{projectId},#{content},#{isDone}
-            ,#{year},#{month})
+        insert into month_goal (project_id, content, is_done, year, month,user_id) value (#{projectId},#{content},#{isDone}
+            ,#{year},#{month},#{userId})
     </insert>
     <update id="changeState" >
         update month_goal set is_done=#{state} where id =#{id}

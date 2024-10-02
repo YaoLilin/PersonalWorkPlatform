@@ -1,7 +1,7 @@
 package com.personalwork.modal.entity;
 
-import com.personalwork.enu.ProblemLevel;
-import com.personalwork.enu.ProblemState;
+import com.personalwork.constants.ProblemLevel;
+import com.personalwork.constants.ProblemState;
 import lombok.Data;
 import lombok.ToString;
 
@@ -20,4 +20,5 @@ public class ProblemDo {
     private ProblemState state;
     private ProblemLevel level;
     private String weekDate;
+    private Integer userId;
 }

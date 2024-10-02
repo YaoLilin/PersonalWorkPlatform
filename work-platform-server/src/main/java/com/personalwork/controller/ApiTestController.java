@@ -1,6 +1,6 @@
 package com.personalwork.controller;
 
-import com.personalwork.enu.ProblemLevel;
+import com.personalwork.constants.ProblemLevel;
 import com.personalwork.modal.query.ProblemQr;
 import com.personalwork.modal.query.TypeQr;
 import jakarta.validation.constraints.NotNull;

@@ -1,6 +1,6 @@
 package com.personalwork.modal.query;
 
-import com.personalwork.enu.Mark;
+import com.personalwork.constants.Mark;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 

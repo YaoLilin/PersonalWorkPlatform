@@ -6,6 +6,7 @@ import com.personalwork.modal.dto.MonthGoalDto;
 import com.personalwork.modal.entity.GoalDo;
 import com.personalwork.modal.entity.ProjectDo;
 import com.personalwork.modal.query.GoalQueryParam;
+import com.personalwork.util.UserUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -14,21 +15,23 @@ import java.util.List;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 月目标业务实现类
  * @date 2024/5/4
  */
 @Service
-public class MonthGoalServiceImpl extends GoalServiceImpl{
+public class MonthGoalServiceImpl extends BaseGoalServiceImpl {
     private final ProjectMapper projectMapper;
+    private final MonthGoalMapper monthGoalMapper;
 
     public MonthGoalServiceImpl(MonthGoalMapper goalMapper,ProjectMapper projectMapper) {
         super(goalMapper);
+        this.monthGoalMapper = goalMapper;
         this.projectMapper = projectMapper;
     }
 
-    @Override
     public List<MonthGoalDto> getGoals(GoalQueryParam param) {
-        List<? extends GoalDo> goalsDo = goalMapper.list(param);
+        param.setUserId(UserUtil.getLoginUserId());
+        List<? extends GoalDo> goalsDo = monthGoalMapper.list(param);
         List<MonthGoalDto> goalsDto = new ArrayList<>();
         goalsDo.forEach(i -> {
             MonthGoalDto monthGoalDto = new MonthGoalDto();

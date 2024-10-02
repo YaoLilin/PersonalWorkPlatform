@@ -5,6 +5,7 @@ import TextArea from "antd/es/input/TextArea";
 import {ProblemsApis} from "../../../request/problemApi";
 import OrderNumber from "../../ui/OrderNumber";
 import {MessageContext} from "../../../provider/MessageProvider";
+import FieldLabel from "@/components/ui/FieldLabel";
 
 const ProblemItem = ({num, data, onRemove, onEditDone, onDone, removeAble,onChange,editAble ,defaultEdit=false}) => {
     const {id, resolve, state, title,level} = data;
@@ -47,15 +48,15 @@ const ProblemItem = ({num, data, onRemove, onEditDone, onDone, removeAble,onChan
     function getTitle() {
         if (edit || defaultEdit) {
             return (
-            <div style={{marginTop: 10}}>
-                <Input placeholder={'请输入标题'}
-                       defaultValue={title}
-                       onChange={v => {
-                           params.title = v.target.value;
-                           data.title = v.target.value;
-                           onChange(data);
-                       }}/>
-            </div>
+                <FieldLabel style={{marginTop: 10}} name={'标题'} labelWidth={100}>
+                    <Input placeholder={'请输入标题'}
+                           defaultValue={title}
+                           onChange={v => {
+                               params.title = v.target.value;
+                               data.title = v.target.value;
+                               onChange(data);
+                           }}/>
+                </FieldLabel>
             )
         }
         return (
@@ -68,26 +69,22 @@ const ProblemItem = ({num, data, onRemove, onEditDone, onDone, removeAble,onChan
     function getResolveTextArea() {
         if (edit || defaultEdit) {
             return (
-            <div style={{marginTop: 4}}>
-                <TextArea  placeholder={'请输入解决方法'}
-                           defaultValue={resolve}
-                           onChange={v => {
-                               params.resolve = v.target.value;
-                               data.resolve = v.target.value;
-                               onChange(data);
-                           }}/>
-            </div>
+                <FieldLabel name={'解决方法'} labelWidth={100} style={{width:'100%',marginTop: 4}}>
+                    <TextArea  placeholder={'请输入解决方法'}
+                               defaultValue={resolve}
+                               onChange={v => {
+                                   params.resolve = v.target.value;
+                                   data.resolve = v.target.value;
+                                   onChange(data);
+                               }}/>
+                </FieldLabel>
             )
         }
         return (
-            <div style={{overflow: "hidden"}}>
-                <div style={{paddingTop: 10}}>解决方法：</div>
+            <div style={{overflow: "hidden",display:'flex',paddingTop: 10}}>
+                <div>解决方法：</div>
                 {
-                    resolve && <div style={{
-                        padding: 4,
-                        border: 'solid #ccc 1px',
-                        borderRadius: '8px',
-                    }}>{resolve}</div>
+                    resolve && <div>{resolve}</div>
                 }
             </div>
         )
@@ -144,7 +141,7 @@ const ProblemItem = ({num, data, onRemove, onEditDone, onDone, removeAble,onChan
     function getProblemDoneBt() {
         if (!edit && !defaultEdit && state !== 1) {
             return (
-                <div style={{textAlign: 'right', paddingTop: 10}}>
+                <div style={{textAlign: 'left'}}>
                     <CheckCircleOutlined
                         style={{color: '#464646', fontSize: '1.5em', cursor: 'pointer'}}
                         title={'完成'}
@@ -158,29 +155,28 @@ const ProblemItem = ({num, data, onRemove, onEditDone, onDone, removeAble,onChan
     function getLevelSelector() {
         if (edit || defaultEdit) {
             return(
-                <div style={{display: 'flex', paddingTop: 10}}>
-                    <div >级别</div>
-                    <div style={{width: 120,paddingLeft:10}}>
-                        <Select options={[
-                            {
-                                value: 1,
-                                label: '低',
-                            },
-                            {
-                                value: 2,
-                                label: '高',
-                            },
-                        ]}
-                                defaultValue={level}
-                                onSelect={v => {
-                                    params.level = v;
-                                    data.level = v;
-                                    onChange(data);
-                                }}
-                                style={{width: 80}}
-                        />
-                    </div>
-                </div>
+                    <FieldLabel name={'级别'} labelWidth={85} style={{paddingTop: 10}}>
+                        <div style={{width: 120}}>
+                            <Select options={[
+                                {
+                                    value: 1,
+                                    label: '低',
+                                },
+                                {
+                                    value: 2,
+                                    label: '高',
+                                },
+                            ]}
+                                    defaultValue={level}
+                                    onSelect={v => {
+                                        params.level = v;
+                                        data.level = v;
+                                        onChange(data);
+                                    }}
+                                    style={{width: 80}}
+                            />
+                        </div>
+                    </FieldLabel>
             )
         }
     }
@@ -192,24 +188,30 @@ const ProblemItem = ({num, data, onRemove, onEditDone, onDone, removeAble,onChan
                     <OrderNumber number={num}/>
                 </div>
                 <div style={{
-                    padding: '10px 20px',
-                    marginLeft: 10,
                     backgroundColor: 'rgb(250, 250, 250)',
                     border: 'solid 1px #eee',
                     borderRadius: '8px',
-                    width: 600
+                    display:"flex",
+                    padding: '10px 20px',
+                    marginLeft: 10,
                 }}>
-                    {getTag()}
-                    {getTitle()}
-                    {getResolveTextArea()}
-                    {getProblemDoneBt()}
-                    {getLevelSelector()}
-                    {getEditOperationBt()}
+                    <div style={{
+                        width: 600
+                    }}>
+                        {getTitle()}
+                        {getResolveTextArea()}
+                        {getLevelSelector()}
+                        {getEditOperationBt()}
+                    </div>
+                    <div style={{display: 'flex',justifyContent:'flex-start',paddingLeft:10}}>
+                        {getTag()}
+                    </div>
                 </div>
 
                 <div style={{lineHeight: '30px', paddingLeft: 10, width: 40}}>
                     {getRemoveBt()}
                     {gerEditBt()}
+                    {getProblemDoneBt()}
                 </div>
 
             </div>

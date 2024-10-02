@@ -1,7 +1,7 @@
 package com.personalwork.service.count;
 
 import com.personalwork.dao.ProjectMapper;
-import com.personalwork.enu.CountType;
+import com.personalwork.constants.CountType;
 import com.personalwork.modal.dto.MonthProjectCountDto;
 import com.personalwork.modal.dto.MonthRecordDto;
 import com.personalwork.modal.dto.WorkTimeProportionDto;

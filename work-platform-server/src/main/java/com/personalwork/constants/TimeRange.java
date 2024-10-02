@@ -1,4 +1,4 @@
-package com.personalwork.enu;
+package com.personalwork.constants;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

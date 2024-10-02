@@ -2,7 +2,7 @@ package com.personalwork.service.count;
 
 import com.personalwork.dao.WeekProjectTimeCountMapper;
 import com.personalwork.dao.WorkTimeCountMapper;
-import com.personalwork.enu.TimeRange;
+import com.personalwork.constants.TimeRange;
 import com.personalwork.exception.MethodParamInvalidException;
 import com.personalwork.modal.dto.ProjectTimeCountDto;
 import com.personalwork.modal.dto.ProjectWeekTimeDto;
@@ -14,6 +14,7 @@ import com.personalwork.modal.vo.PieCountVo;
 import com.personalwork.service.count.bean.ProjectTime;
 import com.personalwork.service.count.manage.ProjectTypeCountManager;
 import com.personalwork.util.DateUtil;
+import com.personalwork.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,10 +22,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author yaolilin
@@ -44,17 +42,12 @@ public class WeekWorkTimeCountService {
      * @return 统计结果集合
      */
     public List<WeekTimeCountDto> weekWorkTimeCount(TimeCountChartParam param) {
+        param.setUserId(UserUtil.getLoginUserId());
         String[] dateRange = getDateRange(param);
         String startDate = dateRange[0];
         String endDate = dateRange[1];
         List<ProjectWeekTimeDto> projectWeekTimeList = getProjectWeekTimeList(param,startDate,endDate);
-        Map<RecordWeekDo, WeekTimeCountDto> weekTimeMap = new LinkedHashMap<>(10);
-        for (ProjectWeekTimeDto projectTime : projectWeekTimeList) {
-            ProjectTimeCountDto item = new ProjectTimeCountDto(projectTime.project(), projectTime.minutes());
-            weekTimeMap.computeIfAbsent(projectTime.week(),
-                    k -> new WeekTimeCountDto(projectTime.week(), new ArrayList<>())).items().add(item);
-        }
-        List<WeekTimeCountDto> result = new ArrayList<>(weekTimeMap.values());
+        List<WeekTimeCountDto> result = getProjectTimeOfEachWeek(projectWeekTimeList);
         fillEmptyWeekTime(result,startDate,endDate);
         return result;
     }
@@ -79,6 +72,16 @@ public class WeekWorkTimeCountService {
             projectTimeList.add(projectTime);
         });
         return projectTypeCountManager.countProjectTypeTime(projectTimeList);
+    }
+
+    private List<WeekTimeCountDto> getProjectTimeOfEachWeek(List<ProjectWeekTimeDto> projectWeekTimeList) {
+        Map<RecordWeekDo, WeekTimeCountDto> weekTimeMap = new LinkedHashMap<>(10);
+        for (ProjectWeekTimeDto projectTime : projectWeekTimeList) {
+            ProjectTimeCountDto item = new ProjectTimeCountDto(projectTime.project(), projectTime.minutes());
+            weekTimeMap.computeIfAbsent(projectTime.week(),
+                    k -> new WeekTimeCountDto(projectTime.week(), new ArrayList<>())).items().add(item);
+        }
+        return new ArrayList<>(weekTimeMap.values());
     }
 
     private String[] getDateRange(TimeCountChartParam param) {
@@ -125,30 +128,24 @@ public class WeekWorkTimeCountService {
         LocalDate weekDate = getEndDate(endDate, formatter);
         LocalDate startWeekDate = LocalDate.parse(startDate,formatter);
         while (weekDate.isAfter(startWeekDate)) {
-            boolean isFind = false;
-            int previousWeekIndex = 0;
-            // 倒叙遍历周工作时间列表，判断列表存不存在日期为 weekDate 的周数据，如果存在跳出循环，如果不存在，则向列表插入一个周工作时间为0
-            // 的数据
-            for (int i = weekTimeCountList.size() - 1; i >= 0; i--) {
-                LocalDate currentWeekDate = LocalDate.parse(weekTimeCountList.get(i).week().getDate(), formatter);
-                if (currentWeekDate.isEqual(weekDate)) {
-                    isFind= true;
-                    break;
-                }
-                if (currentWeekDate.isBefore(weekDate)) {
-                    previousWeekIndex = i;
-                    break;
-                }
-            }
-            if (!isFind) {
+            LocalDate finalWeekDate = weekDate;
+            Optional<WeekTimeCountDto> weekTimeCountOp = weekTimeCountList.stream()
+                    .filter(i -> LocalDate.parse(i.week().getDate(), formatter).equals(finalWeekDate))
+                    .findAny();
+            if (weekTimeCountOp.isEmpty()) {
                 RecordWeekDo weekDo = new RecordWeekDo();
                 weekDo.setTime(0);
                 weekDo.setDate(formatter.format(weekDate));
-                weekTimeCountList.add(previousWeekIndex,new WeekTimeCountDto(weekDo,new ArrayList<>()));
+                weekTimeCountList.add(new WeekTimeCountDto(weekDo,new ArrayList<>()));
             }
             // weekDate 往前一周
             weekDate = weekDate.minusWeeks(1);
         }
+        weekTimeCountList.sort((w1,w2) -> {
+            LocalDate w1Date = LocalDate.parse(w1.week().getDate(), formatter);
+            LocalDate w2Date = LocalDate.parse(w2.week().getDate(), formatter);
+            return w1Date.compareTo(w2Date);
+        });
     }
 
     private LocalDate getEndDate(String endDate, DateTimeFormatter formatter) {

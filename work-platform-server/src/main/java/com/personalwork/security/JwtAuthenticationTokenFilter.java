@@ -2,7 +2,6 @@ package com.personalwork.security;
 
 import com.personalwork.constants.SessionAttrNames;
 import com.personalwork.security.bean.UserDetail;
-import com.personalwork.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,6 +27,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
+    private final JwtTokenManager jwtTokenManager;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -40,7 +40,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             return;
         }
         // 解析token
-        if (!JwtUtil.verify(token)) {
+        if (!jwtTokenManager.verify(token)) {
             unauthorizedError(response);
             return;
         }
@@ -48,7 +48,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             unauthorizedError(response);
             return;
         }
-        String username = JwtUtil.getUserName(token);
+        String username = jwtTokenManager.getUserName(token);
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             setUserContext(request, username);
         }

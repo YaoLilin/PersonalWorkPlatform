@@ -4,8 +4,8 @@ import com.personalwork.dao.MonthProjectCountMapper;
 import com.personalwork.dao.ProjectMapper;
 import com.personalwork.dao.ProjectTimeMapper;
 import com.personalwork.dao.RecordMonthMapper;
-import com.personalwork.enu.Mark;
-import com.personalwork.enu.ProjectState;
+import com.personalwork.constants.Mark;
+import com.personalwork.constants.ProjectState;
 import com.personalwork.modal.dto.MonthProjectCountDto;
 import com.personalwork.modal.dto.MonthRecordDto;
 import com.personalwork.modal.entity.MonthProjectCountDo;
@@ -49,9 +49,9 @@ class MonthRecordServiceTest {
      */
     @Test
     void testGetWorkMonthRecordList() {
-        when(recordMonthMapper.list()).thenReturn(new ArrayList<>());
+        when(recordMonthMapper.list(anyInt())).thenReturn(new ArrayList<>());
         assertTrue(monthRecordService.getWorkMonthRecordList().isEmpty());
-        verify(recordMonthMapper).list();
+        verify(recordMonthMapper).list(anyInt());
     }
 
     /**
@@ -70,7 +70,7 @@ class MonthRecordServiceTest {
 
         ArrayList<RecordMonthDo> recordMonthDoList = new ArrayList<>();
         recordMonthDoList.add(recordMonthDo);
-        when(recordMonthMapper.list()).thenReturn(recordMonthDoList);
+        when(recordMonthMapper.list(anyInt())).thenReturn(recordMonthDoList);
         ArrayList<MonthProjectCountDo> monthProjectCountDoList = new ArrayList<>();
         when(monthProjectCountMapper.list((Integer) any())).thenReturn(monthProjectCountDoList);
         List<MonthRecordDto> actualWorkMonthList = monthRecordService.getWorkMonthRecordList();
@@ -78,7 +78,7 @@ class MonthRecordServiceTest {
         MonthRecordDto getResult = actualWorkMonthList.get(0);
         assertEquals(monthProjectCountDoList, getResult.getProjectCountList());
         assertSame(recordMonthDo, getResult.getRecordMonthDo());
-        verify(recordMonthMapper).list();
+        verify(recordMonthMapper).list(anyInt());
         verify(monthProjectCountMapper).list((Integer) any());
     }
 
@@ -108,7 +108,7 @@ class MonthRecordServiceTest {
         ArrayList<RecordMonthDo> recordMonthDoList = new ArrayList<>();
         recordMonthDoList.add(recordMonthDo1);
         recordMonthDoList.add(recordMonthDo);
-        when(recordMonthMapper.list()).thenReturn(recordMonthDoList);
+        when(recordMonthMapper.list(anyInt())).thenReturn(recordMonthDoList);
         ArrayList<MonthProjectCountDo> monthProjectCountDoList = new ArrayList<>();
         when(monthProjectCountMapper.list((Integer) any())).thenReturn(monthProjectCountDoList);
         List<MonthRecordDto> actualWorkMonthList = monthRecordService.getWorkMonthRecordList();
@@ -119,7 +119,7 @@ class MonthRecordServiceTest {
         assertSame(recordMonthDo, getResult1.getRecordMonthDo());
         assertEquals(monthProjectCountDoList, getResult.getProjectCountList());
         assertEquals(monthProjectCountDoList, getResult1.getProjectCountList());
-        verify(recordMonthMapper).list();
+        verify(recordMonthMapper).list(anyInt());
         verify(monthProjectCountMapper, atLeast(1)).list((Integer) any());
     }
 
@@ -139,7 +139,7 @@ class MonthRecordServiceTest {
 
         ArrayList<RecordMonthDo> recordMonthDoList = new ArrayList<>();
         recordMonthDoList.add(recordMonthDo);
-        when(recordMonthMapper.list()).thenReturn(recordMonthDoList);
+        when(recordMonthMapper.list(anyInt())).thenReturn(recordMonthDoList);
 
         MonthProjectCountDo monthProjectCountDo = new MonthProjectCountDo();
         monthProjectCountDo.setId(1);
@@ -180,7 +180,7 @@ class MonthRecordServiceTest {
         assertEquals("Name", getResult1.getProjectName());
         assertEquals(1, getResult1.getId().intValue());
         assertEquals(1, getResult1.getMonthId().intValue());
-        verify(recordMonthMapper).list();
+        verify(recordMonthMapper).list(anyInt());
         verify(monthProjectCountMapper).list((Integer) any());
         verify(projectMapper).getProject(anyInt());
     }
@@ -201,7 +201,7 @@ class MonthRecordServiceTest {
 
         ArrayList<RecordMonthDo> recordMonthDoList = new ArrayList<>();
         recordMonthDoList.add(recordMonthDo);
-        when(recordMonthMapper.list()).thenReturn(recordMonthDoList);
+        when(recordMonthMapper.list(anyInt())).thenReturn(recordMonthDoList);
 
         MonthProjectCountDo monthProjectCountDo = new MonthProjectCountDo();
         monthProjectCountDo.setId(1);
@@ -255,7 +255,7 @@ class MonthRecordServiceTest {
         assertEquals(1, getResult1.getProjectId().intValue());
         assertEquals(2, getResult2.getId().intValue());
         assertEquals(2, getResult2.getProjectId().intValue());
-        verify(recordMonthMapper).list();
+        verify(recordMonthMapper).list(anyInt());
         verify(monthProjectCountMapper).list((Integer) any());
         verify(projectMapper, atLeast(1)).getProject(anyInt());
     }

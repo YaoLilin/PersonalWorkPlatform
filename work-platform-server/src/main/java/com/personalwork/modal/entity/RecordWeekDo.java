@@ -1,6 +1,6 @@
 package com.personalwork.modal.entity;
 
-import com.personalwork.enu.Mark;
+import com.personalwork.constants.Mark;
 import lombok.Data;
 import lombok.ToString;
 
@@ -19,6 +19,7 @@ public class RecordWeekDo {
     private Integer time;
     private String summary;
     private Mark mark;
+    private Integer userId;
 
     @Override
     public boolean equals(Object o) {

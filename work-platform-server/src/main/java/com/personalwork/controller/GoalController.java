@@ -1,6 +1,6 @@
 package com.personalwork.controller;
 
-import com.personalwork.service.impl.GoalServiceImpl;
+import com.personalwork.service.impl.BaseGoalServiceImpl;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,14 +13,14 @@ import java.util.Map;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 目标相关接口
  * @date 2024/5/5
  */
 public class GoalController {
 
-    protected final GoalServiceImpl goalService;
+    protected final BaseGoalServiceImpl goalService;
 
-    public GoalController(GoalServiceImpl goalService) {
+    public GoalController(BaseGoalServiceImpl goalService) {
         this.goalService = goalService;
     }
 
@@ -32,7 +32,7 @@ public class GoalController {
     }
 
     @PutMapping("/{id}/change-state")
-    public boolean changeState(@RequestBody @NotNull Map<String ,Integer> params) {
-        return goalService.changeState(params.get("id"),params.get("state"));
+    public boolean changeState(@RequestBody @NotNull Map<String ,Integer> params, @PathVariable String id) {
+        return goalService.changeState(Integer.valueOf(id),params.get("state"));
     }
 }

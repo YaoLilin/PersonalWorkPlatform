@@ -59,7 +59,7 @@ const HeadImage = ({size = 55}) => {
         return(
             <div>
                 <p className={'text-xl text-gray-500'}>
-                    姚礼林
+                    {user.name}
                 </p>
                 <p className={'mt-2'}>
                     <Link>用户设置</Link>

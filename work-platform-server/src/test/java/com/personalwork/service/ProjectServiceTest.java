@@ -70,7 +70,7 @@ public class ProjectServiceTest {
 
     @Test
     public void testGetAll() {
-        when(projectMapper.getAll()).thenReturn(projectDoList);
+        when(projectMapper.listByUser(anyInt())).thenReturn(projectDoList);
         List<ProjectDto> result = projectService.getAll();
         assertNotNull(result);
         assertEquals(1, result.size());

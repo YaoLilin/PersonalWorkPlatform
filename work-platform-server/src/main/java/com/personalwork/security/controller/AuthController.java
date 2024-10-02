@@ -1,6 +1,8 @@
 package com.personalwork.security.controller;
 
-import com.personalwork.enu.LoginResultType;
+import com.personalwork.anotations.NoAuthRequired;
+import com.personalwork.constants.LoginResultType;
+import com.personalwork.modal.query.RegisterParam;
 import com.personalwork.modal.query.UserParam;
 import com.personalwork.modal.dto.LoginResultDto;
 import com.personalwork.modal.vo.LoginResultVo;
@@ -26,14 +28,37 @@ public class AuthController {
     }
 
 
+    @NoAuthRequired
     @GetMapping(value = "/rsa/public-key")
-    public @ResponseBody String getPublicKey(){
+    public String getPublicKey(){
         return RSAUtils.generateBase64PublicKey();
     }
 
+    @NoAuthRequired
     @PostMapping("/login")
     public ResponseEntity<LoginResultVo> login(@Validated @RequestBody UserParam param, HttpServletRequest request) {
         LoginResultDto resultDto = authService.login(param,request);
+        LoginResultVo result = getLoginResultVo(resultDto);
+        if (resultDto.getType() != LoginResultType.SUCCESS) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    @NoAuthRequired
+    @PostMapping("/register")
+    public ResponseEntity<LoginResultVo> register(@Validated @RequestBody RegisterParam param,HttpServletRequest request) {
+        LoginResultDto resultDto = authService.register(param, request);
+        LoginResultVo result = getLoginResultVo(resultDto);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/logout")
+    public void logout(HttpServletRequest request) {
+        authService.logout(request);
+    }
+
+    private LoginResultVo getLoginResultVo(LoginResultDto resultDto) {
         LoginResultVo result = new LoginResultVo();
         result.setToken(resultDto.getToken());
         result.setType(resultDto.getType());
@@ -42,15 +67,7 @@ public class AuthController {
             BeanUtils.copyProperties(resultDto.getUser(), userVo);
             result.setUser(userVo);
         }
-        if (resultDto.getType() != LoginResultType.SUCCESS) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
-        }
-        return ResponseEntity.ok(result);
-    }
-
-    @PostMapping("/logout")
-    public void logout(HttpServletRequest request) {
-        authService.logout(request);
+        return result;
     }
 
 }

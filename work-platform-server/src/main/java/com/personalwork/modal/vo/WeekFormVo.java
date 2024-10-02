@@ -1,6 +1,6 @@
 package com.personalwork.modal.vo;
 
-import com.personalwork.enu.Mark;
+import com.personalwork.constants.Mark;
 import lombok.Data;
 
 import java.util.List;

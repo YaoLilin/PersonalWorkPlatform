@@ -18,7 +18,6 @@ axios.interceptors.request.use(
         return config;
     },
     (error) => {
-        // 对请求错误做些什么
         return Promise.reject(error);
     }
 );
@@ -26,11 +25,13 @@ axios.interceptors.request.use(
 // 接口返回未授权拦截，跳转到登录页面
 axios.interceptors.response.use(
     (response) => {
-        // 对响应数据做点什么
         return response;
     },
     (error) => {
         if (error.response) {
+            if (error.config.url.includes("/auth/login")){
+                return Promise.reject(error);
+            }
             // 如果请求被服务器处理了，但返回了错误状态码
             switch (error.response.status) {
                 case 401:

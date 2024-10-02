@@ -12,12 +12,13 @@
             <if test="weekNumber != null">
                 and week_number = #{weekNumber}
             </if>
+            and user_id=#{userId}
         </where>
         order by year,week_number desc
     </select>
     <insert id="insert" parameterType="com.personalwork.modal.query.WeekGoalParam">
-        insert into week_goal (project_id, content, is_done, year, week_number) value (#{projectId},#{content},#{isDone}
-                                                                                 ,#{year},#{weekNumber})
+        insert into week_goal (project_id, content, is_done, year, week_number,user_id) value (#{projectId},#{content},#{isDone}
+                                                                                 ,#{year},#{weekNumber},#{userId})
     </insert>
     <update id="changeState" >
         update week_goal set is_done=#{state} where id =#{id}

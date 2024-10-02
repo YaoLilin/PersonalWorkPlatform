@@ -1,7 +1,7 @@
 package com.personalwork.dao;
 
-import com.personalwork.enu.ProblemLevel;
-import com.personalwork.enu.ProblemState;
+import com.personalwork.constants.ProblemLevel;
+import com.personalwork.constants.ProblemState;
 import com.personalwork.modal.entity.ProblemDo;
 import com.personalwork.modal.query.ProblemQr;
 import org.junit.jupiter.api.Test;
@@ -42,12 +42,12 @@ class ProblemMapperTest {
 
     @Test
     void getProblemsByWeekDate() {
-        assertEquals(10, problemMapper.getProblemsByWeekDate("2024-03-04").size());
+        assertEquals(10, problemMapper.getProblemsByWeekDate("2024-03-04",1).size());
     }
 
     @Test
     void getProblemsExceptThisWeek() {
-        assertTrue(problemMapper.getProblemsExceptThisWeek(9).size() > 0);
+        assertTrue(problemMapper.getProblemsExceptThisWeek(9,1).size() > 0);
     }
 
     @Test
@@ -85,7 +85,7 @@ class ProblemMapperTest {
 
     @Test
     void getOpenProblemByName() {
-        assertEquals("问题1", problemMapper.getOpenProblemByName("问题1").getTitle());
+        assertEquals("问题1", problemMapper.getOpenProblemByName("问题1",1).getTitle());
     }
 
     @Test

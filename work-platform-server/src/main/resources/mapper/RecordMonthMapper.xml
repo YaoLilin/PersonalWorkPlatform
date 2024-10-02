@@ -5,6 +5,7 @@
 <mapper namespace="com.personalwork.dao.RecordMonthMapper">
     <select id="list" resultType="RecordMonthDo">
         select id,year,month,mark,summary,work_time workTime,is_summarize from record_month
+            where user_id=#{userId}
         order by year desc,month desc
     </select>
     <select id="listRange" resultType="RecordMonthDo">
@@ -13,8 +14,8 @@
         <where>
             <!--查询xxxx年xx月以后的记录-->
             <if test="startYear != null and startMonth != null and endYear == null and endMonth == null">
-                year = #{startYear} and month >= #{startMonth}
-                   or year > #{startYear}
+                (year = #{startYear} and month >= #{startMonth}
+                   or year > #{startYear})
             </if>
             <!--查询xxxx年xx月到xxxx年xx月之间的记录-->
             <if test="startYear != null and startMonth != null and endYear != null and endMonth != null">
@@ -24,11 +25,12 @@
                 </if>
                 <if test="startYear != endYear">
 <!--                    如果开始年份和结束年份不是同一年，则先查找第一年的数据，再查找开始年份和结束年份之间的数据，最后查找结束年份的数据-->
-                    and year = #{startYear} and month >= #{startMonth}
+                    and (year = #{startYear} and month >= #{startMonth}
                        or year > #{startYear} and year &lt; #{endYear}
-                       or year = #{endYear} and month &lt;= #{endMonth}
+                       or year = #{endYear} and month &lt;= #{endMonth})
                 </if>
             </if>
+            and user_id=#{userId}
         </where>
         order by year desc, month desc
     </select>
@@ -36,11 +38,12 @@
         select id,year,month,mark,summary,work_time workTime from record_month where id=#{id} order by year desc,month desc
     </select>
     <insert id="insert" parameterType="RecordMonthDo">
-        insert into record_month (year,month,mark,summary,work_time) values(#{year},#{month},#{mark},#{summary},
-            #{workTime})
+        insert into record_month (year,month,mark,summary,work_time,user_id) values(#{year},#{month},#{mark},#{summary},
+            #{workTime},#{userId})
     </insert>
     <select id="getByDate" resultType="RecordMonthDo">
-        select id,year,month,mark,summary,work_time workTime from record_month where year=#{year} and month=#{month}
+        select id,year,month,mark,summary,work_time workTime
+        from record_month where year=#{year} and month=#{month} and user_id=#{userId}
     </select>
     <update id="update" parameterType="RecordMonthDo">
         update record_month

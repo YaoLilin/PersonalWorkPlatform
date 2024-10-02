@@ -3,24 +3,21 @@ package com.personalwork.service;
 import com.personalwork.dao.TypeMapper;
 import com.personalwork.modal.dto.TypeTreeNode;
 import com.personalwork.modal.entity.TypeDo;
-import com.personalwork.modal.query.TypeQr;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class TypeServiceTest {
@@ -62,7 +59,7 @@ public class TypeServiceTest {
         treeNode4.setChildren(new ArrayList<>());
         List<TypeTreeNode> expectedTree = Arrays.asList(treeNode1, treeNode2);
 
-        when(mapper.getTypes()).thenReturn(Stream.of(type1, type2, type3, type4).toList());
+        when(mapper.getTypes(anyInt())).thenReturn(Stream.of(type1, type2, type3, type4).toList());
         List<TypeTreeNode> typeTree = typeService.getTypeTree();
         assertEquals(expectedTree, typeTree);
     }
@@ -82,14 +79,14 @@ public class TypeServiceTest {
         treeNode2.setChildren(new ArrayList<>());
         List<TypeTreeNode> expectedTree = Arrays.asList(treeNode1, treeNode2);
 
-        when(mapper.getTypes()).thenReturn(Stream.of(type1, type2).toList());
+        when(mapper.getTypes(anyInt())).thenReturn(Stream.of(type1, type2).toList());
         List<TypeTreeNode> typeTree = typeService.getTypeTree();
         assertEquals(expectedTree, typeTree);
     }
 
     @Test
     public void testGetTypeTree2_withNoneType() {
-        when(mapper.getTypes()).thenReturn(new ArrayList<>());
+        when(mapper.getTypes(anyInt())).thenReturn(new ArrayList<>());
         List<TypeTreeNode> typeTree = typeService.getTypeTree();
         assertEquals(new ArrayList<>(), typeTree);
     }

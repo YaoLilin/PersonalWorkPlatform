@@ -14,4 +14,5 @@ public class GoalDo {
     private String content;
     private Integer year;
     private Integer isDone;
+    private Integer userId;
 }

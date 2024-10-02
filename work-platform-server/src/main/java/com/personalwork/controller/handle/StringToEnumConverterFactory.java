@@ -1,6 +1,6 @@
 package com.personalwork.controller.handle;
 
-import com.personalwork.enu.EnumValue;
+import com.personalwork.constants.EnumValue;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
 
