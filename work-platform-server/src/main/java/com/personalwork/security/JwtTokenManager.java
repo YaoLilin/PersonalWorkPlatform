@@ -4,8 +4,9 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.personalwork.config.SecretProperties;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -19,8 +20,8 @@ import java.util.Date;
 @Slf4j
 public class JwtTokenManager {
     private static final long THREE_DAY_EXPIRE_TIME = 1000L * 24 * 60 * 60 * 3;
-    @Value("${secret.jwt-secret}")
-    private String secret;
+    @Autowired
+    private SecretProperties secretProperties;
 
     /**
      * 签名生成
@@ -35,7 +36,7 @@ public class JwtTokenManager {
                 .withClaim("userId", userId)
                 .withExpiresAt(expiresAt)
                 // 使用了HMAC256加密算法。
-                .sign(Algorithm.HMAC256(secret));
+                .sign(Algorithm.HMAC256(secretProperties.getJwtSecret()));
     }
 
     /**
@@ -46,7 +47,7 @@ public class JwtTokenManager {
      */
     public boolean verify(String token) {
         try {
-            JWTVerifier verifier = JWT.require(Algorithm.HMAC256(secret)).withIssuer("auth0").build();
+            JWTVerifier verifier = getJwtVerifier();
             verifier.verify(token);
             return true;
         } catch (Exception e) {
@@ -56,14 +57,19 @@ public class JwtTokenManager {
     }
 
     public String getUserId(String token) {
-        JWTVerifier verifier = JWT.require(Algorithm.HMAC256(secret)).withIssuer("auth0").build();
+        JWTVerifier verifier = getJwtVerifier();
         DecodedJWT jwt = verifier.verify(token);
         return jwt.getClaim("userId").asString();
     }
 
     public String getUserName(String token) {
-        JWTVerifier verifier = JWT.require(Algorithm.HMAC256(secret)).withIssuer("auth0").build();
+        JWTVerifier verifier = getJwtVerifier();
         DecodedJWT jwt = verifier.verify(token);
         return jwt.getClaim("username").asString();
+    }
+
+    private JWTVerifier getJwtVerifier() {
+        return JWT.require(Algorithm.HMAC256(secretProperties.getJwtSecret()))
+                .withIssuer("auth0").build();
     }
 }
