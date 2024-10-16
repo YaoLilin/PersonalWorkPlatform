@@ -11,7 +11,7 @@ import lombok.ToString;
 @Data
 @ToString
 public class ProjectTimeDo {
-    private int id;
+    private Integer id;
     private ProjectDo project;
     private String projectName;
     private String date;

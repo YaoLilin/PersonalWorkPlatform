@@ -1,15 +1,13 @@
-import {Button, DatePicker, Progress, Table, TimePicker} from "antd";
+import {Button, DatePicker, Table, TimePicker} from "antd";
 import React, {useState} from "react";
 import BrowserInput from "../../public/projectBrowser";
 import dayjs from "dayjs";
-import FormTitle from "../../ui/FormTitle";
 import DateUtil from "../../../util/DateUtil";
 import weekOfYear from "dayjs/plugin/weekOfYear"
+import { v4 as uuidv4 } from 'uuid';
 
 dayjs.extend(weekOfYear)
-
-let rowKey = 0;
-export default (props) => {
+const ProjectTable = (props) => {
     const {onChange,data,week,isEdit} = props;
 
     const getDataItem = (key)=>{
@@ -131,7 +129,7 @@ export default (props) => {
     };
     const onAdd = () => {
         const newData = data.slice(0);
-        newData.push({key: ++rowKey, date: '', startTime: '', endTime: '', progress: ''})
+        newData.push({key: uuidv4(), date: '', startTime: '', endTime: '', progress: ''})
         onChange(newData);
     }
     const onCopy = () => {
@@ -139,7 +137,7 @@ export default (props) => {
         data.forEach(i => {
             if (selectedRowKeys.indexOf(i.key) !== -1) {
                 const newItem = {...i};
-                newItem.key = ++rowKey;
+                newItem.key = uuidv4();
                 newData.push(newItem);
             }
         });
@@ -175,3 +173,5 @@ export default (props) => {
         </>
     )
 }
+
+export default ProjectTable;

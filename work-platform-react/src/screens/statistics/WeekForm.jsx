@@ -58,7 +58,7 @@ const WeekForm = ({isFormCreate}) => {
     // 项目进行时间数据，用于表格
     const projectTimeData = useMemo(() => {
         if (formData?.projectTime) {
-            return formData.projectTime.map((i, index) => ({ key: index, ...i }));
+            return formData.projectTime.map((i, index) => ({ key: i.id, ...i }));
         }
         return [];
     }, [formData?.projectTime]);
