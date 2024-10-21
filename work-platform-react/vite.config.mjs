@@ -28,7 +28,5 @@ export default defineConfig(({mode}) => {
                 }
             }
         },
-        base: './',
-        // 如果需要，可以配置其他选项
     }
 });
