@@ -1,18 +1,16 @@
 package com.personalwork.service.impl;
 
+import com.personalwork.base.TestSetUp;
 import com.personalwork.dao.MonthGoalMapper;
 import com.personalwork.dao.ProjectMapper;
 import com.personalwork.modal.dto.MonthGoalDto;
 import com.personalwork.modal.entity.GoalDo;
 import com.personalwork.modal.entity.ProjectDo;
 import com.personalwork.modal.query.GoalQueryParam;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -20,7 +18,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-class MonthBaseGoalServiceImplTest {
+class MonthBaseGoalServiceImplTest extends TestSetUp {
 
     @Mock
     private MonthGoalMapper goalMapper;
@@ -29,10 +27,6 @@ class MonthBaseGoalServiceImplTest {
     @InjectMocks
     private MonthGoalServiceImpl monthGoalService;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.initMocks(this);
-    }
 
     @Test
     void testGetGoalsWithNonEmptyResult() {

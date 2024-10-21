@@ -2,3 +2,4 @@ Log/
 work-platform-react/build/
 work-platform-react/node_modules/
 work-platform-server/log/
+.idea/httpClient.xml

@@ -1,18 +1,16 @@
 package com.personalwork.service.impl;
 
+import com.personalwork.base.TestSetUp;
+import com.personalwork.constants.ProjectState;
 import com.personalwork.dao.ProjectMapper;
 import com.personalwork.dao.WeekGoalMapper;
-import com.personalwork.constants.ProjectState;
 import com.personalwork.modal.entity.ProjectDo;
 import com.personalwork.modal.entity.TypeDo;
 import com.personalwork.modal.entity.WeekGoalDo;
 import com.personalwork.modal.query.GoalQueryParam;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 
 import java.util.ArrayList;
 
@@ -22,25 +20,19 @@ import static org.mockito.Mockito.*;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 周问题业务类测试
  * @date 2024/6/23
  */
-@ContextConfiguration(classes = {WeekGoalServiceImpl.class})
-@ExtendWith(SpringExtension.class)
-class WeekBaseGoalServiceImplTest {
+class WeekBaseGoalServiceImplTest extends TestSetUp {
 
-    @MockBean
+    @Mock
     private ProjectMapper projectMapper;
 
-    @MockBean
+    @Mock
     private WeekGoalMapper weekGoalMapper;
 
-    @Autowired
+    @InjectMocks
     private WeekGoalServiceImpl weekGoalServiceImpl;
-
-    @Test
-    void getGoals() {
-    }
 
     /**
      * Method under test: {@link WeekGoalServiceImpl#getGoals(GoalQueryParam)}

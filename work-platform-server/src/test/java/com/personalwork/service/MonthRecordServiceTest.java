@@ -1,11 +1,12 @@
 package com.personalwork.service;
 
+import com.personalwork.base.TestSetUp;
+import com.personalwork.constants.Mark;
+import com.personalwork.constants.ProjectState;
 import com.personalwork.dao.MonthProjectCountMapper;
 import com.personalwork.dao.ProjectMapper;
 import com.personalwork.dao.ProjectTimeMapper;
 import com.personalwork.dao.RecordMonthMapper;
-import com.personalwork.constants.Mark;
-import com.personalwork.constants.ProjectState;
 import com.personalwork.modal.dto.MonthProjectCountDto;
 import com.personalwork.modal.dto.MonthRecordDto;
 import com.personalwork.modal.entity.MonthProjectCountDo;
@@ -14,11 +15,8 @@ import com.personalwork.modal.entity.RecordMonthDo;
 import com.personalwork.modal.entity.TypeDo;
 import com.personalwork.modal.query.MonthFormParam;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,22 +24,21 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ContextConfiguration(classes = {MonthRecordService.class})
-@ExtendWith(SpringExtension.class)
-class MonthRecordServiceTest {
-    @MockBean
+
+class MonthRecordServiceTest extends TestSetUp {
+    @Mock
     private MonthProjectCountMapper monthProjectCountMapper;
 
-    @Autowired
+    @InjectMocks
     private MonthRecordService monthRecordService;
 
-    @MockBean
+    @Mock
     private ProjectMapper projectMapper;
 
-    @MockBean
+    @Mock
     private ProjectTimeMapper projectTimeMapper;
 
-    @MockBean
+    @Mock
     private RecordMonthMapper recordMonthMapper;
 
     /**

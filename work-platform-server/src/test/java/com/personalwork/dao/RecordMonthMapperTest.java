@@ -6,14 +6,16 @@ import org.junit.jupiter.api.Test;
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 月记录持久层测试
  * @date 2024/7/2
  */
+@ActiveProfiles("test")
 @MybatisTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class RecordMonthMapperTest {
@@ -39,6 +41,7 @@ class RecordMonthMapperTest {
         recordMonthDo.setSummary("test");
         recordMonthDo.setMark(Mark.UNQUALIFIED);
         recordMonthDo.setIsSummarize(1);
+        recordMonthDo.setUserId(1);
         assertTrue(recordMonthMapper.insert(recordMonthDo));
     }
 

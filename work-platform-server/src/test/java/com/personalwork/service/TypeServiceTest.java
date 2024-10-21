@@ -1,14 +1,12 @@
 package com.personalwork.service;
 
+import com.personalwork.base.TestSetUp;
 import com.personalwork.dao.TypeMapper;
 import com.personalwork.modal.dto.TypeTreeNode;
 import com.personalwork.modal.entity.TypeDo;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,8 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-public class TypeServiceTest {
+class TypeServiceTest extends TestSetUp {
 
     @Mock
     private TypeMapper mapper;
@@ -28,12 +25,8 @@ public class TypeServiceTest {
     @InjectMocks
     private TypeService typeService;
 
-    @BeforeEach
-    public void setUp() {
-    }
-
     @Test
-    public void testGetTypeTree() {
+    void testGetTypeTree() {
         TypeDo type1 = new TypeDo();
         type1.setId(1);
         type1.setName("学习");
@@ -65,7 +58,7 @@ public class TypeServiceTest {
     }
 
     @Test
-    public void testGetTypeTree2_withOnlyParent() {
+    void testGetTypeTree2_withOnlyParent() {
         TypeDo type1 = new TypeDo();
         type1.setId(1);
         type1.setName("学习");
@@ -85,13 +78,13 @@ public class TypeServiceTest {
     }
 
     @Test
-    public void testGetTypeTree2_withNoneType() {
+    void testGetTypeTree2_withNoneType() {
         when(mapper.getTypes(anyInt())).thenReturn(new ArrayList<>());
         List<TypeTreeNode> typeTree = typeService.getTypeTree();
         assertEquals(new ArrayList<>(), typeTree);
     }
 
-    private  TypeTreeNode buildTypeTree(int key, String name) {
+    private TypeTreeNode buildTypeTree(int key, String name) {
         TypeTreeNode treeNode = new TypeTreeNode();
         treeNode.setKey(key);
         treeNode.setValue(key);

@@ -89,7 +89,7 @@ const App = () => {
     const [paddingLeft, setPaddingLeft] = useState(200);
     const selectedKey = getSelectedKey(pathname);
     useEffect(() => {
-        document.title = "个人工作平台";
+        document.title = import.meta.env.VITE_TITLE;
     }, []);
     const navigate = useNavigate();
 

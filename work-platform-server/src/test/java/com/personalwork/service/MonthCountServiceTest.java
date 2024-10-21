@@ -1,17 +1,18 @@
 package com.personalwork.service;
 
+import com.personalwork.base.TestSetUp;
 import com.personalwork.dao.MonthProjectCountMapper;
 import com.personalwork.dao.ProjectTimeMapper;
 import com.personalwork.dao.RecordMonthMapper;
 import com.personalwork.exception.MethodParamInvalidException;
 import com.personalwork.modal.entity.*;
+import com.personalwork.security.bean.UserDetail;
+import com.personalwork.util.UserUtil;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 
 import java.util.ArrayList;
 import java.util.stream.Stream;
@@ -20,20 +21,27 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
-@ContextConfiguration(classes = {MonthCountService.class})
-@ExtendWith(SpringExtension.class)
-class MonthCountServiceTest {
-    @Autowired
+
+class MonthCountServiceTest extends TestSetUp {
+    @InjectMocks
     private MonthCountService monthCountService;
 
-    @MockBean
+    @Mock
     private MonthProjectCountMapper monthProjectCountMapper;
 
-    @MockBean
+    @Mock
     private ProjectTimeMapper projectTimeMapper;
 
-    @MockBean
+    @Mock
     private RecordMonthMapper recordMonthMapper;
+
+    @BeforeEach
+    public void setUp() {
+        UserDo userDo = new UserDo();
+        userDo.setId(1);
+        UserDetail userDetail = new UserDetail(userDo);
+        when(UserUtil.getLoginUser()).thenReturn(userDetail);
+    }
 
     /**
      * Method under test: {@link MonthCountService#countMonthProjectTime(int, int)}

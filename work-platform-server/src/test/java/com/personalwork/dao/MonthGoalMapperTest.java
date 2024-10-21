@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
@@ -17,40 +18,43 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @desc TODO
  * @date 2024/7/1
  */
+@ActiveProfiles("test")
 @MybatisTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class MonthGoalMapperTest {
+class MonthGoalMapperTest {
     @Autowired
     private MonthGoalMapper monthGoalMapper;
 
     @Test
-    public void testList() {
+    void testList() {
         MonthGoalQueryParam param = new MonthGoalQueryParam();
-        param.setMonth(5);
+        param.setMonth(10);
         param.setYear(2024);
+        param.setUserId(1);
         List<? extends GoalDo> list = monthGoalMapper.list(param);
-        System.out.println("size:"+list.size());
+        System.out.println("size:" + list.size());
         assertTrue(list.size() > 0);
     }
 
     @Test
-    public void testInsert() {
+    void testInsert() {
         MonthGoalParam goalParam = new MonthGoalParam();
         goalParam.setYear(2024);
         goalParam.setMonth(5);
         goalParam.setIsDone(0);
         goalParam.setProjectId(1);
+        goalParam.setUserId(1);
         goalParam.setContent("test");
         assertTrue(monthGoalMapper.insert(goalParam));
     }
 
     @Test
-    public void testChangeState() {
-        assertTrue(monthGoalMapper.changeState(1,1));
+    void testChangeState() {
+        assertTrue(monthGoalMapper.changeState(8, 1));
     }
 
     @Test
-    public void testDelete() {
-        assertTrue(monthGoalMapper.delete(1));
+    void testDelete() {
+        assertTrue(monthGoalMapper.delete(8));
     }
 }

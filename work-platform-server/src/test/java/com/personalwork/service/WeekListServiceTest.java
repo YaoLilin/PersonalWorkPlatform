@@ -1,5 +1,6 @@
 package com.personalwork.service;
 
+import com.personalwork.base.TestSetUp;
 import com.personalwork.dao.ProjectMapper;
 import com.personalwork.dao.RecordWeekMapper;
 import com.personalwork.dao.WeekProjectTimeCountMapper;
@@ -10,11 +11,9 @@ import com.personalwork.modal.vo.WeekProjectTimeVo;
 import com.personalwork.modal.vo.WeeksVo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +21,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 
-@ExtendWith(MockitoExtension.class)
-public class WeekListServiceTest {
+class WeekListServiceTest extends TestSetUp {
 
     @InjectMocks
     private WeekListService weekListService;
@@ -36,7 +34,7 @@ public class WeekListServiceTest {
     private ProjectMapper projectMapper;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // Setup mock data
         RecordWeekDo recordWeekDo = new RecordWeekDo();
         recordWeekDo.setId(1);
@@ -71,7 +69,7 @@ public class WeekListServiceTest {
     }
 
     @Test
-    public void testGetCardList() {
+    void testGetCardList() {
         List<WeeksVo> result = weekListService.getCardList();
 
         assertNotNull(result);

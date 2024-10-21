@@ -6,14 +6,16 @@ import org.junit.jupiter.api.Test;
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 周记录持久层测试
  * @date 2024/7/2
  */
+@ActiveProfiles("test")
 @MybatisTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class RecordWeekMapperTest {
@@ -31,11 +33,6 @@ class RecordWeekMapperTest {
     }
 
     @Test
-    void getWorkWeekByYear() {
-        // no sql
-    }
-
-    @Test
     void getWorkWeekList() {
         assertTrue(mapper.getWorkWeekList(1).size()>0);
     }
@@ -47,6 +44,7 @@ class RecordWeekMapperTest {
         recordWeekDo.setDate("2024-03-04");
         recordWeekDo.setMark(Mark.UNQUALIFIED);
         recordWeekDo.setSummary("test");
+        recordWeekDo.setUserId(1);
         assertTrue(mapper.addWorkWeek(recordWeekDo));
     }
 

@@ -7,15 +7,17 @@ import org.junit.jupiter.api.Test;
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 项目持久层测试
  * @date 2024/7/1
  */
+@ActiveProfiles("test")
 @MybatisTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class ProjectMapperTest {
@@ -43,6 +45,7 @@ class ProjectMapperTest {
         projectDo.setIsStartDateOnly(1);
         projectDo.setStartDate("2024-01-01");
         projectDo.setState(ProjectState.STARTED);
+        projectDo.setUserId(1);
         assertTrue(projectMapper.addProject(projectDo));
     }
 

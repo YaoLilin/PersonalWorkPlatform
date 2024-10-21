@@ -1,29 +1,29 @@
 package com.personalwork.service;
 
+import com.personalwork.base.TestSetUp;
 import com.personalwork.dao.ProblemMapper;
 import com.personalwork.exception.ProblemAddException;
 import com.personalwork.modal.entity.ProblemDo;
+import com.personalwork.modal.entity.UserDo;
 import com.personalwork.modal.query.ProblemAddQr;
 import com.personalwork.modal.query.ProblemQr;
 import com.personalwork.modal.vo.ProblemInFormVo;
+import com.personalwork.security.bean.UserDetail;
+import com.personalwork.util.UserUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-class ProblemsServiceTest {
+class ProblemsServiceTest extends TestSetUp {
 
     @Mock
     private ProblemMapper problemMapper;
@@ -42,6 +42,10 @@ class ProblemsServiceTest {
         problemAddQr = new ProblemAddQr();
         problemList = Collections.emptyList();
         problemDo = new ProblemDo();
+        UserDo userDo = new UserDo();
+        userDo.setId(1);
+        UserDetail userDetail = new UserDetail(userDo);
+        when(UserUtil.getLoginUser()).thenReturn(userDetail);
     }
 
     @Test

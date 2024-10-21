@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
@@ -14,44 +15,47 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 周目标持久层测试
  * @date 2024/7/1
  */
+@ActiveProfiles("test")
 @MybatisTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class WeekGoalMapperTest {
+class WeekGoalMapperTest {
 
     @Autowired
     private WeekGoalMapper weekGoalMapper;
 
     @Test
-    public void testList() {
+     void testList() {
         WeekGoalQueryParam param = new WeekGoalQueryParam();
-        param.setWeekNumber(18);
+        param.setWeekNumber(41);
         param.setYear(2024);
+        param.setUserId(1);
         List<? extends GoalDo> list = weekGoalMapper.list(param);
         System.out.println("size:"+list.size());
         assertTrue(list.size() > 0);
     }
 
     @Test
-    public void testInsert() {
+    void testInsert() {
         WeekGoalParam goalParam = new WeekGoalParam();
         goalParam.setYear(2024);
         goalParam.setWeekNumber(18);
         goalParam.setIsDone(0);
         goalParam.setProjectId(1);
         goalParam.setContent("test");
+        goalParam.setUserId(1);
         assertTrue(weekGoalMapper.insert(goalParam));
     }
 
     @Test
-    public void testChangeState() {
-        assertTrue(weekGoalMapper.changeState(7,1));
+     void testChangeState() {
+        assertTrue(weekGoalMapper.changeState(24,1));
     }
 
     @Test
-    public void testDelete() {
-        assertTrue(weekGoalMapper.delete(7));
+     void testDelete() {
+        assertTrue(weekGoalMapper.delete(24));
     }
 }

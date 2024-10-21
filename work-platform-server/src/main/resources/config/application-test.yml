@@ -9,7 +9,7 @@ management:
 
 spring:
   datasource:
-    url: jdbc:mysql:///personal_work_dev?character=UTF-8
+    url: jdbc:mysql:///personal_work_test?character=UTF-8
     username: root
     password: mysql123
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -21,4 +21,4 @@ mybatis:
   mapper-locations: classpath:mapper/*
   type-handlers-package: com.personalwork.constants
 server:
-  port: 8081
+  port: 8082

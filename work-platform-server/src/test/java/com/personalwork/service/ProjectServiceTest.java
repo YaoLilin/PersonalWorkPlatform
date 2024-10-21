@@ -1,15 +1,17 @@
 package com.personalwork.service;
 
-import com.personalwork.dao.*;
+import com.personalwork.base.TestSetUp;
+import com.personalwork.dao.MonthProjectCountMapper;
+import com.personalwork.dao.ProjectMapper;
+import com.personalwork.dao.ProjectTimeMapper;
+import com.personalwork.dao.WeekProjectTimeCountMapper;
 import com.personalwork.modal.dto.ProjectDto;
 import com.personalwork.modal.entity.*;
 import com.personalwork.modal.query.ProjectParam;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.BeanUtils;
 
 import java.util.Arrays;
@@ -19,8 +21,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-public class ProjectServiceTest {
+class ProjectServiceTest extends TestSetUp {
 
     @Mock
     private ProjectMapper projectMapper;
@@ -43,7 +44,7 @@ public class ProjectServiceTest {
     private List<WeekProjectTimeCountDo> weekProjectTimeCountDoList;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         projectParam = new ProjectParam();
         projectParam.setId(1);
         projectParam.setName("Test Project");
@@ -69,7 +70,7 @@ public class ProjectServiceTest {
     }
 
     @Test
-    public void testGetAll() {
+    void testGetAll() {
         when(projectMapper.listByUser(anyInt())).thenReturn(projectDoList);
         List<ProjectDto> result = projectService.getAll();
         assertNotNull(result);
@@ -78,7 +79,7 @@ public class ProjectServiceTest {
     }
 
     @Test
-    public void testGetProject() {
+    void testGetProject() {
         when(projectMapper.getProject(1)).thenReturn(projectDo);
         ProjectDto result = projectService.getProject(1);
         assertNotNull(result);
@@ -86,7 +87,7 @@ public class ProjectServiceTest {
     }
 
     @Test
-    public void testAddProject() {
+    void testAddProject() {
         when(projectMapper.addProject(any(ProjectDo.class))).thenReturn(true);
         boolean result = projectService.addProject(projectParam);
         assertTrue(result);
@@ -94,9 +95,10 @@ public class ProjectServiceTest {
     }
 
     @Test
-    public void testDeleteProject() {
+    void testDeleteProject() {
         when(projectMapper.deleteProject(eq(1))).thenReturn(true);
-        when(projectTimeMapper.deleteByProjectId(eq(1))).thenReturn(true);;
+        when(projectTimeMapper.deleteByProjectId(eq(1))).thenReturn(true);
+        ;
         when(weekProjectTimeCountMapper.deleteByProjectId(eq(1))).thenReturn(true);
         when(monthProjectCountMapper.deleteByProjectId(eq(1))).thenReturn(true);
 
@@ -109,7 +111,7 @@ public class ProjectServiceTest {
     }
 
     @Test
-    public void testDeleteProjectList() {
+    void testDeleteProjectList() {
         when(projectMapper.deleteProject(1)).thenReturn(true);
         boolean result = projectService.deleteProjectList(1);
         assertTrue(result);
@@ -117,7 +119,7 @@ public class ProjectServiceTest {
     }
 
     @Test
-    public void testUpdateProject() {
+    void testUpdateProject() {
         when(projectMapper.updateProject(any(ProjectDo.class))).thenReturn(true);
         boolean result = projectService.updateProject(projectParam);
         assertTrue(result);
@@ -125,7 +127,7 @@ public class ProjectServiceTest {
     }
 
     @Test
-    public void testExistRecordFalse() {
+    void testExistRecordFalse() {
         when(monthProjectCountMapper.listByProjectId(1)).thenReturn(monthProjectCountDoList);
         when(projectTimeMapper.getProjectTimeByProjectId(1)).thenReturn(projectTimeDoList);
         when(weekProjectTimeCountMapper.listByProjectId(1)).thenReturn(weekProjectTimeCountDoList);
@@ -134,7 +136,7 @@ public class ProjectServiceTest {
     }
 
     @Test
-    public void testExistRecordTrue() {
+    void testExistRecordTrue() {
         when(monthProjectCountMapper.listByProjectId(1)).thenReturn(Collections.singletonList(new MonthProjectCountDo()));
         boolean result = projectService.existRecord(1);
         assertTrue(result);
