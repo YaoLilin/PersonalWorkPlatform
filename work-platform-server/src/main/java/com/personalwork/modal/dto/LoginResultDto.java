@@ -1,7 +1,7 @@
 package com.personalwork.modal.dto;
 
 import com.personalwork.constants.LoginResultType;
-import com.personalwork.modal.entity.UserDo;
+import com.personalwork.security.bean.UserDetail;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -10,5 +10,5 @@ import lombok.Data;
 public class LoginResultDto {
     private LoginResultType type;
     private String token;
-    private UserDo user;
+    private UserDetail user;
 }

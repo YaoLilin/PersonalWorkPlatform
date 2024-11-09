@@ -20,7 +20,7 @@ import java.util.Objects;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 项目业务类
  * @date 2023/3/22
  */
 @Service
@@ -43,7 +43,7 @@ public class ProjectService {
 
     public List<ProjectDto> getAll() {
         UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
-        List<ProjectDo> projectsList = projectMapper.listByUser(loginUser.getUser().getId());
+        List<ProjectDo> projectsList = projectMapper.listByUser(loginUser.getId());
         List<ProjectDto> data = new ArrayList<>();
         for (ProjectDo project : projectsList) {
             data.add(toProjectDto(project));
@@ -67,7 +67,7 @@ public class ProjectService {
         UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
         ProjectDo project = new ProjectDo();
         BeanUtils.copyProperties(projectParam,project);
-        project.setUserId(loginUser.getUser().getId());
+        project.setUserId(loginUser.getId());
         if ("".equals(projectParam.getEndDate())) {
             project.setEndDate(null);
         }

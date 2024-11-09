@@ -129,7 +129,7 @@ public class MonthCountService {
 
     private RecordMonthDo alterDbRecordMonth(int year, int month, int totalMinute) {
         UserDetail loginUser = getLoginUser();
-        Integer userId = loginUser.getUser().getId();
+        Integer userId = loginUser.getId();
         RecordMonthDo recordMonthDo = monthMapper.getByDate(year, month,userId);
         if (recordMonthDo == null) {
             recordMonthDo = buildRecordMonthDo(year, month, totalMinute);
@@ -150,7 +150,7 @@ public class MonthCountService {
         recordMonthDo.setMonth(month);
         recordMonthDo.setWorkTime(totalMinute);
         recordMonthDo.setIsSummarize(0);
-        recordMonthDo.setUserId(loginUser.getUser().getId());
+        recordMonthDo.setUserId(loginUser.getId());
         return recordMonthDo;
     }
 
@@ -179,7 +179,7 @@ public class MonthCountService {
         calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
         String endDate = dateFormat.format(calendar.getTime());
         UserDetail loginUser = getLoginUser();
-        return projectTimeMapper.getProjectTimesByRange(startDate, endDate,loginUser.getUser().getId());
+        return projectTimeMapper.getProjectTimesByRange(startDate, endDate,loginUser.getId());
     }
 
 

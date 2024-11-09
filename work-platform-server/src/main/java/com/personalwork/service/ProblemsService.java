@@ -20,7 +20,7 @@ import java.util.Objects;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 问题业务类
  * @date 2024/1/11
  */
 @Service
@@ -34,7 +34,7 @@ public class ProblemsService {
 
     public List<ProblemDo> getProblems(ProblemQr problemQr) {
         UserDetail loginUser = getLoginUser();
-        problemQr.setUserId(loginUser.getUser().getId());
+        problemQr.setUserId(loginUser.getId());
         return problemMapper.getProblems(problemQr);
     }
 
@@ -45,7 +45,7 @@ public class ProblemsService {
      */
     public List<ProblemDo> getProblemsExceptThisWeek(Integer weekId){
         UserDetail loginUser = getLoginUser();
-        return problemMapper.getProblemsExceptThisWeek(weekId,loginUser.getUser().getId());
+        return problemMapper.getProblemsExceptThisWeek(weekId,loginUser.getId());
     }
 
     private static UserDetail getLoginUser() {
@@ -64,7 +64,7 @@ public class ProblemsService {
         UserDetail loginUser = getLoginUser();
         ProblemDo problemDo = new ProblemDo();
         BeanUtils.copyProperties(problemQr, problemDo);
-        problemDo.setUserId(loginUser.getUser().getId());
+        problemDo.setUserId(loginUser.getId());
         problemDo.setState(ProblemState.UN_RESOLVE);
         if (problemDo.getLevel() == null) {
             problemDo.setLevel(ProblemLevel.NORMAL);
@@ -72,14 +72,14 @@ public class ProblemsService {
         if (!problemMapper.add(problemDo)){
             throw new ProblemAddException("添加问题出错");
         }
-        ProblemDo newProblemDo = problemMapper.getOpenProblemByName(problemQr.getTitle(),getLoginUser().getUser().getId());
+        ProblemDo newProblemDo = problemMapper.getOpenProblemByName(problemQr.getTitle(),getLoginUser().getId());
         ProblemInFormVo vo = new ProblemInFormVo();
         BeanUtils.copyProperties(newProblemDo,vo);
         return vo;
     }
 
     public boolean update(ProblemAddQr problemAddQr,Integer id) throws ProblemAddException {
-        ProblemDo pro = problemMapper.getOpenProblemByName(problemAddQr.getTitle(),getLoginUser().getUser().getId());
+        ProblemDo pro = problemMapper.getOpenProblemByName(problemAddQr.getTitle(),getLoginUser().getId());
         if (pro != null && !pro.getId().equals(id)){
             throw new ProblemAddException("已存在相同问题");
         }
@@ -98,7 +98,7 @@ public class ProblemsService {
     }
 
     public boolean isExists(String name) {
-        ProblemDo problem = problemMapper.getOpenProblemByName(name,getLoginUser().getUser().getId());
+        ProblemDo problem = problemMapper.getOpenProblemByName(name,getLoginUser().getId());
         return problem != null;
     }
 

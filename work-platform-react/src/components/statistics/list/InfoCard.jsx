@@ -39,6 +39,7 @@ const InfoCard = ({data,title,onClick,bottomFlag,style}) => {
             cursor: "pointer",
             marginRight:'40px',
             position:"relative",
+            overflow:"hidden",
             ...style
         }} onClick={()=>onClick(id)}>
             <div>
@@ -72,7 +73,11 @@ const InfoCard = ({data,title,onClick,bottomFlag,style}) => {
             <div style={{paddingTop: "10px"}}>
                 总结：
             </div>
-            <div>
+            <div style={{
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis"
+            }}>
                 {summary}
             </div>
             {bottomFlag}

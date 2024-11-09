@@ -22,7 +22,7 @@ import java.util.Objects;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 周记录列表业务
  * @date 2023/9/17
  */
 @Service
@@ -44,7 +44,7 @@ public class WeekListService {
     public List<WeeksVo> getCardList() {
         UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
         List<WeeksVo> result = new ArrayList<>();
-        List<RecordWeekDo> weekList = recordWeekMapper.getWorkWeekList(loginUser.getUser().getId());
+        List<RecordWeekDo> weekList = recordWeekMapper.getWorkWeekList(loginUser.getId());
         DecimalFormat df = new DecimalFormat("0.00");
         DecimalFormat df2 = new DecimalFormat("0");
         for (RecordWeekDo recordWeekDo : weekList) {

@@ -37,7 +37,7 @@ public class AuthController {
     @NoAuthRequired
     @PostMapping("/login")
     public ResponseEntity<LoginResultVo> login(@Validated @RequestBody UserParam param, HttpServletRequest request) {
-        LoginResultDto resultDto = authService.login(param,request);
+        LoginResultDto resultDto = authService.login(param);
         LoginResultVo result = getLoginResultVo(resultDto);
         if (resultDto.getType() != LoginResultType.SUCCESS) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
@@ -48,14 +48,14 @@ public class AuthController {
     @NoAuthRequired
     @PostMapping("/register")
     public ResponseEntity<LoginResultVo> register(@Validated @RequestBody RegisterParam param,HttpServletRequest request) {
-        LoginResultDto resultDto = authService.register(param, request);
+        LoginResultDto resultDto = authService.register(param);
         LoginResultVo result = getLoginResultVo(resultDto);
         return ResponseEntity.ok(result);
     }
 
     @PostMapping("/logout")
-    public void logout(HttpServletRequest request) {
-        authService.logout(request);
+    public void logout() {
+        authService.logout();
     }
 
     private LoginResultVo getLoginResultVo(LoginResultDto resultDto) {

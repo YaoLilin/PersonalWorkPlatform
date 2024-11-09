@@ -13,6 +13,17 @@ spring:
     username: root
     password: mysql123
     driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      lettuce:
+        pool:
+          max-idle: 8
+          max-active: 8
+          min-idle: 0
+          max-wait: 5000ms
+      database: 1
 mybatis:
   type-aliases-package: com.personalwork.modal.entity,com.personalwork.modal.query,com.personalwork.modal.dto
   configuration:

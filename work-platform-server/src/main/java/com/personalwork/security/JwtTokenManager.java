@@ -20,8 +20,12 @@ import java.util.Date;
 @Slf4j
 public class JwtTokenManager {
     private static final long THREE_DAY_EXPIRE_TIME = 1000L * 24 * 60 * 60 * 3;
+    private final SecretProperties secretProperties;
+
     @Autowired
-    private SecretProperties secretProperties;
+    public JwtTokenManager(SecretProperties secretProperties) {
+        this.secretProperties = secretProperties;
+    }
 
     /**
      * 签名生成
@@ -65,7 +69,7 @@ public class JwtTokenManager {
     public String getUserName(String token) {
         JWTVerifier verifier = getJwtVerifier();
         DecodedJWT jwt = verifier.verify(token);
-        return jwt.getClaim("username").asString();
+        return jwt.getClaim("loginName").asString();
     }
 
     private JWTVerifier getJwtVerifier() {

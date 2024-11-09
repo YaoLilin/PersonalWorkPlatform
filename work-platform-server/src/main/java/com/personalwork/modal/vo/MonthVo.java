@@ -1,5 +1,6 @@
 package com.personalwork.modal.vo;
 
+import com.personalwork.constants.Mark;
 import lombok.Data;
 
 import java.util.List;
@@ -15,7 +16,7 @@ public class MonthVo {
     private Integer id;
     private Integer month;
     private Integer year;
-    private Integer mark;
+    private Mark mark;
     /**
      * 工作总结
      */

@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -57,7 +58,8 @@ public class SecurityConfig  {
      * 获取AuthenticationManager（认证管理器），登录时认证使用
      */
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
@@ -75,13 +77,15 @@ public class SecurityConfig  {
                                 // 指定某些接口不需要通过验证即可访问。登录接口肯定是不需要认证的
                                 .requestMatchers(unAuthRequireUrls.toArray(new String[0])).permitAll()
                                 // 静态资源，可匿名访问
-                                .requestMatchers(HttpMethod.GET, "/", "/*.html", "/*/*.html", "/*/*.css", "/*/*.js", "/profile/**").permitAll()
-                                .requestMatchers("/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/*/api-docs", "/druid/**", "/doc.html").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/", "/*.html", "/*/*.html",
+                                        "/*/*.css", "/*/*.js", "/profile/**").permitAll()
+                                .requestMatchers("/swagger-ui.html", "/swagger-resources/**",
+                                        "/webjars/**", "/*/api-docs", "/druid/**", "/doc.html").permitAll()
                                 .anyRequest().authenticated()
                 )
                 // 基于 token，不需要 session
-//                .sessionManagement(session -> session
-//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(e ->
                     // 自定义未认证处理
                     e.authenticationEntryPoint(customAuthenticationEntryPoint())

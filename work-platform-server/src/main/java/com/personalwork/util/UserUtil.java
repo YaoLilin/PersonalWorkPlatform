@@ -29,6 +29,6 @@ public class UserUtil {
     }
 
     public static Integer getLoginUserId() {
-        return Objects.requireNonNull(getLoginUser()).getUser().getId();
+        return Objects.requireNonNull(getLoginUser()).getId();
     }
 }

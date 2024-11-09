@@ -1,6 +1,5 @@
 package com.personalwork.security.bean;
 
-import com.personalwork.modal.entity.UserDo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,7 +16,11 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class UserDetail implements UserDetails {
-    private final UserDo user;
+    private String loginName;
+    private String name;
+    private String email;
+    private String password;
+    private Integer id;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -25,13 +28,8 @@ public class UserDetail implements UserDetails {
     }
 
     @Override
-    public String getPassword() {
-        return user.getPassword();
-    }
-
-    @Override
     public String getUsername() {
-        return user.getName();
+        return name;
     }
 
     @Override

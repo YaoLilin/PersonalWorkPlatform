@@ -30,14 +30,14 @@ public class TypeService {
 
     public List<TypeDo> getTypes() {
         UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
-        return mapper.getTypes(loginUser.getUser().getId());
+        return mapper.getTypes(loginUser.getId());
     }
 
     public boolean addType(TypeQr type) {
         UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
         TypeDo typeDo = new TypeDo();
         BeanUtils.copyProperties(type, typeDo);
-        typeDo.setUserId(loginUser.getUser().getId());
+        typeDo.setUserId(loginUser.getId());
         return mapper.addType(typeDo);
     }
 
@@ -60,7 +60,7 @@ public class TypeService {
      */
     public List<TypeTreeNode> getTypeTree() {
         UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
-        List<TypeDo> typeList = mapper.getTypes(loginUser.getUser().getId());
+        List<TypeDo> typeList = mapper.getTypes(loginUser.getId());
         List<TypeTreeNode> parentNodes = new ArrayList<>();
         for (TypeDo item :typeList){
             if (item.getParentId() == null){

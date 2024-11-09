@@ -29,6 +29,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (userDo == null) {
             throw new UsernameNotFoundException("用户名不存在！");
         }
-        return new UserDetail(userDo);
+        return new UserDetail(userDo.getLoginName(), userDo.getName(), userDo.getEmail()
+                , userDo.getPassword(), userDo.getId());
     }
 }

@@ -44,7 +44,7 @@ class ProblemsServiceTest extends TestSetUp {
         problemDo = new ProblemDo();
         UserDo userDo = new UserDo();
         userDo.setId(1);
-        UserDetail userDetail = new UserDetail(userDo);
+        UserDetail userDetail = new UserDetail("admin","admin","123@163.com","123",1);
         when(UserUtil.getLoginUser()).thenReturn(userDetail);
     }
 

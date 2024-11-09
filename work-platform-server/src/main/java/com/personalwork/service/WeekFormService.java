@@ -19,7 +19,7 @@ import java.util.Objects;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 周记录表单业务
  * @date 2023/8/26
  */
 @Service
@@ -50,7 +50,7 @@ public class WeekFormService {
     @Transactional(rollbackFor = Exception.class)
     public Integer createForm(WeekFormParam param) {
         insertRecordWeek(param);
-        RecordWeekDo returnWeek = recordWeekMapper.getWorkWeekByDate(param.getDate(),getLoginUser().getUser().getId());
+        RecordWeekDo returnWeek = recordWeekMapper.getWorkWeekByDate(param.getDate(),getLoginUser().getId());
         insertProjectTimeCount(returnWeek.getId(), param);
         insertProjectTime(returnWeek.getId(), param);
         insertProblems(param.getProblems());
@@ -86,13 +86,13 @@ public class WeekFormService {
     private void insertProblems(List<WeekFormParam.Problem> problems) {
         UserDetail loginUser = getLoginUser();
         problems.forEach(i -> {
-            if (problemMapper.getOpenProblemByName(i.getTitle(),loginUser.getUser().getId()) != null) {
+            if (problemMapper.getOpenProblemByName(i.getTitle(),loginUser.getId()) != null) {
                 throw new ProblemAddException("已存在相同的问题，问题：" + i.getTitle());
             }
             ProblemDo problemDo = new ProblemDo();
             BeanUtils.copyProperties(i, problemDo);
             problemDo.setState(ProblemState.UN_RESOLVE);
-            problemDo.setUserId(loginUser.getUser().getId());
+            problemDo.setUserId(loginUser.getId());
             if (problemDo.getLevel() == null) {
                 problemDo.setLevel(ProblemLevel.NORMAL);
             }
@@ -104,7 +104,7 @@ public class WeekFormService {
         RecordWeekDo recordWeekDo = recordWeekMapper.getWorkWeekById(weekId);
         List<ProjectTimeDo> projectTimeDoList = projectTimeMapper.getProjectTimeByWeek(weekId);
         List<ProblemDo> problemDos = problemMapper.getProblemsByWeekDate(recordWeekDo.getDate()
-            ,getLoginUser().getUser().getId());
+            ,getLoginUser().getId());
         WeekFormDto weekFormDto = new WeekFormDto();
         weekFormDto.setWeekDo(recordWeekDo);
         weekFormDto.setProblemDos(problemDos);
@@ -113,7 +113,7 @@ public class WeekFormService {
     }
 
     public boolean isExist(String date) {
-        RecordWeekDo recordWeekDo = recordWeekMapper.getWorkWeekByDate(date,getLoginUser().getUser().getId());
+        RecordWeekDo recordWeekDo = recordWeekMapper.getWorkWeekByDate(date,getLoginUser().getId());
         return recordWeekDo != null;
     }
 
@@ -128,7 +128,7 @@ public class WeekFormService {
     private void insertRecordWeek(WeekFormParam param) {
         UserDetail loginUser = getLoginUser();
         RecordWeekDo recordWeekDo = convertToRecordWeekDo(param);
-        recordWeekDo.setUserId(loginUser.getUser().getId());
+        recordWeekDo.setUserId(loginUser.getId());
         recordWeekMapper.addWorkWeek(recordWeekDo);
     }
 
