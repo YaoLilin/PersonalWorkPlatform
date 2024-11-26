@@ -1,6 +1,6 @@
 package com.personalwork.security;
 
-import com.personalwork.constants.RedisKeyNames;
+import com.personalwork.system.cache.RedisKeyConstants;
 import com.personalwork.security.bean.UserDetail;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -66,7 +66,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     private boolean existUserInRedis(String token) {
         String userId = jwtTokenManager.getUserId(token);
         Map<Object, Object> userCache = stringRedisTemplate.opsForHash()
-                .entries(RedisKeyNames.PREFIX_LOGIN_USER + userId);
+                .entries(RedisKeyConstants.PREFIX_LOGIN_USER_KEY + userId);
         return !userCache.isEmpty();
     }
 

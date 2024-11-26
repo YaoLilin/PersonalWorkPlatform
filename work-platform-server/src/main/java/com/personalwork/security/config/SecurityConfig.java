@@ -1,6 +1,6 @@
 package com.personalwork.security.config;
 
-import com.personalwork.anotations.NoAuthRequired;
+import com.personalwork.security.NoAuthRequired;
 import com.personalwork.security.CustomAuthenticationEntryPoint;
 import com.personalwork.security.JwtAuthenticationTokenFilter;
 import com.personalwork.security.Md5PasswordEncoder;

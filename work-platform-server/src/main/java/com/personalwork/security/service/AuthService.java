@@ -3,7 +3,7 @@ package com.personalwork.security.service;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import com.personalwork.constants.LoginResultType;
-import com.personalwork.constants.RedisKeyNames;
+import com.personalwork.system.cache.RedisKeyConstants;
 import com.personalwork.dao.UserMapper;
 import com.personalwork.exception.UserRegisterException;
 import com.personalwork.modal.dto.LoginResultDto;
@@ -72,7 +72,7 @@ public class AuthService {
 
     public void logout() {
         Integer loginUserId = UserUtil.getLoginUserId();
-        redisTemplate.delete(RedisKeyNames.PREFIX_LOGIN_USER + loginUserId);
+        redisTemplate.delete(RedisKeyConstants.PREFIX_LOGIN_USER_KEY + loginUserId);
     }
 
     private Authentication authenticate(UserParam param) {
@@ -89,9 +89,9 @@ public class AuthService {
     private void putToRedis(UserDetail userDetail) {
         AuthUser authUser = new AuthUser();
         BeanUtils.copyProperties(userDetail, authUser);
-        redisTemplate.opsForHash().putAll(RedisKeyNames.PREFIX_LOGIN_USER +authUser.getId(),
+        redisTemplate.opsForHash().putAll(RedisKeyConstants.PREFIX_LOGIN_USER_KEY +authUser.getId(),
                 BeanUtil.beanToMap(authUser,new HashMap<>(5),
                         new CopyOptions().setFieldValueEditor((s, o) -> o.toString())));
-        redisTemplate.expire(RedisKeyNames.PREFIX_LOGIN_USER + authUser.getId(), 3, TimeUnit.DAYS);
+        redisTemplate.expire(RedisKeyConstants.PREFIX_LOGIN_USER_KEY + authUser.getId(), 3, TimeUnit.DAYS);
     }
 }

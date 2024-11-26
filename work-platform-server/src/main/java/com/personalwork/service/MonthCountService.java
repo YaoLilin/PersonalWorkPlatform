@@ -8,6 +8,8 @@ import com.personalwork.modal.entity.MonthProjectCountDo;
 import com.personalwork.modal.entity.ProjectTimeDo;
 import com.personalwork.modal.entity.RecordMonthDo;
 import com.personalwork.security.bean.UserDetail;
+import com.personalwork.system.cache.RedisKeyConstants;
+import com.personalwork.util.RedisUtil;
 import com.personalwork.util.TimeUtils;
 import com.personalwork.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,13 +33,15 @@ public class MonthCountService {
     private final RecordMonthMapper monthMapper;
     private final ProjectTimeMapper projectTimeMapper;
     private final MonthProjectCountMapper monthProjectCountMapper;
+    private final RedisUtil redisUtil;
 
     @Autowired
-    public MonthCountService(ProjectTimeMapper projectTimeMapper, RecordMonthMapper monthMapper, MonthProjectCountMapper monthProjectCountMapper) {
+    public MonthCountService(ProjectTimeMapper projectTimeMapper, RecordMonthMapper monthMapper,
+                             MonthProjectCountMapper monthProjectCountMapper, RedisUtil redisUtil) {
         this.projectTimeMapper = projectTimeMapper;
         this.monthMapper = monthMapper;
         this.monthProjectCountMapper = monthProjectCountMapper;
-
+        this.redisUtil = redisUtil;
     }
 
     /**
@@ -48,6 +52,7 @@ public class MonthCountService {
         verifyParam(year, month);
         List<ProjectTimeDo> projectTimeDoList = getProjectTimeList(year, month);
         countMonthProjectTime(year, month, projectTimeDoList);
+        redisUtil.delete(RedisKeyConstants.WEEK_LIST_KEY + UserUtil.getLoginUserId());
     }
 
     /**
@@ -61,6 +66,7 @@ public class MonthCountService {
             int month = Integer.parseInt(k.split("-")[1]);
             countMonthProjectTime(year, month, v);
         });
+        redisUtil.delete(RedisKeyConstants.WEEK_LIST_KEY + UserUtil.getLoginUserId());
     }
 
     private void countMonthProjectTime(int year, int month,List<ProjectTimeDo> projectTimeDoList) {

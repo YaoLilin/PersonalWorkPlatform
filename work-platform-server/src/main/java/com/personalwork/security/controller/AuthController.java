@@ -1,6 +1,6 @@
 package com.personalwork.security.controller;
 
-import com.personalwork.anotations.NoAuthRequired;
+import com.personalwork.security.NoAuthRequired;
 import com.personalwork.constants.LoginResultType;
 import com.personalwork.modal.query.RegisterParam;
 import com.personalwork.modal.query.UserParam;

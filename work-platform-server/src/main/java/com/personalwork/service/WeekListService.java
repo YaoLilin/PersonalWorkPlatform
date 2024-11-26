@@ -2,14 +2,16 @@ package com.personalwork.service;
 
 import com.personalwork.dao.ProjectMapper;
 import com.personalwork.dao.RecordWeekMapper;
+import com.personalwork.dao.WeekProjectTimeCountMapper;
 import com.personalwork.modal.entity.ProjectDo;
 import com.personalwork.modal.entity.RecordWeekDo;
-import com.personalwork.modal.vo.WeeksVo;
-import com.personalwork.dao.WeekProjectTimeCountMapper;
 import com.personalwork.modal.entity.WeekProjectTimeCountDo;
 import com.personalwork.modal.vo.WeekProjectTimeVo;
+import com.personalwork.modal.vo.WeeksVo;
 import com.personalwork.security.bean.UserDetail;
+import com.personalwork.system.cache.RedisKeyConstants;
 import com.personalwork.util.NumberUtil;
+import com.personalwork.util.RedisUtil;
 import com.personalwork.util.UserUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author 姚礼林
@@ -27,24 +30,35 @@ import java.util.Objects;
  */
 @Service
 public class WeekListService {
-
-
     private final RecordWeekMapper recordWeekMapper;
     private final WeekProjectTimeCountMapper projectTimeCountMapper;
     private final ProjectMapper projectMapper;
+    private final RedisUtil redisUtil;
 
     @Autowired
     public WeekListService(RecordWeekMapper recordWeekMapper, WeekProjectTimeCountMapper projectTimeCountMapper,
-                           ProjectMapper projectMapper, ProjectMapper projectMapper1) {
+                           ProjectMapper projectMapper, RedisUtil redisUtil) {
         this.recordWeekMapper = recordWeekMapper;
         this.projectTimeCountMapper = projectTimeCountMapper;
-        this.projectMapper = projectMapper1;
+        this.projectMapper = projectMapper;
+        this.redisUtil = redisUtil;
     }
 
     public List<WeeksVo> getCardList() {
         UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
-        List<WeeksVo> result = new ArrayList<>();
+        String redisKey = RedisKeyConstants.WEEK_LIST_KEY + loginUser.getId();
+        List<WeeksVo> cacheValue = redisUtil.getList(redisKey, WeeksVo.class);
+        if (cacheValue != null) {
+            return cacheValue;
+        }
         List<RecordWeekDo> weekList = recordWeekMapper.getWorkWeekList(loginUser.getId());
+        List<WeeksVo> result = getWeeksVos(weekList);
+        redisUtil.set(redisKey,result,RedisKeyConstants.WEEK_LIST_TTL, TimeUnit.SECONDS);
+        return result;
+    }
+
+    private List<WeeksVo> getWeeksVos(List<RecordWeekDo> weekList) {
+        List<WeeksVo> result = new ArrayList<>();
         DecimalFormat df = new DecimalFormat("0.00");
         DecimalFormat df2 = new DecimalFormat("0");
         for (RecordWeekDo recordWeekDo : weekList) {
@@ -54,12 +68,11 @@ public class WeekListService {
             List<WeekProjectTimeCountDo> projectTimeCountList = projectTimeCountMapper.listByWeekId(recordWeekDo.getId());
             List<WeekProjectTimeVo> projectTimeList = getWeekProjectTimeVos(df2, weekUseMinutes, projectTimeCountList);
             WeeksVo weeksVo = new WeeksVo();
-            BeanUtils.copyProperties(recordWeekDo,weeksVo);
+            BeanUtils.copyProperties(recordWeekDo, weeksVo);
             weeksVo.setHours(totalHours);
             weeksVo.setProjectTime(projectTimeList);
             result.add(weeksVo);
         }
-
         return result;
     }
 
@@ -77,8 +90,8 @@ public class WeekListService {
         WeekProjectTimeVo weekProjectTimeVo = new WeekProjectTimeVo();
         ProjectDo project = projectMapper.getProject(count.getProject());
         double projectHours = NumberUtil.round((double) count.getMinutes() / 60,
-                2,true);
-        double percent = Math.round((double) count.getMinutes() / weekUseMinutes * 100) ;
+                2, true);
+        double percent = Math.round((double) count.getMinutes() / weekUseMinutes * 100);
         weekProjectTimeVo.setProjectName(project.getName());
         weekProjectTimeVo.setMinutes(count.getMinutes());
         weekProjectTimeVo.setHours(projectHours);

@@ -1,16 +1,19 @@
 package com.personalwork.service;
 
-import com.personalwork.dao.*;
 import com.personalwork.constants.ProblemLevel;
 import com.personalwork.constants.ProblemState;
+import com.personalwork.system.cache.RedisKeyConstants;
+import com.personalwork.dao.*;
 import com.personalwork.exception.ProblemAddException;
 import com.personalwork.modal.dto.WeekFormDto;
 import com.personalwork.modal.entity.*;
 import com.personalwork.modal.query.WeekFormParam;
 import com.personalwork.security.bean.UserDetail;
+import com.personalwork.util.RedisUtil;
 import com.personalwork.util.UserUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,16 +38,20 @@ public class WeekFormService {
 
     private final ProblemMapper problemMapper;
     private final MonthCountService monthCountService;
+    private final RedisUtil redisUtil;
 
     @Autowired
-    public WeekFormService(ProjectTimeMapper projectTimeMapper, ProjectMapper projectMapper, RecordWeekMapper recordWeekMapper,
-                           WeekProjectTimeCountMapper countMapper, ProblemMapper problemMapper,MonthCountService monthCountService) {
+    public WeekFormService(ProjectTimeMapper projectTimeMapper, ProjectMapper projectMapper,
+                           RecordWeekMapper recordWeekMapper, WeekProjectTimeCountMapper countMapper,
+                           ProblemMapper problemMapper, MonthCountService monthCountService,
+                           StringRedisTemplate redisTemplate, RedisUtil redisUtil) {
         this.projectTimeMapper = projectTimeMapper;
         this.projectMapper = projectMapper;
         this.recordWeekMapper = recordWeekMapper;
         this.countMapper = countMapper;
         this.problemMapper = problemMapper;
         this.monthCountService = monthCountService;
+        this.redisUtil = redisUtil;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -59,8 +66,8 @@ public class WeekFormService {
         int year = Integer.parseInt(date[0]);
         int month = Integer.parseInt(date[1]);
         monthCountService.countMonthProjectTime(year,month);
+        deleteWeekListCache();
         return returnWeek.getId();
-
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -80,24 +87,8 @@ public class WeekFormService {
         int year = Integer.parseInt(date[0]);
         int month = Integer.parseInt(date[1]);
         monthCountService.countMonthProjectTime(year,month);
+        deleteWeekListCache();
         return true;
-    }
-
-    private void insertProblems(List<WeekFormParam.Problem> problems) {
-        UserDetail loginUser = getLoginUser();
-        problems.forEach(i -> {
-            if (problemMapper.getOpenProblemByName(i.getTitle(),loginUser.getId()) != null) {
-                throw new ProblemAddException("已存在相同的问题，问题：" + i.getTitle());
-            }
-            ProblemDo problemDo = new ProblemDo();
-            BeanUtils.copyProperties(i, problemDo);
-            problemDo.setState(ProblemState.UN_RESOLVE);
-            problemDo.setUserId(loginUser.getId());
-            if (problemDo.getLevel() == null) {
-                problemDo.setLevel(ProblemLevel.NORMAL);
-            }
-            problemMapper.add(problemDo);
-        });
     }
 
     public WeekFormDto getWeekForm(Integer weekId) {
@@ -122,7 +113,29 @@ public class WeekFormService {
         projectTimeMapper.deleteWeekProjectTime(weekId);
         countMapper.deleteByWeek(weekId);
         recordWeekMapper.deleteWorkWeek(weekId);
+        deleteWeekListCache();
         return true;
+    }
+
+    private void insertProblems(List<WeekFormParam.Problem> problems) {
+        UserDetail loginUser = getLoginUser();
+        problems.forEach(i -> {
+            if (problemMapper.getOpenProblemByName(i.getTitle(),loginUser.getId()) != null) {
+                throw new ProblemAddException("已存在相同的问题，问题：" + i.getTitle());
+            }
+            ProblemDo problemDo = new ProblemDo();
+            BeanUtils.copyProperties(i, problemDo);
+            problemDo.setState(ProblemState.UN_RESOLVE);
+            problemDo.setUserId(loginUser.getId());
+            if (problemDo.getLevel() == null) {
+                problemDo.setLevel(ProblemLevel.NORMAL);
+            }
+            problemMapper.add(problemDo);
+        });
+    }
+
+    private void deleteWeekListCache() {
+        redisUtil.delete(RedisKeyConstants.WEEK_LIST_KEY + getLoginUser().getId());
     }
 
     private void insertRecordWeek(WeekFormParam param) {
