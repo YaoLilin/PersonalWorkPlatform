@@ -6,6 +6,9 @@ import com.personalwork.modal.vo.MonthProjectTimeVo;
 import com.personalwork.modal.vo.MonthVo;
 import com.personalwork.service.MonthCountService;
 import com.personalwork.service.MonthRecordService;
+import com.personalwork.system.cache.Cache;
+import com.personalwork.system.cache.DeleteCache;
+import com.personalwork.system.cache.RedisKeyConstants;
 import com.personalwork.util.NumberUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +37,7 @@ public class MonthController {
     }
 
     @GetMapping
+    @Cache(key = RedisKeyConstants.MONTH_LIST_KEY,isUserData = true,expire = RedisKeyConstants.MONTH_LIST_TTL)
     public List<MonthVo> getMonths(){
         List<MonthRecordDto> monthDtoList = monthRecordService.getWorkMonthRecordList();
         List<MonthVo> months = new ArrayList<>();
@@ -50,6 +54,7 @@ public class MonthController {
     }
 
     @PutMapping("/recount")
+    @DeleteCache(value = RedisKeyConstants.MONTH_LIST_KEY,isUserData = true)
     public void reCount() {
         monthCountService.reCountAll();
     }

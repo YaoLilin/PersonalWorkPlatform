@@ -11,7 +11,18 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Cache {
-    int expire() default 60;
-    String key() default "";
+    /**
+     * 过期时间，单位秒，默认60秒
+     */
+    long expire() default RedisKeyConstants.DEFAULT_TTL;
+    String key();
+    /**
+     * 是否用户数据，如果为用户数据则redis key后面会加上用户id
+     */
     boolean isUserData() default false;
+
+    /**
+     * 如果缓存的数据为List集合，则必需要指定集合元素的类型，否则无法取出缓存
+     */
+    Class<?> listElementType() default Object.class;
 }

@@ -8,10 +8,7 @@ import com.personalwork.modal.entity.RecordWeekDo;
 import com.personalwork.modal.entity.WeekProjectTimeCountDo;
 import com.personalwork.modal.vo.WeekProjectTimeVo;
 import com.personalwork.modal.vo.WeeksVo;
-import com.personalwork.security.bean.UserDetail;
-import com.personalwork.system.cache.RedisKeyConstants;
 import com.personalwork.util.NumberUtil;
-import com.personalwork.util.RedisUtil;
 import com.personalwork.util.UserUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +17,6 @@ import org.springframework.stereotype.Service;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author 姚礼林
@@ -33,28 +28,18 @@ public class WeekListService {
     private final RecordWeekMapper recordWeekMapper;
     private final WeekProjectTimeCountMapper projectTimeCountMapper;
     private final ProjectMapper projectMapper;
-    private final RedisUtil redisUtil;
 
     @Autowired
     public WeekListService(RecordWeekMapper recordWeekMapper, WeekProjectTimeCountMapper projectTimeCountMapper,
-                           ProjectMapper projectMapper, RedisUtil redisUtil) {
+                           ProjectMapper projectMapper) {
         this.recordWeekMapper = recordWeekMapper;
         this.projectTimeCountMapper = projectTimeCountMapper;
         this.projectMapper = projectMapper;
-        this.redisUtil = redisUtil;
     }
 
     public List<WeeksVo> getCardList() {
-        UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
-        String redisKey = RedisKeyConstants.WEEK_LIST_KEY + loginUser.getId();
-        List<WeeksVo> cacheValue = redisUtil.getList(redisKey, WeeksVo.class);
-        if (cacheValue != null) {
-            return cacheValue;
-        }
-        List<RecordWeekDo> weekList = recordWeekMapper.getWorkWeekList(loginUser.getId());
-        List<WeeksVo> result = getWeeksVos(weekList);
-        redisUtil.set(redisKey,result,RedisKeyConstants.WEEK_LIST_TTL, TimeUnit.SECONDS);
-        return result;
+        List<RecordWeekDo> weekList = recordWeekMapper.getWorkWeekList(UserUtil.getLoginUserId());
+        return getWeeksVos(weekList);
     }
 
     private List<WeeksVo> getWeeksVos(List<RecordWeekDo> weekList) {

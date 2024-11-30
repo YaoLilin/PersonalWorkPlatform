@@ -1,6 +1,9 @@
 package com.personalwork.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.personalwork.system.cache.Cache;
+import com.personalwork.system.cache.DeleteCache;
+import com.personalwork.system.cache.RedisKeyConstants;
 import com.personalwork.validation.constraints.ValidDate;
 import com.personalwork.modal.dto.WeekFormDto;
 import com.personalwork.modal.entity.ProblemDo;
@@ -39,11 +42,14 @@ public class WeekController {
     }
 
     @PutMapping("/{id}")
+    @DeleteCache(value = {RedisKeyConstants.WEEK_LIST_KEY,RedisKeyConstants.WEEK_FORM_KEY
+            ,RedisKeyConstants.MONTH_LIST_KEY}, isUserData = true)
     public boolean saveForm(@PathVariable Integer id,@RequestBody @Validated WeekFormParam params){
         return formService.saveForm(id,params);
     }
 
     @PostMapping
+    @DeleteCache(value = {RedisKeyConstants.WEEK_LIST_KEY,RedisKeyConstants.MONTH_LIST_KEY}, isUserData = true)
     public String  createForm(@RequestBody @Validated WeekFormParam params) {
         Integer id = formService.createForm(params);
         JSONObject result = new JSONObject();
@@ -59,6 +65,7 @@ public class WeekController {
     }
 
     @GetMapping("/{id}")
+    @Cache(key = RedisKeyConstants.WEEK_FORM_KEY, isUserData = true)
     public WeekFormVo loadForm(@PathVariable Integer id){
         WeekFormDto weekFormDto = formService.getWeekForm(id);
         WeekFormVo weekFormVo = buildWeekFormVo(weekFormDto);
@@ -75,11 +82,15 @@ public class WeekController {
     }
 
     @GetMapping
+    @Cache(key = RedisKeyConstants.WEEK_LIST_KEY,expire = RedisKeyConstants.WEEK_LIST_TTL,
+            isUserData = true, listElementType = WeeksVo.class)
     public List<WeeksVo> getWeekCardList(){
         return weekListService.getCardList();
     }
 
     @DeleteMapping("/{id}")
+    @DeleteCache(value = {RedisKeyConstants.WEEK_LIST_KEY,RedisKeyConstants.WEEK_FORM_KEY,
+            RedisKeyConstants.MONTH_LIST_KEY}, isUserData = true)
     public boolean delete(@PathVariable Integer id){
         return formService.delete(id);
     }

@@ -39,9 +39,11 @@ const WeekList =  () => {
                     <div style={{display: "flex",flexFlow:'row wrap'}}>
                         {
                             value.map(item => {
-                                return (<div style={{marginTop:'20px'}}>
-                                    <WeekCard data={item} key={item.id}/>
-                                </div>)
+                                return (
+                                    <div style={{marginTop:'20px'}} key={item.id}>
+                                        <WeekCard data={item} key={item.id}/>
+                                    </div>
+                                )
                             })
                         }
                     </div>

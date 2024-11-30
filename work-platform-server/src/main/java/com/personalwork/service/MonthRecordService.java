@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author 姚礼林
@@ -43,16 +42,8 @@ public class MonthRecordService {
     }
 
     public List<MonthRecordDto> getWorkMonthRecordList() {
-        String redisKey = RedisKeyConstants.MONTH_LIST_KEY + UserUtil.getLoginUserId();
-        List<MonthRecordDto> cacheValue = redisUtil.getList(
-                redisKey, MonthRecordDto.class);
-        if (cacheValue != null) {
-            return cacheValue;
-        }
         List<RecordMonthDo> months = monthMapper.list(UserUtil.getLoginUserId());
-        List<MonthRecordDto> monthRecordDtos = buildMonthRecordDtoList(months);
-        redisUtil.set(redisKey,monthRecordDtos,RedisKeyConstants.MONTH_LIST_TTL,TimeUnit.SECONDS);
-        return monthRecordDtos;
+        return buildMonthRecordDtoList(months);
     }
 
     public List<MonthRecordDto> getWorkMonthRecordList(Integer startYear, Integer startMonth,

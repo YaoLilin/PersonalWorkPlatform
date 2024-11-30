@@ -6,8 +6,10 @@ import com.personalwork.util.RedisUtil;
 import com.personalwork.util.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
+import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -41,40 +44,66 @@ public class CacheAspect {
     public void cache() {
     }
 
+    @Pointcut("@annotation(com.personalwork.system.cache.DeleteCache)")
+    public void deleteCache() {
+    }
+
     @Around("cache()")
     public Object toCache(ProceedingJoinPoint point) throws Throwable {
         String redisKey = getRedisKey(point);
         Signature signature = point.getSignature();
+        MethodSignature methodSignature = (MethodSignature) signature;
+        Cache annotation = methodSignature.getMethod().getAnnotation(Cache.class);
         // 访问redis（先尝试获取，没有则访问数据库）
-        Object cacheValue = redisUtil.get(redisKey, signature.getDeclaringType());
+        Object cacheValue;
+        if (methodSignature.getReturnType().equals(List.class)) {
+            cacheValue = redisUtil.getList(redisKey,annotation.listElementType());
+        }else {
+            cacheValue = redisUtil.get(redisKey, methodSignature.getReturnType());
+        }
         if (cacheValue != null) {
             return cacheValue;
         }
         Object proceed = point.proceed();
         // 存入redis
         log.info("数据存入redis缓存,key: {}", redisKey);
-        MethodSignature methodSignature = (MethodSignature) signature;
-        Cache annotation = methodSignature.getMethod().getAnnotation(Cache.class);
         redisUtil.set(redisKey, proceed, annotation.expire(), TimeUnit.MINUTES);
         return proceed;
-
     }
 
-    private String getRedisKey(ProceedingJoinPoint point) throws NoSuchMethodException {
-        Signature signature = point.getSignature();
+    @After("deleteCache()")
+    public void toDeleteCache(JoinPoint joinPoint) {
+        MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
+        DeleteCache[] annotations = methodSignature.getMethod().getAnnotationsByType(DeleteCache.class);
+        for (DeleteCache annotation : annotations) {
+            String[] keys = annotation.value();
+            for (String key : keys) {
+                String pattern = key+"*";
+                if (annotation.isUserData()) {
+                    pattern += "user:"+UserUtil.getLoginUserId();
+                }
+                log.info("要删除的缓存：{}",pattern);
+                redisUtil.deleteByPattern(pattern);
+            }
+        }
+    }
+
+    private String getRedisKey(JoinPoint point){
+        MethodSignature methodSignature = (MethodSignature) point.getSignature();
         String className = point.getTarget().getClass().getSimpleName();
-        String methodName = signature.getName();
+        String methodName = methodSignature.getName();
         Object[] args = point.getArgs();
-        Class[] parameterTypes = Arrays.stream(args).filter(Objects::nonNull)
-                .map(Object::getClass).toArray(Class[]::new);
         String params = getParamsStr(args);
-        Method method = signature.getDeclaringType().getMethod(methodName, parameterTypes);
+        Method method = methodSignature.getMethod();
         Cache annotation = method.getAnnotation(Cache.class);
         String redisKey;
         if (CharSequenceUtil.isNotBlank(annotation.key())) {
             redisKey = annotation.key();
         } else {
-            redisKey = className + ":" + methodName + ":" + params;
+            redisKey = className + ":" + methodName ;
+        }
+        if (CharSequenceUtil.isNotEmpty(params)) {
+            redisKey += ":" + params;
         }
         if (annotation.isUserData()) {
             redisKey += ":user:" + UserUtil.getLoginUserId();
@@ -84,7 +113,12 @@ public class CacheAspect {
 
     private String getParamsStr(Object[] args) {
         String params = Arrays.stream(args).filter(Objects::nonNull)
-                .map(JSONUtil::toJsonStr).collect(Collectors.joining());
+                .map(i ->{
+                    if (i instanceof Integer || i instanceof String) {
+                        return i.toString();
+                    }
+                    return JSONUtil.toJsonStr(i);
+                }).collect(Collectors.joining(","));
         if (CharSequenceUtil.isNotEmpty(params)) {
             //加密 以防出现key过长以及字符转义获取不到的情况
             params = DigestUtils.md5Hex(params);
