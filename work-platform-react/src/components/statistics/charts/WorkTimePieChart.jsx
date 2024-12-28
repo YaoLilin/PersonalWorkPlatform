@@ -20,6 +20,7 @@ const WorkTimePieChart = ({showCondition=true ,defaultCondition= {dateRangeType:
         legend: showLegend ? {
             orient: 'horizontal',
             left: 'center',
+            type: 'scroll',
             top:'0%'
         } : null,
         series: [

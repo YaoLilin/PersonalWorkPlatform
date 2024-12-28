@@ -28,7 +28,8 @@ const useBarChartOption = (data =[], categories=[],xName=[],defaultMaxValue = 10
             }
         },
         legend: {
-            data: categories
+            data: categories,
+            type: 'scroll',
         },
         grid: {
             left: '3%',
