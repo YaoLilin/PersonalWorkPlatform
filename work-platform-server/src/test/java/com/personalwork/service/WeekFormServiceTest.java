@@ -9,6 +9,7 @@ import com.personalwork.modal.entity.ProblemDo;
 import com.personalwork.modal.entity.ProjectTimeDo;
 import com.personalwork.modal.entity.RecordWeekDo;
 import com.personalwork.modal.query.WeekFormParam;
+import com.personalwork.util.RedisUtil;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -34,6 +35,10 @@ class WeekFormServiceTest extends TestSetUp {
     private ProblemMapper problemMapper;
     @Mock
     private MonthCountService monthCountService;
+    @Mock
+    private RedisUtil redisUtil;
+    @Mock
+    private ProjectProgressWeekService projectProgressWeekService;
 
     @InjectMocks
     private WeekFormService weekFormService;

@@ -14,6 +14,7 @@ import com.personalwork.modal.entity.ProjectDo;
 import com.personalwork.modal.entity.RecordMonthDo;
 import com.personalwork.modal.entity.TypeDo;
 import com.personalwork.modal.query.MonthFormParam;
+import com.personalwork.util.RedisUtil;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -40,6 +41,8 @@ class MonthRecordServiceTest extends TestSetUp {
 
     @Mock
     private RecordMonthMapper recordMonthMapper;
+    @Mock
+    private RedisUtil redisUtil;
 
     /**
      * Method under test: {@link MonthRecordService#getWorkMonthRecordList()}
