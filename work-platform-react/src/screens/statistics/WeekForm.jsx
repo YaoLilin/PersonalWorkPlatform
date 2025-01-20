@@ -22,27 +22,14 @@ import FullRow from "../../components/statistics/form/FullRow";
 import useDeleteDialog from "./useDeleteDialog";
 import useHeadMenus from "./useHeadMenus";
 import handleLoaderError from "../../util/handleLoaderError";
+import ProjectProgressList from "@/components/statistics/form/ProjectProgressList";
 
-function getYearAndWeekNumber(weekId, formData) {
-    let year;
-    let weekNumber;
-    if (weekId) {
-        const {date} = formData;
-        year = dayjs(date).year();
-        weekNumber = dayjs(date).week();
-    } else {
-        year = dayjs().year();
-        weekNumber = dayjs().week();
-    }
-    return {year, weekNumber};
-}
 
 export async function loader({params}) {
     try {
         const weekId = params.weekId;
         const formData = weekId ? await WeeksApi.getForm(weekId) : {};
-        let {year, weekNumber} = getYearAndWeekNumber(weekId, formData);
-        const goalsResult = await GoalApi.getWeekGoals({year, weekNumber});
+        const goalsResult = await GoalApi.getWeekGoals({weekDate:formData.date});
         const goals = goalsResult.length > 0 ? goalsResult[0].goals : [];
         return {formData, goals};
     } catch (e) {
@@ -50,9 +37,9 @@ export async function loader({params}) {
     }
 }
 
-const WeekForm = ({isFormCreate}) => {
+const WeekForm = ({isFormCreate = false}) => {
     const {formData,goals:goalList} = useLoaderData();
-    const {date, mark, summary} = formData;
+    const {date, mark, summary,projectProgressList} = formData;
     const navigate = useNavigate();
     const [form] = useForm();
     // 项目进行时间数据，用于表格
@@ -67,6 +54,7 @@ const WeekForm = ({isFormCreate}) => {
     const [nowProblems, setNowProblems] = useState(formData.nowProblems);
     const [weekValue, setWeekValue] = useState(date ? dayjs(date) : null);
     const [goals, setGoals] = useState(goalList);
+    const [projectProgress, setProjectProgress] = useState(projectProgressList ? projectProgressList : []);
     const {weekId: weekIdFromParam} = useParams();
     const messageApi = useContext(MessageContext);
     // 每个项目的占用时间统计
@@ -77,9 +65,12 @@ const WeekForm = ({isFormCreate}) => {
         return projectTimeCount.map(i => ({ projectName: i.name, minutes: i.minutes }));
     }, [projectTimeCount]);
 
-    const handleSubmit = useWeekFormSubmit(isFormCreate, tableData, theWeekProblems, projectTimeCount, weekIdFromParam);
+    const handleSubmit = useWeekFormSubmit(isFormCreate, tableData, theWeekProblems, projectTimeCount, weekIdFromParam
+                         ,projectProgress);
     const {deleteDialog, setDeleteDialogOpen} = useDeleteDialog(weekIdFromParam);
-    const {headButtons,dropMenu,editAble} = useHeadMenus(form, isFormCreate,()=> setDeleteDialogOpen(true));
+    const {headButtons,dropMenu,editAble} =
+        useHeadMenus(form, isFormCreate,()=> setDeleteDialogOpen(true));
+    debugger
 
     const onTableChange = (data) => {
         setTableData(data.slice());
@@ -155,6 +146,11 @@ const WeekForm = ({isFormCreate}) => {
                             <TimeCountChart projectTime={chartData} weekId={weekIdFromParam}/> : null
                     }
                 </Row>
+                <FormTitle name='项目成果'/>
+                <FullRow>
+                    <ProjectProgressList data={projectProgress} isEditable={editAble}
+                                         onChange={(data) => setProjectProgress(data)}/>
+                </FullRow>
                 <FormTitle name='目标'/>
                 <FullRow>
                     <GoalList data={goals} showTitle={false} onChange={(data) => setGoals(data)}/>

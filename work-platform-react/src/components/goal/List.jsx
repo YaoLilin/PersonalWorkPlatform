@@ -9,26 +9,28 @@ import GoalEditor from "./Editor";
 import GoalApi from "../../request/goalApi";
 import {MessageContext} from "../../provider/MessageProvider";
 import {ThemeContext} from "../../provider/ThemProvider";
+import dayjs from "dayjs";
 
-const GoalList = ({weekNumber=1,month=1,year,goalType ='week',data=[],
+const GoalList = ({weekDate='',month=1,year,goalType ='week',data=[],
                       showTitle = true,onChange,style}) => {
     const [checkAble, setCheckAble] = useState(false);
     const [editGoals, setEditGoals] = useState([]);
     const [selectedIds, setSelectedIds] = useState([]);
     const messageApi = useContext(MessageContext);
-    const {startDate, endDate} = DateUtil.getWeekRange(weekNumber, year);
     const {styleColor} = useContext(ThemeContext);
 
     const handleEditGoalSubmit = async (id, projectId, projectName, content)=> {
+        let newGoalId;
         try {
-            goalType === 'week' ? await GoalApi.addWeekGoals({projectId, content, weekNumber, year})
+            const result = goalType === 'week' ? await GoalApi.addWeekGoals({projectId, content, weekDate})
                 : await GoalApi.addMonthGoals({projectId, content, month, year});
+            newGoalId = result.id;
         } catch (e) {
             messageApi.error("添加目标出错",5);
             return;
         }
         const newData =  [...data];
-        newData.push({projectId, projectName, content, id: new Date().getTime(), isDone: 0});
+        newData.push({projectId, projectName, content, id: newGoalId, isDone: 0});
         onChange(newData);
         const newEditGoals = editGoals.filter(i => i.id !== id);
         setEditGoals(newEditGoals);
@@ -97,11 +99,19 @@ const GoalList = ({weekNumber=1,month=1,year,goalType ='week',data=[],
             onClick={() => setCheckAble(!checkAble)}/>
     ]
 
+    const getLittleTitle = ()=>{
+        if (goalType === 'week') {
+            const endDate = dayjs(weekDate).day(7).format('YYYY-MM-DD');
+            return weekDate + " " + endDate;
+        }
+        return year+'年'
+    }
+
     return (
         <div style={{...style}}>{
             showTitle && <ListTitle
-                title={goalType ==='week' ? weekNumber + '周' : month +'月'}
-                littleTitle={goalType ==='week' ? startDate + ' ' + endDate : year+'年'}
+                title={goalType ==='week' ? weekDate + '周' : month +'月'}
+                littleTitle={getLittleTitle()}
                 buttons={operationButtons}/>
             }
             {
@@ -140,7 +150,7 @@ const GoalList = ({weekNumber=1,month=1,year,goalType ='week',data=[],
 }
 
 GoalList.prototype = {
-    weekNumber : PropTypes.number,
+    weekDate : PropTypes.number,
     month : PropTypes.number,
     year:PropTypes.number,
     goalType:PropTypes.string.isRequired,

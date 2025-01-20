@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 周记录页面视图
  * @date 2024/3/7
  */
 @Data
@@ -18,4 +18,5 @@ public class WeekFormVo {
     private List<ProjectTimeVo> projectTime;
     private List<ProblemInFormVo> theWeekProblems;
     private List<ProblemInFormVo> nowProblems;
+    private List<ProjectProgressWeekVo> projectProgressList;
 }

@@ -1,9 +1,9 @@
 package com.personalwork.dao;
 
+import com.baomidou.mybatisplus.test.autoconfigure.MybatisPlusTest;
 import com.personalwork.constants.Mark;
 import com.personalwork.modal.entity.RecordWeekDo;
 import org.junit.jupiter.api.Test;
-import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.test.context.ActiveProfiles;
@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @date 2024/7/2
  */
 @ActiveProfiles("test")
-@MybatisTest
+@MybatisPlusTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class RecordWeekMapperTest {
     @Autowired

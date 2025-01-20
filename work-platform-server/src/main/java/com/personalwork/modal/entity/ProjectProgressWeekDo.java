@@ -6,18 +6,17 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
- * @author 姚礼林
- * @desc 周目标实体类
- * @date 2024/5/3
- */
-@TableName("week_goal")
+ * @author yaolilin
+ * @desc 项目的周进展信息
+ * @date 2025/1/4
+ **/
 @Data
-public class WeekGoalDo{
+@TableName("project_progress_week")
+public class ProjectProgressWeekDo {
     @TableId(type = IdType.AUTO)
     private Integer id;
-    private Integer projectId;
-    private String content;
-    private Integer isDone;
+    private Integer weekId;
     private Integer userId;
-    private String  weekDate;
+    private Integer projectId;
+    private String progress;
 }

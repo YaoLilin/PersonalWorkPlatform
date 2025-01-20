@@ -6,13 +6,13 @@ import java.util.List;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc “目标”视图对象
  * @date 2024/5/4
  */
 @Data
 public class GoalVo {
     private Integer year;
-    private List<WeekGoalVo.GoalItem> goals;
+    private List<GoalItem> goals;
 
     @Data
     public static class GoalItem{

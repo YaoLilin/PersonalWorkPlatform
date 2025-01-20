@@ -24,7 +24,7 @@ spring:
           min-idle: 0
           max-wait: 5000ms
       database: 1
-mybatis:
+mybatis-plus:
   type-aliases-package: com.personalwork.modal.entity,com.personalwork.modal.query,com.personalwork.modal.dto
   configuration:
     log-impl: org.apache.ibatis.logging.log4j2.Log4j2Impl

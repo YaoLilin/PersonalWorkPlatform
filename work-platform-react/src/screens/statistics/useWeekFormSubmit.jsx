@@ -3,7 +3,8 @@ import {WeeksApi} from "../../request/weeksApi";
 import {useContext} from "react";
 import {MessageContext} from "../../provider/MessageProvider";
 
-export default function useWeekFormSubmit(isFormCreate, tableData, theWeekProblems, projectTimeCount, weekIdFromParam) {
+export default function useWeekFormSubmit(isFormCreate, tableData, theWeekProblems, projectTimeCount,
+                                          weekIdFromParam,projectProgress) {
     const messageApi = useContext(MessageContext);
     async function fetchExistProblemNames(problems) {
         let existProblemNames = "";
@@ -86,6 +87,7 @@ export default function useWeekFormSubmit(isFormCreate, tableData, theWeekProble
         params.date = weekDate;
         params.mark = Number(mark);
         params.summary = summary;
+        params.projectProgressList = projectProgress;
         if (isFormCreate) {
             const addProblemList = theWeekProblems.filter(i => i.title);
             addProblemList.forEach(i => i.weekDate = weekDate);

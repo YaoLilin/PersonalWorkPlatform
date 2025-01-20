@@ -27,6 +27,7 @@ public class WeekFormParam {
     private List<ProjectTime> projectTimeList;
     @NotNull(message = "taskCount 任务统计不能为 null")
     private TaskCount taskCount;
+    private List<ProjectProgressWeekParam> projectProgressList;
     /**
      * 周记录表单创建才会有此参数，表示新增的问题
      */

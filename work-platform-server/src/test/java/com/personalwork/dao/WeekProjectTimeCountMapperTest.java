@@ -1,13 +1,13 @@
 package com.personalwork.dao;
 
+import com.baomidou.mybatisplus.test.autoconfigure.MybatisPlusTest;
 import com.personalwork.modal.entity.WeekProjectTimeCountDo;
 import org.junit.jupiter.api.Test;
-import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.test.context.ActiveProfiles;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author 姚礼林
@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @date 2024/7/2
  */
 @ActiveProfiles("test")
-@MybatisTest
+@MybatisPlusTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class WeekProjectTimeCountMapperTest {
     @Autowired

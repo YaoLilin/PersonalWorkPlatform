@@ -1,31 +1,33 @@
 package com.personalwork.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.personalwork.modal.dto.MonthGoalDto;
+import com.personalwork.modal.entity.MonthGoalDo;
 import com.personalwork.modal.query.MonthGoalParam;
 import com.personalwork.modal.query.MonthGoalQueryParam;
+import com.personalwork.modal.vo.GoalVo;
 import com.personalwork.modal.vo.MonthGoalVo;
-import com.personalwork.modal.vo.WeekGoalVo;
 import com.personalwork.service.impl.MonthGoalServiceImpl;
+import com.personalwork.util.UserUtil;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author 姚礼林
- * @desc TODO
+ * @desc 月目标接口
  * @date 2024/5/5
  */
 @RestController
 @RequestMapping("/month-goals")
-public class MonthGoalController extends GoalController{
+public class MonthGoalController {
     private final MonthGoalServiceImpl monthGoalService;
 
     public MonthGoalController(MonthGoalServiceImpl goalService) {
-        super(goalService);
         this.monthGoalService = goalService;
     }
 
@@ -34,18 +36,19 @@ public class MonthGoalController extends GoalController{
         List<MonthGoalDto> monthGoalDtoList = monthGoalService.getGoals(param);
         List<MonthGoalVo> result = new ArrayList<>();
         monthGoalDtoList.forEach(i -> {
-            Optional<MonthGoalVo> opt = result.stream().filter(g -> g.getYear().equals(i.getYear()) && g.getMonth().equals(i.getMonth()))
+            Optional<MonthGoalVo> opt = result.stream().filter(g -> g.getYear().equals(i.getYear())
+                            && g.getMonth().equals(i.getMonth()))
                     .findAny();
             if (opt.isPresent()) {
                 MonthGoalVo monthGoalVo = opt.get();
-                WeekGoalVo.GoalItem item = convertGoalItem(i);
+                GoalVo.GoalItem item = convertGoalItem(i);
                 monthGoalVo.getGoals().add(item);
             } else {
                 MonthGoalVo vo = new MonthGoalVo();
                 vo.setYear(i.getYear());
                 vo.setMonth(i.getMonth());
-                MonthGoalVo.GoalItem item = convertGoalItem(i);
-                List<MonthGoalVo.GoalItem> itemList = new ArrayList<>();
+                GoalVo.GoalItem item = convertGoalItem(i);
+                List<GoalVo.GoalItem> itemList = new ArrayList<>();
                 itemList.add(item);
                 vo.setGoals(itemList);
                 result.add(vo);
@@ -54,17 +57,30 @@ public class MonthGoalController extends GoalController{
         return result;
     }
 
-    private  MonthGoalVo.GoalItem convertGoalItem(MonthGoalDto i) {
-        MonthGoalVo.GoalItem item = new MonthGoalVo.GoalItem();
+    @PostMapping
+    public boolean insertGoal(@RequestBody @Validated MonthGoalParam param) {
+        param.setIsDone(0);
+        MonthGoalDo monthGoalDo = BeanUtil.copyProperties(param, MonthGoalDo.class);
+        monthGoalDo.setUserId(UserUtil.getLoginUserId());
+        return monthGoalService.save(monthGoalDo);
+    }
+
+    @DeleteMapping("/{ids}")
+    public boolean batchDelete(@Validated @NotBlank @PathVariable String ids) {
+        Arrays.stream(ids.split(",")).forEach(i -> monthGoalService.removeById(Integer.parseInt(i)));
+        return true;
+    }
+
+    @PutMapping("/{id}/change-state")
+    public boolean changeState(@RequestBody @NotNull Map<String , Integer> params, @PathVariable String id) {
+        return monthGoalService.changeState(Integer.parseInt(id), params.get("state"));
+    }
+
+    private  GoalVo.GoalItem convertGoalItem(MonthGoalDto i) {
+        GoalVo.GoalItem item = new MonthGoalVo.GoalItem();
         BeanUtils.copyProperties(i, item);
         item.setProjectId(i.getProject().getId());
         item.setProjectName(i.getProject().getName());
         return item;
-    }
-
-    @PostMapping
-    public boolean insertGoal(@RequestBody @Validated MonthGoalParam param) {
-        param.setIsDone(0);
-        return monthGoalService.insertGoal(param);
     }
 }

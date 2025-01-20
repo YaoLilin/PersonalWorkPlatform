@@ -56,8 +56,8 @@ public class MonthRecordService {
     public boolean saveForm(Integer id, MonthFormParam param) {
         RecordMonthDo recordMonthDo = new RecordMonthDo();
         recordMonthDo.setId(id);
-        recordMonthDo.setMark(param.mark);
-        recordMonthDo.setSummary(param.summary);
+        recordMonthDo.setMark(param.getMark());
+        recordMonthDo.setSummary(param.getSummary());
         recordMonthDo.setIsSummarize(1);
         if (!monthMapper.update(recordMonthDo)) {
             return false;

@@ -1,11 +1,21 @@
 import {CloseCircleOutlined, SearchOutlined} from "@ant-design/icons";
-import React, {useState} from "react";
+import React, {useContext, useState} from "react";
 import Browser from "./BrowserDialog";
 import PropTypes from "prop-types";
+import {ThemeContext} from "@/provider/ThemProvider";
 
-const ProjectBrowser = ({onChange,multiple,value,style={}}) => {
+/**
+ * 项目浏览框
+ * @param onChange {function} onChange({id,name}) 当数据发生改变时
+ * @param multiple {boolean} 是否多选
+ * @param value {object} 数据 {id,name}
+ * @param style PropTypes.object 样式
+ * @param editable 是否可编辑
+ */
+const ProjectBrowser = ({onChange,multiple,value,style={},editable = true}) => {
     const [showBrowser,setShowBrowser] = useState(false);
     const [selectedProjectIds, setSelectedProjectIds] = useState([]);
+    const {styleColor} = useContext(ThemeContext);
 
     const handelClickRow = (id, name) => {
         setShowBrowser(false)
@@ -33,13 +43,12 @@ const ProjectBrowser = ({onChange,multiple,value,style={}}) => {
     }
 
     const showName = multiple ? value.map(v=>v.name).join(',') : value?.name;
-    const showCleanBt = multiple ? value && value.length >0 : value;
+    const showCleanBt = multiple ? value && value.length >0 : value && value.name ;
     const nameStyle = !multiple ?  {
         textOverflow:'ellipsis',
         whiteSpace:'nowrap'
     } : null;
-
-    return (
+    return editable ? (
         <div style={{
             width:140,
             minWidth:120,
@@ -74,7 +83,10 @@ const ProjectBrowser = ({onChange,multiple,value,style={}}) => {
                      onSelectedKeysChange={handleBrowserSelectedKeysChange}
             />
         </div>
-    )
+    ) :
+        (<div>
+            <span style={{color: styleColor.accentColor,cursor:'pointer'}}>{showName}</span>
+        </div>)
 }
 ProjectBrowser.prototype={
     onChange:PropTypes.func,

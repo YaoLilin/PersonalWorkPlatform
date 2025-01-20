@@ -1,11 +1,9 @@
 package com.personalwork.dao;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.personalwork.modal.entity.MonthGoalDo;
-import com.personalwork.modal.query.GoalQueryParam;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 /**
  * @author 姚礼林
@@ -14,6 +12,5 @@ import java.util.List;
  */
 @Repository
 @Mapper
-public interface MonthGoalMapper extends GoalMapper{
-    List<MonthGoalDo> list(GoalQueryParam param);
+public interface MonthGoalMapper extends BaseMapper<MonthGoalDo> {
 }

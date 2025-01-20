@@ -1,19 +1,21 @@
 package com.personalwork.service;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.personalwork.constants.ProblemLevel;
 import com.personalwork.constants.ProblemState;
-import com.personalwork.system.cache.RedisKeyConstants;
 import com.personalwork.dao.*;
 import com.personalwork.exception.ProblemAddException;
 import com.personalwork.modal.dto.WeekFormDto;
 import com.personalwork.modal.entity.*;
 import com.personalwork.modal.query.WeekFormParam;
 import com.personalwork.security.bean.UserDetail;
+import com.personalwork.system.cache.RedisKeyConstants;
 import com.personalwork.util.RedisUtil;
 import com.personalwork.util.UserUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,33 +28,17 @@ import java.util.Objects;
  * @date 2023/8/26
  */
 @Service
+@RequiredArgsConstructor
 public class WeekFormService {
-
     private final ProjectTimeMapper projectTimeMapper;
-
     private final ProjectMapper projectMapper;
-
     private final RecordWeekMapper recordWeekMapper;
-
     private final WeekProjectTimeCountMapper countMapper;
-
     private final ProblemMapper problemMapper;
     private final MonthCountService monthCountService;
+    private final ProjectProgressWeekService projectProgressWeekService;
     private final RedisUtil redisUtil;
 
-    @Autowired
-    public WeekFormService(ProjectTimeMapper projectTimeMapper, ProjectMapper projectMapper,
-                           RecordWeekMapper recordWeekMapper, WeekProjectTimeCountMapper countMapper,
-                           ProblemMapper problemMapper, MonthCountService monthCountService,
-                           StringRedisTemplate redisTemplate, RedisUtil redisUtil) {
-        this.projectTimeMapper = projectTimeMapper;
-        this.projectMapper = projectMapper;
-        this.recordWeekMapper = recordWeekMapper;
-        this.countMapper = countMapper;
-        this.problemMapper = problemMapper;
-        this.monthCountService = monthCountService;
-        this.redisUtil = redisUtil;
-    }
 
     @Transactional(rollbackFor = Exception.class)
     public Integer createForm(WeekFormParam param) {
@@ -61,6 +47,7 @@ public class WeekFormService {
         insertProjectTimeCount(returnWeek.getId(), param);
         insertProjectTime(returnWeek.getId(), param);
         insertProblems(param.getProblems());
+        handleProjectProgressSave(param,returnWeek.getId());
         // 重新对本月的数据进行统计
         String[] date = param.getDate().split("-");
         int year = Integer.parseInt(date[0]);
@@ -74,14 +61,13 @@ public class WeekFormService {
     public boolean saveForm(Integer id, WeekFormParam param) {
         projectTimeMapper.deleteWeekProjectTime(id);
         countMapper.deleteByWeek(id);
-
         RecordWeekDo recordWeekDo = convertToRecordWeekDo(param);
         recordWeekDo.setId(id);
         recordWeekMapper.updateWorkWeek(recordWeekDo);
         insertProblems(param.getAddProblems());
-
         insertProjectTimeCount(id, param);
         insertProjectTime(id, param);
+        handleProjectProgressSave(param,id);
         // 重新对本月的数据进行统计
         String[] date = param.getDate().split("-");
         int year = Integer.parseInt(date[0]);
@@ -96,10 +82,12 @@ public class WeekFormService {
         List<ProjectTimeDo> projectTimeDoList = projectTimeMapper.getProjectTimeByWeek(weekId);
         List<ProblemDo> problemDos = problemMapper.getProblemsByWeekDate(recordWeekDo.getDate()
             ,getLoginUser().getId());
+        List<ProjectProgressWeekDo> projectProgressWeekDos = projectProgressWeekService.list(weekId);
         WeekFormDto weekFormDto = new WeekFormDto();
         weekFormDto.setWeekDo(recordWeekDo);
         weekFormDto.setProblemDos(problemDos);
         weekFormDto.setProjectTimeDos(projectTimeDoList);
+        weekFormDto.setProjectProgressList(projectProgressWeekDos);
         return weekFormDto;
     }
 
@@ -115,6 +103,23 @@ public class WeekFormService {
         recordWeekMapper.deleteWorkWeek(weekId);
         deleteWeekListCache();
         return true;
+    }
+
+    private void handleProjectProgressSave(WeekFormParam param,Integer weekId) {
+        // 先删除该周的全部项目进度记录
+        projectProgressWeekService.remove(new LambdaQueryWrapper<ProjectProgressWeekDo>()
+                .eq(ProjectProgressWeekDo::getWeekId, weekId));
+        // 再重新添加记录
+        if (CollUtil.isNotEmpty(param.getProjectProgressList())) {
+            param.getProjectProgressList().forEach(i -> {
+                ProjectProgressWeekDo projectProgressWeekDo = new ProjectProgressWeekDo();
+                BeanUtil.copyProperties(i, projectProgressWeekDo);
+                projectProgressWeekDo.setWeekId(weekId);
+                projectProgressWeekDo.setUserId(getLoginUser().getId());
+                projectProgressWeekDo.setId(null);
+                projectProgressWeekService.save(projectProgressWeekDo);
+            });
+        }
     }
 
     private void insertProblems(List<WeekFormParam.Problem> problems) {

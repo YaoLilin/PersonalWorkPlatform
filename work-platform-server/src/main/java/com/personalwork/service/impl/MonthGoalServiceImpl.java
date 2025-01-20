@@ -1,11 +1,15 @@
 package com.personalwork.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.personalwork.dao.MonthGoalMapper;
 import com.personalwork.dao.ProjectMapper;
 import com.personalwork.modal.dto.MonthGoalDto;
-import com.personalwork.modal.entity.GoalDo;
+import com.personalwork.modal.entity.MonthGoalDo;
 import com.personalwork.modal.entity.ProjectDo;
-import com.personalwork.modal.query.GoalQueryParam;
+import com.personalwork.modal.query.MonthGoalQueryParam;
+import com.personalwork.service.GoalService;
 import com.personalwork.util.UserUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -19,19 +23,16 @@ import java.util.List;
  * @date 2024/5/4
  */
 @Service
-public class MonthGoalServiceImpl extends BaseGoalServiceImpl {
+public class MonthGoalServiceImpl extends ServiceImpl<MonthGoalMapper, MonthGoalDo> implements GoalService {
     private final ProjectMapper projectMapper;
-    private final MonthGoalMapper monthGoalMapper;
 
-    public MonthGoalServiceImpl(MonthGoalMapper goalMapper,ProjectMapper projectMapper) {
-        super(goalMapper);
-        this.monthGoalMapper = goalMapper;
+    public MonthGoalServiceImpl(ProjectMapper projectMapper) {
         this.projectMapper = projectMapper;
     }
 
-    public List<MonthGoalDto> getGoals(GoalQueryParam param) {
+    public List<MonthGoalDto> getGoals(MonthGoalQueryParam param) {
         param.setUserId(UserUtil.getLoginUserId());
-        List<? extends GoalDo> goalsDo = monthGoalMapper.list(param);
+        List<MonthGoalDo> goalsDo = getGoalList(param);
         List<MonthGoalDto> goalsDto = new ArrayList<>();
         goalsDo.forEach(i -> {
             MonthGoalDto monthGoalDto = new MonthGoalDto();
@@ -41,5 +42,26 @@ public class MonthGoalServiceImpl extends BaseGoalServiceImpl {
             goalsDto.add(monthGoalDto);
         });
         return goalsDto;
+    }
+
+    @Override
+    public boolean changeState(Integer id, Integer state) {
+        return update(new LambdaUpdateWrapper<MonthGoalDo>().eq(MonthGoalDo::getId, id)
+                .set(MonthGoalDo::getIsDone, state));
+    }
+
+    private List<MonthGoalDo> getGoalList(MonthGoalQueryParam param) {
+        param.setUserId(UserUtil.getLoginUserId());
+        LambdaQueryWrapper<MonthGoalDo> queryWrapper = new LambdaQueryWrapper<MonthGoalDo>()
+                .eq(MonthGoalDo::getUserId, UserUtil.getLoginUserId())
+                .orderByDesc(MonthGoalDo::getYear)
+                .orderByDesc(MonthGoalDo::getMonth);
+        if (param.getYear() != null){
+            queryWrapper.eq(MonthGoalDo::getYear, param.getYear());
+        }
+        if (param.getMonth() != null){
+            queryWrapper.eq(MonthGoalDo::getMonth, param.getMonth());
+        }
+        return list(queryWrapper);
     }
 }

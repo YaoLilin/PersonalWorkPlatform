@@ -22,16 +22,16 @@ const WeekGoalList = () => {
     const messageApi = useContext((MessageContext));
 
     function onClickAdd() {
-        const year = dayjs().year();
-        const weekNumber = dayjs().week();
+        const year = dayjs().day(1).year();
+        const weekDate = dayjs().day(1).format('YYYY-MM-DD');
         for (let i = 0; i < list.length; i++) {
             const item = list[i];
-            if (item.year === year && item.weekNumber === weekNumber) {
+            if (item.year === year && item.weekDate === weekDate) {
                 messageApi.info("已经存在当前周，请前往修改", 5);
                 return;
             }
         }
-        const newData = [{year,weekNumber,goals:[]},...list];
+        const newData = [{year, weekDate,goals:[]},...list];
         setList(newData);
     }
 
@@ -45,15 +45,14 @@ const WeekGoalList = () => {
                 list.map((item,index)=>{
                     return(
                         <GoalList data={item.goals}
-                                  weekNumber={item.weekNumber}
-                                  year={item.year}
+                                  weekDate={item.weekDate}
                                   goalType={'week'}
                                   key={index}
                                   style={{paddingTop:10}}
                                   onChange={(newData) => {
                                         const newList = list.slice();
                                         newList.forEach(i => {
-                                            if (i.year === item.year && i.weekNumber === item.weekNumber) {
+                                            if (i.weekDate === item.weekDate) {
                                                 i.goals = newData;
                                             }
                                         });

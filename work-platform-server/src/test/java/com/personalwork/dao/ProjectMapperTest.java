@@ -1,10 +1,10 @@
 package com.personalwork.dao;
 
+import com.baomidou.mybatisplus.test.autoconfigure.MybatisPlusTest;
 import com.personalwork.constants.ProjectState;
 import com.personalwork.modal.entity.ProjectDo;
 import com.personalwork.modal.entity.TypeDo;
 import org.junit.jupiter.api.Test;
-import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.test.context.ActiveProfiles;
@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @date 2024/7/1
  */
 @ActiveProfiles("test")
-@MybatisTest
+@MybatisPlusTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class ProjectMapperTest {
     @Autowired
