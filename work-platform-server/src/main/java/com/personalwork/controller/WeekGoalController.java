@@ -68,7 +68,7 @@ public class WeekGoalController {
     }
 
     private static List<WeekGoalVo> getWeekGoalVos(List<WeekGoalDto> weekGoalDtoList) {
-        Map<String, List<WeekGoalVo.Item>> goalMap = new HashMap<>(10);
+        Map<String, List<WeekGoalVo.Item>> goalMap = new LinkedHashMap<>(10);
         for (WeekGoalDto goal : weekGoalDtoList) {
             WeekGoalVo.Item item = BeanUtil.copyProperties(goal, WeekGoalVo.Item.class);
             item.setProjectId(goal.getProject().getId());

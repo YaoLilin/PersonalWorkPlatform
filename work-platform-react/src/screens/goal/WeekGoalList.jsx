@@ -26,7 +26,7 @@ const WeekGoalList = () => {
         const weekDate = dayjs().day(1).format('YYYY-MM-DD');
         for (let i = 0; i < list.length; i++) {
             const item = list[i];
-            if (item.year === year && item.weekDate === weekDate) {
+            if (item.weekDate === weekDate) {
                 messageApi.info("已经存在当前周，请前往修改", 5);
                 return;
             }
