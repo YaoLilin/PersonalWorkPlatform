@@ -15,7 +15,21 @@ const WorkTimePieChart = ({showCondition=true ,defaultCondition= {dateRangeType:
 
     const option = {
         tooltip: {
-            trigger: 'item'
+            trigger: 'item',
+            formatter: (params) => {
+                debugger
+                // 不显示系列的值为0的数据
+                let html = '';
+                html+='<div style="font-size: 12px;display: flex;align-items: center">';
+                html+= params.marker;
+                html+= `<div style="padding: 0 10px 0 10px;display: inline-block;width: 120px;white-space: nowrap;
+                            text-overflow:ellipsis;overflow: hidden">
+                                ${params.name} 
+                            </div>
+                            <span>${params.percent}% ${params.value} 小时 </span>`;
+                html+='</div>'
+                return html ? `<div>${html}</div>` : null;
+            }
         },
         legend: showLegend ? {
             orient: 'horizontal',
@@ -38,7 +52,7 @@ const WorkTimePieChart = ({showCondition=true ,defaultCondition= {dateRangeType:
                     }
                 }
             }
-        ]
+        ],
     };
 
     const handleConditionChange = (condition) => {

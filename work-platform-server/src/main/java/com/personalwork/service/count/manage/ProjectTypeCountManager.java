@@ -33,13 +33,13 @@ public class ProjectTypeCountManager {
      */
     public   List<PieCountVo> countProjectTypeTime(List<ProjectTime> projectTimeList) {
         List<PieCountVo> result = new ArrayList<>();
-        int sumTime = projectTimeList.stream().mapToInt(i -> i.getMinutes()).sum();
+        int sumTime = projectTimeList.stream().mapToInt(ProjectTime::getMinutes).sum();
         if (sumTime == 0) {
             throw new ChartCalculateException.TypeChartCalculateException("所有类型总时间不能为0");
         }
         Map<TypeDo, Integer> typeAndTimeMap = calculateEachTypeTime(projectTimeList);
         typeAndTimeMap.forEach((type, time) -> {
-            PieCountVo countVo = ModelUtil.buildPipeCountVo(sumTime, type, time);
+            PieCountVo countVo = ModelUtil.buildPipeCountVo(sumTime, type, Double.valueOf(time));
             result.add(countVo);
         });
         return result;

@@ -6,6 +6,7 @@ import com.personalwork.modal.dto.ProjectTimeCountDto;
 import com.personalwork.modal.dto.WeekTimeCountDto;
 import com.personalwork.modal.dto.WorkTimeProportionDto;
 import com.personalwork.modal.entity.RecordMonthDo;
+import com.personalwork.modal.entity.TypeDo;
 import com.personalwork.modal.query.TimeCountChartParam;
 import com.personalwork.modal.vo.BarChartVo;
 import com.personalwork.modal.vo.PieCountVo;
@@ -22,7 +23,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 姚礼林
@@ -84,7 +87,7 @@ public class ChartController {
             }else {
                 pieCountVo.setName(proportionDto.getType().getName());
             }
-            pieCountVo.setCount(proportionDto.getMinutes());
+            pieCountVo.setCount(getHour(proportionDto.getMinutes()));
             result.add(pieCountVo);
         }
         return result;
@@ -94,13 +97,35 @@ public class ChartController {
      * 获取统计图中的类别数据，例如这一周中a项目的时间、b项目的时间
      */
     private List<BarChartVo.Item> getTypeData(TimeCountChartParam param, List<ProjectTimeCountDto> countDtoItems) {
+        if (param.getCountType() == CountType.PROJECT) {
+            List<BarChartVo.Item> items = new ArrayList<>();
+            countDtoItems.forEach(i ->{
+                String name = param.getCountType() == CountType.PROJECT ? i.project().getName()
+                        : i.project().getType().getName();
+                double hour = getHour(i.minutes());
+                items.add(new BarChartVo.Item(name,hour));
+            });
+            return items;
+        }
+        return getTypeDataByProjectType(countDtoItems);
+    }
+
+    private static List<BarChartVo.Item> getTypeDataByProjectType(List<ProjectTimeCountDto> countDtoItems) {
         List<BarChartVo.Item> items = new ArrayList<>();
-        countDtoItems.forEach(i ->{
-            String name = param.getCountType() == CountType.PROJECT ? i.project().getName()
-                    : i.project().getType().getName();
-            double hour = NumberUtil.round((double) i.minutes()/60, 1, false);
-            items.add(new BarChartVo.Item(name,hour));
+        Map<TypeDo, Integer> typeTimeMap = new HashMap<>(20);
+        // 统计每个项目类型的时间，如果是同一个类型，则累加时间
+        countDtoItems.forEach(i -> {
+            int minutes = i.minutes();
+            typeTimeMap.put(i.project().getType(),
+                    typeTimeMap.getOrDefault(i.project().getType(), 0) + minutes);
+        });
+        typeTimeMap.forEach((type, minutes) -> {
+            items.add(new BarChartVo.Item(type.getName(), getHour(minutes)));
         });
         return items;
+    }
+
+    private static double getHour(int minutes) {
+        return NumberUtil.round((double) minutes/60, 1, false);
     }
 }

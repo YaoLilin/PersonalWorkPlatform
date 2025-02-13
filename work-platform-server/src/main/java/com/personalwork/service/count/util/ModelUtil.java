@@ -11,12 +11,12 @@ import com.personalwork.util.NumberUtil;
  * @date 2024/8/26
  **/
 public class ModelUtil {
-    public static PieCountVo buildPipeCountVo(int totalMinutes, TypeDo type, Integer time) {
+    public static PieCountVo buildPipeCountVo(int totalMinutes, TypeDo type, Double time) {
         PieCountVo countVo = new PieCountVo();
         String typeName = type.getName();
         double percent;
         try {
-            percent = NumberUtil.round((double) time / totalMinutes * 100,
+            percent = NumberUtil.round(time / totalMinutes * 100,
                     0, true);
         } catch (NumberFormatException e) {
             throw new ChartCalculateException.TypeChartCalculateException("计算当前类型的时间占比出错，当前类型占用时间："
