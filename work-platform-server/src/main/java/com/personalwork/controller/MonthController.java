@@ -37,7 +37,8 @@ public class MonthController {
     }
 
     @GetMapping
-    @Cache(key = RedisKeyConstants.MONTH_LIST_KEY,isUserData = true,expire = RedisKeyConstants.MONTH_LIST_TTL)
+    @Cache(key = RedisKeyConstants.MONTH_LIST_KEY,isUserData = true,expire = RedisKeyConstants.MONTH_LIST_TTL,
+            listElementType = MonthVo.class)
     public List<MonthVo> getMonths(){
         List<MonthRecordDto> monthDtoList = monthRecordService.getWorkMonthRecordList();
         List<MonthVo> months = new ArrayList<>();
@@ -49,6 +50,7 @@ public class MonthController {
     }
 
     @PutMapping("/{id}")
+    @DeleteCache(value = RedisKeyConstants.MONTH_LIST_KEY,isUserData = true)
     public boolean saveForm(@PathVariable Integer id, @RequestBody @Validated MonthFormParam param) {
         return monthRecordService.saveForm(id,param);
     }
