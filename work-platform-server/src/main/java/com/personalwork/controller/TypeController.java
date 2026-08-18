@@ -1,7 +1,7 @@
 package com.personalwork.controller;
 
-import com.personalwork.modal.dto.TypeTreeNode;
-import com.personalwork.modal.query.TypeQr;
+import com.personalwork.domain.dto.TypeTreeNode;
+import com.personalwork.domain.query.TypeQr;
 import com.personalwork.service.TypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;

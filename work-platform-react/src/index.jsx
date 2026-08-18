@@ -14,6 +14,7 @@ import MonthList, {loader as monthListLoader} from "./screens/statistics/MonthLi
 import MonthForm, {loader as monthFormLoader} from "./screens/statistics/MonthForm";
 import WeekGoalList, {loader as weekGoalListLoader} from "./screens/goal/WeekGoalList";
 import MonthGoalList, {loader as monthGoalListLoader} from "./screens/goal/MonthGoalList";
+import SchedulePage, {loader as scheduleLoader} from "./screens/schedule/SchedulePage";
 import ChartPage from "./screens/statistics/ChartPage";
 import ErrorBoundary from "./components/ui/ErrorBoundary";
 import LoginPage, {loader as userLoader} from "./screens/login/LoginPage";
@@ -44,6 +45,11 @@ const router = createBrowserRouter([
                 path: 'type',
                 element: <TypeEditPage/>,
                 loader: typeLoader,
+            },
+            {
+                path: 'schedule',
+                element: <SchedulePage/>,
+                loader: scheduleLoader,
             },
             {
                 path: 'problems',
@@ -129,4 +135,3 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         </ConfigProvider>
     </React.StrictMode>
 );
-

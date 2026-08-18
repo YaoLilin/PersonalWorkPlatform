@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:mysql:///personal_work?character=UTF-8
+    username: root
+    password: mysql123
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 0
+server:
+  port: 8080

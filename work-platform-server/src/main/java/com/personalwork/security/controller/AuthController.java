@@ -2,11 +2,11 @@ package com.personalwork.security.controller;
 
 import com.personalwork.security.NoAuthRequired;
 import com.personalwork.constants.LoginResultType;
-import com.personalwork.modal.query.RegisterParam;
-import com.personalwork.modal.query.UserParam;
-import com.personalwork.modal.dto.LoginResultDto;
-import com.personalwork.modal.vo.LoginResultVo;
-import com.personalwork.modal.vo.UserVo;
+import com.personalwork.domain.query.RegisterParam;
+import com.personalwork.domain.query.UserParam;
+import com.personalwork.domain.dto.LoginResultDto;
+import com.personalwork.domain.vo.LoginResultVo;
+import com.personalwork.domain.vo.UserVo;
 import com.personalwork.security.service.AuthService;
 import com.personalwork.util.RSAUtils;
 import jakarta.servlet.http.HttpServletRequest;

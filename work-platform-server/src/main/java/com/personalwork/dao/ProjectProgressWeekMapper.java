@@ -1,7 +1,7 @@
 package com.personalwork.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.personalwork.modal.entity.ProjectProgressWeekDo;
+import com.personalwork.domain.entity.ProjectProgressWeekDo;
 
 /**
  * @author yaolilin

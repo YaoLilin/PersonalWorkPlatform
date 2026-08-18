@@ -1,6 +1,6 @@
 package com.personalwork.base;
 
-import com.personalwork.modal.entity.UserDo;
+import com.personalwork.domain.entity.UserDo;
 import com.personalwork.security.bean.UserDetail;
 import com.personalwork.util.UserUtil;
 import org.junit.jupiter.api.AfterEach;

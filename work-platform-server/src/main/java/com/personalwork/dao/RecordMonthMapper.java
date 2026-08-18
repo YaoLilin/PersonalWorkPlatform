@@ -1,6 +1,6 @@
 package com.personalwork.dao;
 
-import com.personalwork.modal.entity.RecordMonthDo;
+import com.personalwork.domain.entity.RecordMonthDo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;

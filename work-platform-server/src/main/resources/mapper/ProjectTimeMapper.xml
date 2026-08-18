@@ -3,13 +3,14 @@
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.personalwork.dao.ProjectTimeMapper">
-    <insert id="insert" parameterType="com.personalwork.modal.entity.ProjectTimeDo">
-        insert into project_time (project_id, date, start_time, end_time,week_id)
-        values (#{project.id}, #{date}, #{startTime}, #{endTime},#{weekId});
+    <insert id="insert" parameterType="com.personalwork.domain.entity.ProjectTimeDo" useGeneratedKeys="true" keyProperty="id">
+        insert into project_time (project_id, date, end_date, start_time, end_time, schedule_name, description, week_id)
+        values (#{project.id}, #{date}, #{endDate}, #{startTime}, #{endTime}, #{scheduleName}, #{description}, #{weekId});
     </insert>
 
-    <update id="update" parameterType="com.personalwork.modal.entity.ProjectTimeDo">
-        update project_time set date=#{date},start_time=#{startTime},end_time=#{endTime} where week_id=#{weekId} and project_id=#{project.id}
+    <update id="update" parameterType="com.personalwork.domain.entity.ProjectTimeDo">
+        update project_time set date=#{date}, end_date=#{endDate}, start_time=#{startTime}, end_time=#{endTime},
+        schedule_name=#{scheduleName}, description=#{description} where week_id=#{weekId} and project_id=#{project.id}
     </update>
 
     <delete id="deleteWeekProjectTime">
@@ -34,15 +35,43 @@
         select p.* from project_time p join record_week w on p.week_id = w.id
         where user_id = #{userId}
     </select>
+    <select id="listScheduleByUser" resultType="com.personalwork.domain.vo.ScheduleEventVo">
+        select pt.id, pt.project_id, p.name as project_name, pt.schedule_name, pt.description,
+               pt.date, coalesce(pt.end_date, pt.date) as end_date, pt.start_time, pt.end_time
+        from project_time pt
+        join record_week rw on pt.week_id = rw.id
+        join project p on pt.project_id = p.id
+        where rw.user_id = #{userId}
+        order by pt.date, pt.start_time
+    </select>
 
-    <resultMap id="projectTimeMap" type="com.personalwork.modal.entity.ProjectTimeDo">
+    <select id="getScheduleById" resultMap="projectTimeMap">
+        select pt.* from project_time pt join record_week rw on pt.week_id = rw.id
+        where pt.id = #{id} and rw.user_id = #{userId}
+    </select>
+
+    <update id="updateSchedule" parameterType="com.personalwork.domain.entity.ProjectTimeDo">
+        update project_time set project_id = #{project.id}, date = #{date}, end_date = #{endDate}, start_time = #{startTime},
+        end_time = #{endTime}, schedule_name = #{scheduleName}, description = #{description}, week_id = #{weekId}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteScheduleById">
+        delete pt from project_time pt join record_week rw on pt.week_id = rw.id
+        where pt.id = #{id} and rw.user_id = #{userId}
+    </delete>
+
+    <resultMap id="projectTimeMap" type="com.personalwork.domain.entity.ProjectTimeDo">
         <result column="start_time" property="startTime"/>
         <result column="end_time" property="endTime"/>
+        <result column="end_date" property="endDate"/>
+        <result column="schedule_name" property="scheduleName"/>
+        <result column="description" property="description"/>
         <result column="week_id" property="weekId"/>
-        <association property="project" column="project_id" select="getProject" javaType="com.personalwork.modal.entity.ProjectDo"/>
+        <association property="project" column="project_id" select="getProject" javaType="com.personalwork.domain.entity.ProjectDo"/>
     </resultMap>
 
-    <select id="getProject" resultType="com.personalwork.modal.entity.ProjectDo">
+    <select id="getProject" resultType="com.personalwork.domain.entity.ProjectDo">
         select * from project where id = #{id}
     </select>
 
@@ -52,6 +81,14 @@
                  join record_week b on a.week_id = b.id and b.user_id = #{userId}
         where a.date >= #{startDate}
           and a.date &lt;= #{endDate}
+    </select>
+
+    <select id="getProjectTimesByWeekRange" resultMap="projectTimeMap">
+        select pt.*
+        from project_time pt join record_week rw on pt.week_id = rw.id
+        where rw.user_id = #{userId}
+          and pt.date &lt; #{endDate}
+          and coalesce(pt.end_date, pt.date) &gt;= #{startDate}
     </select>
 
 </mapper>

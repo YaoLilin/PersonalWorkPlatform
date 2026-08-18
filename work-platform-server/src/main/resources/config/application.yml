@@ -1,28 +1,16 @@
 
 spring:
+  profiles:
+    active: prod
   datasource:
-    url: jdbc:mysql:///personal_work?character=UTF-8
-    username: root
-    password: mysql123
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
-      host: 127.0.0.1
-      port: 6379
-      lettuce:
-        pool:
-          max-idle: 8
-          max-active: 8
-          min-idle: 0
-          max-wait: 5000ms
       database: 0
 mybatis-plus:
-  type-aliases-package: com.personalwork.modal.entity,com.personalwork.modal.query,com.personalwork.modal.dto
+  type-aliases-package: com.personalwork.domain.entity,com.personalwork.domain.query,com.personalwork.domain.dto
   configuration:
     log-impl: org.apache.ibatis.logging.log4j2.Log4j2Impl
     map-underscore-to-camel-case: true
   mapper-locations: classpath:mapper/*
   type-handlers-package: com.personalwork.constants
-server:
-  port: 8080
-

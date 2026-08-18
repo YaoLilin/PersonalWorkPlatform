@@ -1,9 +1,9 @@
 package com.personalwork.service;
 
 import com.personalwork.dao.TypeMapper;
-import com.personalwork.modal.dto.TypeTreeNode;
-import com.personalwork.modal.entity.TypeDo;
-import com.personalwork.modal.query.TypeQr;
+import com.personalwork.domain.dto.TypeTreeNode;
+import com.personalwork.domain.entity.TypeDo;
+import com.personalwork.domain.query.TypeQr;
 import com.personalwork.security.bean.UserDetail;
 import com.personalwork.util.UserUtil;
 import org.springframework.beans.BeanUtils;
@@ -21,6 +21,7 @@ import java.util.Objects;
  */
 @Service
 public class TypeService {
+    private static final String INBOX_NAME = "收集箱";
     private final TypeMapper mapper;
 
     @Autowired
@@ -30,7 +31,7 @@ public class TypeService {
 
     public List<TypeDo> getTypes() {
         UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
-        return mapper.getTypes(loginUser.getId());
+        return mapper.getTypes(loginUser.getId()).stream().filter(type -> !isInboxType(type)).toList();
     }
 
     public boolean addType(TypeQr type) {
@@ -60,7 +61,8 @@ public class TypeService {
      */
     public List<TypeTreeNode> getTypeTree() {
         UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
-        List<TypeDo> typeList = mapper.getTypes(loginUser.getId());
+        List<TypeDo> typeList = mapper.getTypes(loginUser.getId()).stream()
+                .filter(type -> !isInboxType(type)).toList();
         List<TypeTreeNode> parentNodes = new ArrayList<>();
         for (TypeDo item :typeList){
             if (item.getParentId() == null){
@@ -88,6 +90,10 @@ public class TypeService {
             }
         }
         return result;
+    }
+
+    private boolean isInboxType(TypeDo type) {
+        return INBOX_NAME.equals(type.getName()) && type.getParentId() == null;
     }
 
 }

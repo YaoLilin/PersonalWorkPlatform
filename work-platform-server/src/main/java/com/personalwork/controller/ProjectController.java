@@ -1,8 +1,8 @@
 package com.personalwork.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.personalwork.modal.dto.ProjectDto;
-import com.personalwork.modal.query.ProjectParam;
+import com.personalwork.domain.dto.ProjectDto;
+import com.personalwork.domain.query.ProjectParam;
 import com.personalwork.service.ProjectService;
 import com.personalwork.validation.ValidGroup;
 import org.springframework.beans.factory.annotation.Autowired;

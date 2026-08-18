@@ -5,7 +5,7 @@ import com.personalwork.dao.MonthProjectCountMapper;
 import com.personalwork.dao.ProjectTimeMapper;
 import com.personalwork.dao.RecordMonthMapper;
 import com.personalwork.exception.MethodParamInvalidException;
-import com.personalwork.modal.entity.*;
+import com.personalwork.domain.entity.*;
 import com.personalwork.security.bean.UserDetail;
 import com.personalwork.util.UserUtil;
 import org.junit.jupiter.api.BeforeEach;

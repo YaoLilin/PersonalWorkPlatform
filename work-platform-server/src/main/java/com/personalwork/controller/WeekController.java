@@ -1,12 +1,12 @@
 package com.personalwork.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.personalwork.modal.dto.WeekFormDto;
-import com.personalwork.modal.entity.ProblemDo;
-import com.personalwork.modal.entity.ProjectTimeDo;
-import com.personalwork.modal.entity.RecordWeekDo;
-import com.personalwork.modal.query.WeekFormParam;
-import com.personalwork.modal.vo.*;
+import com.personalwork.domain.dto.WeekFormDto;
+import com.personalwork.domain.entity.ProblemDo;
+import com.personalwork.domain.entity.ProjectTimeDo;
+import com.personalwork.domain.entity.RecordWeekDo;
+import com.personalwork.domain.query.WeekFormParam;
+import com.personalwork.domain.vo.*;
 import com.personalwork.service.ProblemsService;
 import com.personalwork.service.ProjectService;
 import com.personalwork.service.WeekFormService;
@@ -141,11 +141,14 @@ public class WeekController {
                             return vo;
                         })
                         .toList();
-        for (ProjectProgressWeekVo projectProgressWeekVo : projectProgressWeekVos) {
-            projectProgressWeekVo.setProjectName(
-                    projectService.getProject(projectProgressWeekVo.getProjectId()).getName());
-        }
-        return projectProgressWeekVos;
+        return projectProgressWeekVos.stream()
+                .flatMap(projectProgress -> projectService.findProject(projectProgress.getProjectId())
+                        .map(project -> {
+                            projectProgress.setProjectName(project.getName());
+                            return projectProgress;
+                        })
+                        .stream())
+                .toList();
     }
 
 }

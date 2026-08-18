@@ -33,9 +33,9 @@
 
     <resultMap id="weekTimeMap" type="ProjectWeekTimeDto">
         <constructor>
-            <arg column="weekId" name="week" javaType="com.personalwork.modal.entity.RecordWeekDo"
+            <arg column="weekId" name="week" javaType="com.personalwork.domain.entity.RecordWeekDo"
                  select="com.personalwork.dao.RecordWeekMapper.getWorkWeekById"/>
-            <arg column="projectId" name="project" javaType="com.personalwork.modal.entity.ProjectDo"
+            <arg column="projectId" name="project" javaType="com.personalwork.domain.entity.ProjectDo"
                  select="com.personalwork.dao.ProjectMapper.getProject"/>
             <arg column="minutes" name="minutes" javaType="int"/>
         </constructor>

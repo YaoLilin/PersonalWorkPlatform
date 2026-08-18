@@ -85,7 +85,10 @@ const ProjectForm =  ({data,onSubmit,type=TYPE_CREATE}) => {
                                 rules={[{required: true}]}
                                 initialValue={data.typeId}
                             >
-                                <TypeSelector allowClear={true} value={treeValue} onChange={onTreeChange}/>
+                                <TypeSelector allowClear={true}
+                                              value={treeValue}
+                                              onChange={onTreeChange}
+                                              style={{width: '100%'}}/>
                             </Form.Item>
                         </Col>
                         <Col span={24}>

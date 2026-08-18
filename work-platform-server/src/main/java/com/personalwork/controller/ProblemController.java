@@ -1,10 +1,10 @@
 package com.personalwork.controller;
 
-import com.personalwork.modal.entity.ProblemDo;
-import com.personalwork.modal.query.ProblemAddQr;
-import com.personalwork.modal.query.ProblemQr;
+import com.personalwork.domain.entity.ProblemDo;
+import com.personalwork.domain.query.ProblemAddQr;
+import com.personalwork.domain.query.ProblemQr;
 import com.personalwork.service.ProblemsService;
-import com.personalwork.modal.vo.ProblemInFormVo;
+import com.personalwork.domain.vo.ProblemInFormVo;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;

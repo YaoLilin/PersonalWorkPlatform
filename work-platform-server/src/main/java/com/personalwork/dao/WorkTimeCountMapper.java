@@ -1,7 +1,7 @@
 package com.personalwork.dao;
 
-import com.personalwork.modal.dto.ProjectWeekTimeDto;
-import com.personalwork.modal.query.TimeCountChartParam;
+import com.personalwork.domain.dto.ProjectWeekTimeDto;
+import com.personalwork.domain.query.TimeCountChartParam;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 

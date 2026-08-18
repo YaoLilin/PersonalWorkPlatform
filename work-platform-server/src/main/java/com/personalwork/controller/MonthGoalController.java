@@ -1,12 +1,12 @@
 package com.personalwork.controller;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.personalwork.modal.dto.MonthGoalDto;
-import com.personalwork.modal.entity.MonthGoalDo;
-import com.personalwork.modal.query.MonthGoalParam;
-import com.personalwork.modal.query.MonthGoalQueryParam;
-import com.personalwork.modal.vo.GoalVo;
-import com.personalwork.modal.vo.MonthGoalVo;
+import com.personalwork.domain.dto.MonthGoalDto;
+import com.personalwork.domain.entity.MonthGoalDo;
+import com.personalwork.domain.query.MonthGoalParam;
+import com.personalwork.domain.query.MonthGoalQueryParam;
+import com.personalwork.domain.vo.GoalVo;
+import com.personalwork.domain.vo.MonthGoalVo;
 import com.personalwork.service.impl.MonthGoalServiceImpl;
 import com.personalwork.util.UserUtil;
 import jakarta.validation.constraints.NotBlank;

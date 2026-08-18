@@ -1,8 +1,8 @@
 package com.personalwork.controller;
 
 import com.personalwork.constants.ProblemLevel;
-import com.personalwork.modal.query.ProblemQr;
-import com.personalwork.modal.query.TypeQr;
+import com.personalwork.domain.query.ProblemQr;
+import com.personalwork.domain.query.TypeQr;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.validation.annotation.Validated;

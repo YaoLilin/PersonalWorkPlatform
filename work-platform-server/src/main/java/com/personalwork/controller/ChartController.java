@@ -1,15 +1,15 @@
 package com.personalwork.controller;
 
 import com.personalwork.constants.CountType;
-import com.personalwork.modal.dto.MonthTimeCountDto;
-import com.personalwork.modal.dto.ProjectTimeCountDto;
-import com.personalwork.modal.dto.WeekTimeCountDto;
-import com.personalwork.modal.dto.WorkTimeProportionDto;
-import com.personalwork.modal.entity.RecordMonthDo;
-import com.personalwork.modal.entity.TypeDo;
-import com.personalwork.modal.query.TimeCountChartParam;
-import com.personalwork.modal.vo.BarChartVo;
-import com.personalwork.modal.vo.PieCountVo;
+import com.personalwork.domain.dto.MonthTimeCountDto;
+import com.personalwork.domain.dto.ProjectTimeCountDto;
+import com.personalwork.domain.dto.WeekTimeCountDto;
+import com.personalwork.domain.dto.WorkTimeProportionDto;
+import com.personalwork.domain.entity.RecordMonthDo;
+import com.personalwork.domain.entity.TypeDo;
+import com.personalwork.domain.query.TimeCountChartParam;
+import com.personalwork.domain.vo.BarChartVo;
+import com.personalwork.domain.vo.PieCountVo;
 import com.personalwork.service.count.ChartService;
 import com.personalwork.service.count.MonthWorkTimeCountService;
 import com.personalwork.service.count.WeekWorkTimeCountService;

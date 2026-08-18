@@ -2,8 +2,8 @@ package com.personalwork.dao;
 
 import com.baomidou.mybatisplus.test.autoconfigure.MybatisPlusTest;
 import com.personalwork.constants.ProjectState;
-import com.personalwork.modal.entity.ProjectDo;
-import com.personalwork.modal.entity.TypeDo;
+import com.personalwork.domain.entity.ProjectDo;
+import com.personalwork.domain.entity.TypeDo;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;

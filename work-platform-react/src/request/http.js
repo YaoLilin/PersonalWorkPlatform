@@ -105,7 +105,7 @@ export function del(url,resourceId,params){
  * @param resourceId 资源id
  */
 function replaceResIdToUrl(url,resourceId) {
-    if (resourceId){
+    if (resourceId !== undefined && resourceId !== null && resourceId !== '') {
         if (url.includes('{id}')) {
             url = url.replace('{id}',resourceId);
         } else {
@@ -114,4 +114,3 @@ function replaceResIdToUrl(url,resourceId) {
     }
     return url;
 }
-

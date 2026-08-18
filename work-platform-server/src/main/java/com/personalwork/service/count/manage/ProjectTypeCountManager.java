@@ -2,9 +2,9 @@ package com.personalwork.service.count.manage;
 
 import com.personalwork.dao.ProjectMapper;
 import com.personalwork.exception.ChartCalculateException;
-import com.personalwork.modal.entity.ProjectDo;
-import com.personalwork.modal.entity.TypeDo;
-import com.personalwork.modal.vo.PieCountVo;
+import com.personalwork.domain.entity.ProjectDo;
+import com.personalwork.domain.entity.TypeDo;
+import com.personalwork.domain.vo.PieCountVo;
 import com.personalwork.service.count.util.ModelUtil;
 import com.personalwork.service.count.bean.ProjectTime;
 import lombok.RequiredArgsConstructor;

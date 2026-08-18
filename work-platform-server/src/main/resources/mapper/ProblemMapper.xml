@@ -3,8 +3,8 @@
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.personalwork.dao.ProblemMapper">
-    <select id="getProblems" parameterType="com.personalwork.modal.query.ProblemDbQr"
-            resultType="com.personalwork.modal.entity.ProblemDo">
+    <select id="getProblems" parameterType="com.personalwork.domain.query.ProblemDbQr"
+            resultType="com.personalwork.domain.entity.ProblemDo">
         select id,title,resolve,state,level,week_date weekDate from problem
         <where>
             <if test="title != null">
@@ -26,7 +26,7 @@
         </where>
         order by state asc,week_date desc
     </select>
-    <select id="getProblemsExceptThisWeek" resultType="com.personalwork.modal.entity.ProblemDo">
+    <select id="getProblemsExceptThisWeek" resultType="com.personalwork.domain.entity.ProblemDo">
         select id, title, resolve, state, level, week_date weekDate
         from problem
         where week_date != (select date from record_week where id = #{weekId})
@@ -38,29 +38,29 @@
         from problem
         where week_date = #{weekDate} and user_id=#{userId}
     </select>
-    <select id="getProblemById" resultType="com.personalwork.modal.entity.ProblemDo">
+    <select id="getProblemById" resultType="com.personalwork.domain.entity.ProblemDo">
         select id, title, resolve, state, level, week_date weekDate
         from problem
         where id = #{id}
     </select>
-    <select id="getProblemByName" resultType="com.personalwork.modal.entity.ProblemDo">
+    <select id="getProblemByName" resultType="com.personalwork.domain.entity.ProblemDo">
         select id, title, resolve, state, level, week_date weekDate
         from problem
         where title = #{title}
     </select>
-    <select id="getOpenProblemByName" resultType="com.personalwork.modal.entity.ProblemDo">
+    <select id="getOpenProblemByName" resultType="com.personalwork.domain.entity.ProblemDo">
         select id, title, resolve, state, level, week_date weekDate
         from problem
         where title = #{name}
           and state = 0
           and user_id=#{userId}
     </select>
-    <insert id="add" parameterType="com.personalwork.modal.entity.ProblemDo">
+    <insert id="add" parameterType="com.personalwork.domain.entity.ProblemDo">
         insert into problem (title, resolve, state, level, week_date,user_id)
         values (#{title}, #{resolve},
                 #{state}, #{level}, #{weekDate},#{userId})
     </insert>
-    <update id="update" parameterType="com.personalwork.modal.entity.ProblemDo">
+    <update id="update" parameterType="com.personalwork.domain.entity.ProblemDo">
         update problem
         <set>
             <if test="title != null">

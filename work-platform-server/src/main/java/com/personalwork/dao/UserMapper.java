@@ -1,6 +1,6 @@
 package com.personalwork.dao;
 
-import com.personalwork.modal.entity.UserDo;
+import com.personalwork.domain.entity.UserDo;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 

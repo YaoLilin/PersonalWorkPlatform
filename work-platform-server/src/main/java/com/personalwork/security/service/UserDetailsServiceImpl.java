@@ -1,7 +1,7 @@
 package com.personalwork.security.service;
 
 import com.personalwork.dao.UserMapper;
-import com.personalwork.modal.entity.UserDo;
+import com.personalwork.domain.entity.UserDo;
 import com.personalwork.security.bean.UserDetail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

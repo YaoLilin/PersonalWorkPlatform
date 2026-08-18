@@ -2,8 +2,8 @@ package com.personalwork.service;
 
 import com.personalwork.base.TestSetUp;
 import com.personalwork.dao.TypeMapper;
-import com.personalwork.modal.dto.TypeTreeNode;
-import com.personalwork.modal.entity.TypeDo;
+import com.personalwork.domain.dto.TypeTreeNode;
+import com.personalwork.domain.entity.TypeDo;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;

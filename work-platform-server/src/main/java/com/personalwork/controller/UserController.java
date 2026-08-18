@@ -1,6 +1,6 @@
 package com.personalwork.controller;
 
-import com.personalwork.modal.query.UserParam;
+import com.personalwork.domain.query.UserParam;
 import com.personalwork.service.UserService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;

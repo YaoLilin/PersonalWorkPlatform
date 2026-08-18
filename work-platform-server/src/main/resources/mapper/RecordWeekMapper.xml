@@ -12,13 +12,13 @@
     <select id="getWorkWeekList" resultType="RecordWeekDo">
         select * from record_week where user_id=#{userId} order by date desc
     </select>
-    <insert id="addWorkWeek" parameterType="com.personalwork.modal.entity.RecordWeekDo">
+    <insert id="addWorkWeek" parameterType="com.personalwork.domain.entity.RecordWeekDo">
         insert into record_week( date, time, summary, mark,user_id) values (#{date},#{time},#{summary},#{mark},#{userId})
     </insert>
     <delete id="deleteWorkWeek">
         delete from record_week where id =#{id}
     </delete>
-    <update id="updateWorkWeek" parameterType="com.personalwork.modal.entity.RecordWeekDo">
+    <update id="updateWorkWeek" parameterType="com.personalwork.domain.entity.RecordWeekDo">
         update record_week set date=#{date},time=#{time},summary=#{summary},mark=#{mark} where id=#{id}
     </update>
 </mapper>

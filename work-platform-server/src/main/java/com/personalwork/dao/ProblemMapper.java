@@ -1,7 +1,7 @@
 package com.personalwork.dao;
 
-import com.personalwork.modal.entity.ProblemDo;
-import com.personalwork.modal.query.ProblemQr;
+import com.personalwork.domain.entity.ProblemDo;
+import com.personalwork.domain.query.ProblemQr;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 

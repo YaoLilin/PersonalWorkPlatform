@@ -1,7 +1,7 @@
 package com.personalwork.service.count.util;
 
-import com.personalwork.modal.entity.ProjectDo;
-import com.personalwork.modal.query.TimeCountChartParam;
+import com.personalwork.domain.entity.ProjectDo;
+import com.personalwork.domain.query.TimeCountChartParam;
 
 /**
  * @author yaolilin

@@ -2,8 +2,8 @@ package com.personalwork.service.count.manage;
 
 import com.personalwork.constants.TimeRange;
 import com.personalwork.exception.MethodParamInvalidException;
-import com.personalwork.modal.dto.MonthRecordDto;
-import com.personalwork.modal.query.TimeCountChartParam;
+import com.personalwork.domain.dto.MonthRecordDto;
+import com.personalwork.domain.query.TimeCountChartParam;
 import com.personalwork.service.MonthRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

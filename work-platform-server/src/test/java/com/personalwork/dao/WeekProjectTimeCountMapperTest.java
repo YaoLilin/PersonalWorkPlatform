@@ -1,7 +1,7 @@
 package com.personalwork.dao;
 
 import com.baomidou.mybatisplus.test.autoconfigure.MybatisPlusTest;
-import com.personalwork.modal.entity.WeekProjectTimeCountDo;
+import com.personalwork.domain.entity.WeekProjectTimeCountDo;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;

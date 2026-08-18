@@ -3,11 +3,11 @@
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.personalwork.dao.WeekProjectTimeCountMapper">
-    <insert id="add" parameterType="com.personalwork.modal.entity.WeekProjectTimeCountDo">
+    <insert id="add" parameterType="com.personalwork.domain.entity.WeekProjectTimeCountDo">
         insert into week_project_time_count (week_id,project,minutes) values (#{weekId}, #{project}, #{minutes});
     </insert>
 
-    <update id="update" parameterType="com.personalwork.modal.entity.WeekProjectTimeCountDo">
+    <update id="update" parameterType="com.personalwork.domain.entity.WeekProjectTimeCountDo">
         update week_project_time_count set minutes=#{minutes} where week_id = #{weekId} and project = #{project}
     </update>
 
@@ -19,7 +19,7 @@
         select * from week_project_time_count where project=#{projectId};
     </select>
 
-    <resultMap id="timeCountMap" type="com.personalwork.modal.entity.WeekProjectTimeCountDo">
+    <resultMap id="timeCountMap" type="com.personalwork.domain.entity.WeekProjectTimeCountDo">
         <result column="week_id" property="weekId"/>
     </resultMap>
 

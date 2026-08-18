@@ -1,6 +1,6 @@
 package com.personalwork.controller.handle;
 
-import com.personalwork.modal.vo.ErrorMsg;
+import com.personalwork.domain.vo.ErrorMsg;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;

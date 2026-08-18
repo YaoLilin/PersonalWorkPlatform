@@ -1,5 +1,6 @@
 import {
     CheckCircleOutlined,
+    CalendarOutlined,
     FundViewOutlined,
     InfoCircleOutlined,
     ProjectOutlined,
@@ -37,6 +38,7 @@ function getItem(label, path, icon, children) {
 
 const items = [
     getItem('项目', '/projects', <ProjectOutlined style={{fontSize: '1.2em'}}/>),
+    getItem('日程', '/schedule', <CalendarOutlined style={{fontSize: '1.2em'}}/>),
     getItem('类型', '/type', <SisternodeOutlined style={{fontSize: '1.2em'}}/>),
     getItem('问题库', '/problems', <InfoCircleOutlined style={{fontSize: '1.2em'}}/>),
     getItem('工作统计', 'count', <FundViewOutlined style={{fontSize: '1.2em'}}/>, [
@@ -63,6 +65,9 @@ const getSelectedKey = (pathname) => {
     }
     if (pathname.startsWith('/projects')) {
         defaultSelectedKey = '/projects';
+    }
+    if (pathname.startsWith('/schedule')) {
+        defaultSelectedKey = '/schedule';
     }
     if (pathname.startsWith('/weeks')) {
         defaultSelectedKey = '/weeks';

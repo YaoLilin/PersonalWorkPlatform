@@ -2,11 +2,11 @@ package com.personalwork.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.personalwork.exception.DbOperateException;
-import com.personalwork.modal.dto.WeekGoalDto;
-import com.personalwork.modal.entity.WeekGoalDo;
-import com.personalwork.modal.query.WeekGoalParam;
-import com.personalwork.modal.query.WeekGoalQueryParam;
-import com.personalwork.modal.vo.WeekGoalVo;
+import com.personalwork.domain.dto.WeekGoalDto;
+import com.personalwork.domain.entity.WeekGoalDo;
+import com.personalwork.domain.query.WeekGoalParam;
+import com.personalwork.domain.query.WeekGoalQueryParam;
+import com.personalwork.domain.vo.WeekGoalVo;
 import com.personalwork.service.impl.WeekGoalServiceImpl;
 import com.personalwork.util.UserUtil;
 import jakarta.validation.constraints.NotBlank;

@@ -1,8 +1,8 @@
 package com.personalwork.service.count.util;
 
 import com.personalwork.exception.ChartCalculateException;
-import com.personalwork.modal.entity.TypeDo;
-import com.personalwork.modal.vo.PieCountVo;
+import com.personalwork.domain.entity.TypeDo;
+import com.personalwork.domain.vo.PieCountVo;
 import com.personalwork.util.NumberUtil;
 
 /**

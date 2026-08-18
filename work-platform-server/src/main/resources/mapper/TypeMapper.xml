@@ -3,19 +3,22 @@
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.personalwork.dao.TypeMapper">
-    <select id="getTypes" resultType="com.personalwork.modal.entity.TypeDo">
+    <select id="getTypes" resultType="com.personalwork.domain.entity.TypeDo">
         select * from type where user_id=#{userId};
     </select>
-    <select id="getType" resultType="com.personalwork.modal.entity.TypeDo">
+    <select id="getType" resultType="com.personalwork.domain.entity.TypeDo">
         select * from type where id=#{id};
     </select>
-    <insert id="addType" parameterType="com.personalwork.modal.entity.TypeDo">
+    <select id="getRootTypeByName" resultType="com.personalwork.domain.entity.TypeDo">
+        select * from type where name = #{name} and parentid is null and user_id = #{userId} limit 1
+    </select>
+    <insert id="addType" parameterType="com.personalwork.domain.entity.TypeDo">
         insert into type (name,parentid,user_id) values(#{name},#{parentId},#{userId});
     </insert>
     <delete id="deleteType" >
         delete from type where id = #{id};
     </delete>
-    <update id="updateType" parameterType="com.personalwork.modal.entity.TypeDo">
+    <update id="updateType" parameterType="com.personalwork.domain.entity.TypeDo">
         update type
         <set>
             name = #{name},

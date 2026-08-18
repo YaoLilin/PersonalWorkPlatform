@@ -10,18 +10,21 @@
     <select id="getProject" resultMap="projectsMap">
         select * from project where id =#{id};
     </select>
+    <select id="getProjectByName" resultMap="projectsMap">
+        select * from project where name = #{name} and user_id = #{userId} limit 1
+    </select>
 
-    <resultMap id="projectsMap" type="com.personalwork.modal.entity.ProjectDo">
+    <resultMap id="projectsMap" type="com.personalwork.domain.entity.ProjectDo">
         <result column="close_date" property="closeDate"/>
         <result column="is_startdate_only" property="isStartDateOnly"/>
         <association property="type" column="type" javaType="TypeDo" select="getType"/>
     </resultMap>
 
-    <select id="getType" resultType="com.personalwork.modal.entity.TypeDo">
+    <select id="getType" resultType="com.personalwork.domain.entity.TypeDo">
         select * from type where id = #{type};
     </select>
 
-    <insert id="addProject" parameterType="com.personalwork.modal.entity.ProjectDo">
+    <insert id="addProject" parameterType="com.personalwork.domain.entity.ProjectDo">
         insert into project (name,startdate,enddate,close_date,type,progress,state,important,is_startdate_only,user_id)
         values (#{name},#{startDate},#{endDate},#{closeDate},#{type.id},#{progress},#{state},#{important},#{isStartDateOnly},#{userId});
     </insert>
@@ -30,7 +33,7 @@
         delete from project where id =#{id}
     </delete>
 
-    <update id="updateProject" parameterType="com.personalwork.modal.entity.ProjectDo">
+    <update id="updateProject" parameterType="com.personalwork.domain.entity.ProjectDo">
         update project
         <set>
             <if test="startDate == '' ">

@@ -2,7 +2,7 @@ package com.personalwork.dao;
 
 import com.baomidou.mybatisplus.test.autoconfigure.MybatisPlusTest;
 import com.personalwork.constants.Mark;
-import com.personalwork.modal.entity.RecordWeekDo;
+import com.personalwork.domain.entity.RecordWeekDo;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;

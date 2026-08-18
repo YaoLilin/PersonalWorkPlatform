@@ -1,7 +1,7 @@
 package com.personalwork.service;
 
 import com.personalwork.dao.UserMapper;
-import com.personalwork.modal.query.UserParam;
+import com.personalwork.domain.query.UserParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -2,9 +2,9 @@ package com.personalwork.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.personalwork.modal.entity.ProjectProgressWeekDo;
-import com.personalwork.modal.query.ProjectProgressWeekParam;
-import com.personalwork.modal.vo.ProjectProgressWeekVo;
+import com.personalwork.domain.entity.ProjectProgressWeekDo;
+import com.personalwork.domain.query.ProjectProgressWeekParam;
+import com.personalwork.domain.vo.ProjectProgressWeekVo;
 import com.personalwork.service.ProjectProgressWeekService;
 import com.personalwork.util.UserUtil;
 import org.springframework.beans.BeanUtils;

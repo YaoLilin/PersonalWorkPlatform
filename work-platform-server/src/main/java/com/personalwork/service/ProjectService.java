@@ -4,9 +4,9 @@ import com.personalwork.dao.MonthProjectCountMapper;
 import com.personalwork.dao.ProjectMapper;
 import com.personalwork.dao.ProjectTimeMapper;
 import com.personalwork.dao.WeekProjectTimeCountMapper;
-import com.personalwork.modal.dto.ProjectDto;
-import com.personalwork.modal.entity.*;
-import com.personalwork.modal.query.ProjectParam;
+import com.personalwork.domain.dto.ProjectDto;
+import com.personalwork.domain.entity.*;
+import com.personalwork.domain.query.ProjectParam;
 import com.personalwork.security.bean.UserDetail;
 import com.personalwork.util.UserUtil;
 import org.springframework.beans.BeanUtils;
@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author 姚礼林
@@ -25,6 +26,8 @@ import java.util.Objects;
  */
 @Service
 public class ProjectService {
+
+    private static final String INBOX_NAME = "收集箱";
 
     private final ProjectMapper projectMapper;
     private final MonthProjectCountMapper monthProjectCountMapper;
@@ -46,6 +49,9 @@ public class ProjectService {
         List<ProjectDo> projectsList = projectMapper.listByUser(loginUser.getId());
         List<ProjectDto> data = new ArrayList<>();
         for (ProjectDo project : projectsList) {
+            if (isInboxProject(project)) {
+                continue;
+            }
             data.add(toProjectDto(project));
         }
         return data;
@@ -55,12 +61,29 @@ public class ProjectService {
         return toProjectDto(projectMapper.getProject(id));
     }
 
+    /**
+     * 根据项目 ID 查询项目。<br>
+     * <p>项目可能已被删除，调用方可通过空结果跳过历史孤儿记录。</p>
+     *
+     * @param id 项目 ID
+     * @return 存在时返回项目数据，否则返回空
+     */
+    public Optional<ProjectDto> findProject(int id) {
+        return Optional.ofNullable(projectMapper.getProject(id)).map(this::toProjectDto);
+    }
+
     private ProjectDto toProjectDto(ProjectDo project) {
         ProjectDto projectDto = new ProjectDto();
         BeanUtils.copyProperties(project,projectDto);
         projectDto.setTypeName(project.getType().getName());
         projectDto.setTypeId(project.getType().getId());
         return projectDto;
+    }
+
+    private boolean isInboxProject(ProjectDo project) {
+        TypeDo type = project.getType();
+        return INBOX_NAME.equals(project.getName()) && type != null && INBOX_NAME.equals(type.getName())
+                && type.getParentId() == null;
     }
 
     private ProjectDo qrToProject(ProjectParam projectParam) {

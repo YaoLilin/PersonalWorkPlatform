@@ -1,6 +1,6 @@
 package com.personalwork.dao;
 
-import com.personalwork.modal.entity.TypeDo;
+import com.personalwork.domain.entity.TypeDo;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
@@ -15,6 +15,7 @@ import java.util.List;
 @Mapper
 public interface TypeMapper {
     List<TypeDo> getTypes(int userId);
+    TypeDo getRootTypeByName(String name, Integer userId);
 
     TypeDo getType(Integer id);
     boolean addType(TypeDo type);
