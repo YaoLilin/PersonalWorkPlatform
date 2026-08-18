@@ -28,6 +28,7 @@ import java.util.Optional;
 public class ProjectService {
 
     private static final String INBOX_NAME = "收集箱";
+    private static final String DEFAULT_PROJECT_COLOR = "#1677FF";
 
     private final ProjectMapper projectMapper;
     private final MonthProjectCountMapper monthProjectCountMapper;
@@ -90,6 +91,9 @@ public class ProjectService {
         UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
         ProjectDo project = new ProjectDo();
         BeanUtils.copyProperties(projectParam,project);
+        if (project.getColor() == null) {
+            project.setColor(DEFAULT_PROJECT_COLOR);
+        }
         project.setUserId(loginUser.getId());
         if ("".equals(projectParam.getEndDate())) {
             project.setEndDate(null);

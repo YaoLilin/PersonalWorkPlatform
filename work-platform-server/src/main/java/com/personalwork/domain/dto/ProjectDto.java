@@ -20,5 +20,6 @@ public class ProjectDto {
     private Double progress;
     private ProjectState state;
     private Integer  important;
+    private String color;
     private Integer isStartDateOnly;
 }

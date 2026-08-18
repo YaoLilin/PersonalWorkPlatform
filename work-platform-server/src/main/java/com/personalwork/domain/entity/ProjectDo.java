@@ -23,6 +23,7 @@ public class ProjectDo {
     private Double progress;
     private ProjectState state;
     private Integer important;
+    private String color;
     private Integer isStartDateOnly;
     private Integer userId;
 

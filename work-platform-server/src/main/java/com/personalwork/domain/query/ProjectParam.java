@@ -5,6 +5,7 @@ import com.personalwork.constants.ProjectState;
 import com.personalwork.validation.ValidGroup;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 /**
@@ -31,6 +32,8 @@ public class ProjectParam {
     private ProjectState state;
     @NotNull (message = "重要程度不能为空")
     private Integer important;
+    @Pattern(regexp = "^#[0-9A-Fa-f]{6}$", message = "项目颜色必须为 HEX 格式")
+    private String color;
     @NotNull(message = "不限定日期区间不能为空")
     private Integer isStartDateOnly;
 }

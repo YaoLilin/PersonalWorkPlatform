@@ -83,6 +83,7 @@ CREATE TABLE `project` (
   `progress` double DEFAULT NULL,
   `state` int(11) DEFAULT NULL COMMENT '0:未开始 1:已开始 2:已结束',
   `important` int(11) DEFAULT NULL COMMENT '0:不重要 1:重要',
+  `color` varchar(7) NOT NULL DEFAULT '#1677FF' COMMENT '项目显示颜色，HEX格式',
   `is_startdate_only` int(11) DEFAULT NULL,
   `close_date` date DEFAULT NULL,
   `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,

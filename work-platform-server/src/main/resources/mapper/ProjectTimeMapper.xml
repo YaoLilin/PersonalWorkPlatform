@@ -36,7 +36,7 @@
         where user_id = #{userId}
     </select>
     <select id="listScheduleByUser" resultType="com.personalwork.domain.vo.ScheduleEventVo">
-        select pt.id, pt.project_id, p.name as project_name, pt.schedule_name, pt.description,
+        select pt.id, pt.project_id, p.name as project_name, p.color as project_color, pt.schedule_name, pt.description,
                pt.date, coalesce(pt.end_date, pt.date) as end_date, pt.start_time, pt.end_time
         from project_time pt
         join record_week rw on pt.week_id = rw.id

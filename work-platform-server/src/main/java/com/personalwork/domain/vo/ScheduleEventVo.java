@@ -13,6 +13,7 @@ public class ScheduleEventVo {
     private Integer id;
     private Integer projectId;
     private String projectName;
+    private String projectColor;
     private String scheduleName;
     private String description;
     private String date;

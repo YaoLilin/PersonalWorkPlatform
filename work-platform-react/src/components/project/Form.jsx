@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Row, Select} from "antd";
+import {Button, Checkbox, Col, ColorPicker, DatePicker, Form, Input, InputNumber, Row, Select} from "antd";
 import {useNavigate} from "react-router-dom";
 import {ArrowLeftOutlined} from "@ant-design/icons";
 import './project.css';
@@ -9,6 +9,16 @@ import dayjs from "dayjs"
 
 const TYPE_CREATE = "create";
 const TYPE_EDIT = "edit";
+const DEFAULT_PROJECT_COLOR = '#1677FF';
+const COLOR_PRESETS = [
+    {label: '常用颜色', colors: ['#1677FF', '#52C41A', '#FAAD14', '#FF4D4F', '#722ED1', '#13C2C2', '#EB2F96', '#FA8C16', '#A0D911', '#2F54EB']},
+];
+
+/**
+ * 项目创建与编辑表单。
+ *
+ * @param {{data: object, onSubmit: function, type: string}} props 表单初始数据、提交回调与使用场景
+ */
 const ProjectForm =  ({data,onSubmit,type=TYPE_CREATE}) => {
     const navigate = useNavigate();
     const [treeValue, setTreeValue] = useState();
@@ -21,6 +31,7 @@ const ProjectForm =  ({data,onSubmit,type=TYPE_CREATE}) => {
             name: values.name,
             progress: values.progress ? Number(values.progress) : 0,
             important: values.important ,
+            color: values.color || DEFAULT_PROJECT_COLOR,
             state: values.state,
             type: values.type,
             startDate: values.startDate.format('YYYY-MM-DD'),
@@ -175,6 +186,17 @@ const ProjectForm =  ({data,onSubmit,type=TYPE_CREATE}) => {
                                         {value: 1, label: '重要'},
                                     ]}
                                 />
+                            </Form.Item>
+                        </Col>
+                        <Col span={24}>
+                            <Form.Item
+                                label="颜色"
+                                name="color"
+                                labelAlign={'left'}
+                                initialValue={data.color || DEFAULT_PROJECT_COLOR}
+                                getValueFromEvent={(color, hex) => hex}
+                            >
+                                <ColorPicker showText presets={COLOR_PRESETS}/>
                             </Form.Item>
                         </Col>
                         <Col span={24}>

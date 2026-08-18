@@ -125,6 +125,7 @@ public class ScheduleService {
         scheduleEvent.setId(projectTime.getId());
         scheduleEvent.setProjectId(projectTime.getProject().getId());
         scheduleEvent.setProjectName(projectTime.getProject().getName());
+        scheduleEvent.setProjectColor(projectTime.getProject().getColor());
         scheduleEvent.setScheduleName(projectTime.getScheduleName());
         scheduleEvent.setDescription(projectTime.getDescription());
         scheduleEvent.setDate(projectTime.getDate());
@@ -174,6 +175,7 @@ public class ScheduleService {
         inboxProject.setProgress(0D);
         inboxProject.setState(ProjectState.STARTED);
         inboxProject.setImportant(0);
+        inboxProject.setColor("#1677FF");
         inboxProject.setIsStartDateOnly(1);
         inboxProject.setUserId(userId);
         projectMapper.addProject(inboxProject);
