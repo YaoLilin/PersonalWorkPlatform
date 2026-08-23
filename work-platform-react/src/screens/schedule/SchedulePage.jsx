@@ -7,7 +7,8 @@ import zhCnLocale from "@fullcalendar/core/locales/zh-cn";
 import {Button, Card, DatePicker, Input, Tree} from "antd";
 import {FolderOutlined} from "@ant-design/icons";
 import dayjs from "dayjs";
-import {useContext, useEffect, useRef, useState} from "react";
+import ReactECharts from "echarts-for-react";
+import {useContext, useEffect, useMemo, useRef, useState} from "react";
 import "./schedule.css";
 import ScheduleApi from "../../request/scheduleApi";
 import {TypeApi} from "../../request/typeApi";
@@ -50,6 +51,8 @@ function toScheduleEvents(projectTimes) {
             borderColor: projectTime.projectColor || "#1677FF",
             extendedProps: {
                 projectId: projectTime.projectId,
+                projectName: projectTime.projectName,
+                projectColor: projectTime.projectColor || "#1677FF",
                 description: projectTime.description || "",
                 scheduleId: projectTime.id,
             },
@@ -85,6 +88,153 @@ function toScheduleParam(calendarEvent) {
 function getErrorMessage(error) {
     return error?.response?.data?.message || error?.message || "日程保存失败";
 }
+
+/**
+ * 截断小时数至两位小数。<br>
+ * <p>统计展示不进行四舍五入。</p>
+ *
+ * @param {number} value 原始小时数或百分比
+ * @returns {number} 截断后的数值
+ */
+function truncateToTwoDigits(value) {
+    return Math.floor(value * 100) / 100;
+}
+
+/**
+ * 格式化截断后的小时数。
+ *
+ * @param {number} hours 原始小时数
+ * @returns {string} 两位小数小时数
+ */
+function formatHours(hours) {
+    return truncateToTwoDigits(hours).toFixed(2);
+}
+
+/**
+ * 获取当前自然周的起止时间。<br>
+ * <p>自然周从周一开始，到下周一开始前结束。</p>
+ *
+ * @returns {{start: dayjs.Dayjs, end: dayjs.Dayjs}} 当前周时间范围
+ */
+function getCurrentWeekRange() {
+    const today = dayjs().startOf("day");
+    const daysSinceMonday = today.day() === 0 ? 6 : today.day() - 1;
+    return {
+        start: today.subtract(daysSinceMonday, "day"),
+        end: today.subtract(daysSinceMonday, "day").add(1, "week"),
+    };
+}
+
+/**
+ * 按项目汇总指定范围内的日程时长。<br>
+ * <p>跨范围日程仅统计落在统计范围内的时长。</p>
+ *
+ * @param {Array} scheduleEvents 日程组件的事件数据
+ * @param {{start: dayjs.Dayjs, end: dayjs.Dayjs}} statisticsRange 当前视图的统计范围
+ * @returns {Array} 项目时间统计数据
+ */
+function getProjectTimeStatistics(scheduleEvents, statisticsRange) {
+    const {start: rangeStart, end: rangeEnd} = statisticsRange;
+    const projectStatistics = new Map();
+    scheduleEvents.forEach((event) => {
+        const eventStart = dayjs(event.start);
+        const eventEnd = dayjs(event.end);
+        if (!eventStart.isValid() || !eventEnd.isValid() || !eventEnd.isAfter(eventStart)
+            || !eventStart.isBefore(rangeEnd) || !eventEnd.isAfter(rangeStart)) {
+            return;
+        }
+        const projectId = event.extendedProps?.projectId;
+        const projectName = event.extendedProps?.projectName || event.title;
+        const projectKey = projectId === undefined ? projectName : String(projectId);
+        const overlappingStart = eventStart.isAfter(rangeStart) ? eventStart : rangeStart;
+        const overlappingEnd = eventEnd.isBefore(rangeEnd) ? eventEnd : rangeEnd;
+        const duration = overlappingEnd.diff(overlappingStart, "minute", true) / 60;
+        const statistic = projectStatistics.get(projectKey) || {
+            name: projectName,
+            value: 0,
+            itemStyle: {color: event.extendedProps?.projectColor || event.backgroundColor || "#1677FF"},
+        };
+        statistic.value += duration;
+        projectStatistics.set(projectKey, statistic);
+    });
+    return Array.from(projectStatistics.values());
+}
+
+/**
+ * 获取统计卡片标题。
+ *
+ * @param {string} viewType FullCalendar 视图类型
+ * @returns {string} 统计卡片标题
+ */
+function getProjectTimeStatisticsTitle(viewType) {
+    if (viewType === "dayGridMonth") {
+        return "本月项目时间占比";
+    }
+    if (viewType === "timeGridDay") {
+        return "当日项目时间占比";
+    }
+    return "本周项目时间占比";
+}
+
+/**
+ * 获取统计时长的展示文案。
+ *
+ * @param {string} viewType FullCalendar 视图类型
+ * @returns {string} 统计时长展示文案
+ */
+function getProjectTimeTotalLabel(viewType) {
+    if (viewType === "dayGridMonth") {
+        return "本月项目总时间";
+    }
+    if (viewType === "timeGridDay") {
+        return "当日项目总时间";
+    }
+    return "本周项目总时间";
+}
+
+/**
+ * 当前周项目时间占比图。<br>
+ * <p>展示项目时间总和及各项目在本周的时间占比。</p>
+ *
+ * @param {{data: Array}} props 项目时间统计数据
+ * @returns {JSX.Element} 项目时间占比图
+ */
+const WeeklyProjectTimePieChart = ({data}) => {
+    const totalHours = data.reduce((total, item) => total + item.value, 0);
+    const option = {
+        tooltip: {
+            trigger: "item",
+            formatter: (params) => {
+                const percent = totalHours === 0 ? 0 : truncateToTwoDigits(params.value / totalHours * 100);
+                return `<div style="font-size: 12px;display: flex;align-items: center">${params.marker}
+                    <span style="padding: 0 10px;display: inline-block;max-width: 120px;white-space: nowrap;
+                    text-overflow: ellipsis;overflow: hidden">${params.name}</span>
+                    <span>${formatHours(params.value)} 小时 ${percent.toFixed(2)}%</span></div>`;
+            },
+        },
+        legend: {
+            orient: "horizontal",
+            left: "center",
+            type: "scroll",
+            top: "0%",
+        },
+        series: [{
+            name: "项目时间统计",
+            type: "pie",
+            radius: "60%",
+            center: ["50%", "60%"],
+            data,
+            emphasis: {
+                itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: "rgba(0, 0, 0, 0.5)",
+                },
+            },
+        }],
+    };
+    return <ReactECharts className="schedule-project-time-chart" option={option} notMerge/>;
+};
 
 /**
  * 判断日程编辑窗口中的内容是否发生变化。
@@ -188,6 +338,19 @@ const SchedulePage = () => {
     const calendarRef = useRef(null);
     const [contextMenu, setContextMenu] = useState(null);
     const [eventEditor, setEventEditor] = useState(null);
+    const [scheduleEvents, setScheduleEvents] = useState(events);
+    const [statisticsRange, setStatisticsRange] = useState(() => ({
+        ...getCurrentWeekRange(),
+        viewType: "timeGridWeek",
+    }));
+    const projectTimeStatistics = useMemo(() => getProjectTimeStatistics(scheduleEvents, statisticsRange),
+        [scheduleEvents, statisticsRange]);
+    const totalProjectHours = projectTimeStatistics.reduce((total, item) => total + item.value, 0);
+
+    const replaceScheduleEvent = (scheduleEvent) => {
+        const [updatedEvent] = toScheduleEvents([scheduleEvent]);
+        setScheduleEvents((currentEvents) => currentEvents.map((event) => event.id === updatedEvent.id ? updatedEvent : event));
+    };
 
     useEffect(() => {
         if (!projectTreeRef.current) {
@@ -274,6 +437,7 @@ const SchedulePage = () => {
                 toScheduleParam(calendarEvent));
             calendarEvent.setProp("backgroundColor", scheduleEvent.projectColor || "#1677FF");
             calendarEvent.setProp("borderColor", scheduleEvent.projectColor || "#1677FF");
+            replaceScheduleEvent(scheduleEvent);
         } catch (error) {
             calendarEvent.setProp("title", currentEditor.originalEvent.title);
             calendarEvent.setStart(currentEditor.originalEvent.start);
@@ -298,7 +462,7 @@ const SchedulePage = () => {
         };
         try {
             const scheduleEvent = await ScheduleApi.createSchedule(toScheduleParam(temporaryEvent));
-            calendarRef.current?.getApi().addEvent(toScheduleEvents([scheduleEvent])[0]);
+            setScheduleEvents((currentEvents) => [...currentEvents, toScheduleEvents([scheduleEvent])[0]]);
         } catch (error) {
             messageApi.error(getErrorMessage(error), 5);
         }
@@ -332,6 +496,7 @@ const SchedulePage = () => {
         try {
             await ScheduleApi.deleteSchedule(calendarEvent.extendedProps.scheduleId || calendarEvent.id);
             calendarEvent.remove();
+            setScheduleEvents((currentEvents) => currentEvents.filter((event) => event.id !== calendarEvent.id));
         } catch (error) {
             messageApi.error(getErrorMessage(error), 5);
         }
@@ -358,12 +523,21 @@ const SchedulePage = () => {
 
     const updateScheduleTime = async (info) => {
         try {
-            await ScheduleApi.updateSchedule(info.event.extendedProps.scheduleId || info.event.id,
+            const scheduleEvent = await ScheduleApi.updateSchedule(info.event.extendedProps.scheduleId || info.event.id,
                 toScheduleParam(info.event));
+            replaceScheduleEvent(scheduleEvent);
         } catch (error) {
             info.revert();
             messageApi.error(getErrorMessage(error), 5);
         }
+    };
+
+    const updateStatisticsRange = (info) => {
+        setStatisticsRange({
+            start: dayjs(info.view.currentStart),
+            end: dayjs(info.view.currentEnd),
+            viewType: info.view.type,
+        });
     };
 
     const calendarOptions = {
@@ -383,7 +557,7 @@ const SchedulePage = () => {
         selectMinDistance: 5,
         slotDuration: "00:30:00",
         slotLabelInterval: "01:00:00",
-        events,
+        events: scheduleEvents,
         height: "100%",
         dateClick: () => {
             setContextMenu(null);
@@ -394,6 +568,7 @@ const SchedulePage = () => {
         eventReceive: openDroppedEventEditor,
         eventDrop: updateScheduleTime,
         eventResize: updateScheduleTime,
+        datesSet: updateStatisticsRange,
         eventDidMount: (info) => {
             info.el.oncontextmenu = (mouseEvent) => {
                 mouseEvent.preventDefault();
@@ -417,9 +592,18 @@ const SchedulePage = () => {
                 <div className="schedule-calendar-wrapper">
                     <FullCalendar ref={calendarRef} {...calendarOptions}/>
                 </div>
-                <aside className="schedule-project-tree" ref={projectTreeRef}>
-                    <div className="schedule-project-tree-title">项目列表</div>
-                    <Tree treeData={projectTree} defaultExpandAll blockNode/>
+                <aside className="schedule-sidebar" ref={projectTreeRef}>
+                    <div className="schedule-project-tree">
+                        <div className="schedule-project-tree-title">项目列表</div>
+                        <Tree treeData={projectTree} defaultExpandAll blockNode/>
+                    </div>
+                    <Card className="schedule-project-time-card" size="small"
+                          title={getProjectTimeStatisticsTitle(statisticsRange.viewType)}>
+                        <div className="schedule-project-time-total">
+                            {getProjectTimeTotalLabel(statisticsRange.viewType)}：{formatHours(totalProjectHours)} 小时
+                        </div>
+                        <WeeklyProjectTimePieChart data={projectTimeStatistics}/>
+                    </Card>
                 </aside>
             </div>
             {contextMenu && (

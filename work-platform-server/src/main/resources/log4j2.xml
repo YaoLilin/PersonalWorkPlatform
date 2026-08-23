@@ -112,7 +112,7 @@
             <AppenderRef ref="Async"/>
         </Logger>
         <!--root 节点用来指定项目的根日志，level:日志输出级别，共有8个级别，按照从低到高为：All < Trace < Debug < Info < Warn < Error < Fatal < OFF.-->
-        <root level="debug" >
+        <root level="info" >
             <AppenderRef ref="Async" />
         </root>
     </loggers>
