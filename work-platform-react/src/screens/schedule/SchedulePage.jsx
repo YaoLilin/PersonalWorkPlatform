@@ -4,21 +4,24 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin, {Draggable} from "@fullcalendar/interaction";
 import zhCnLocale from "@fullcalendar/core/locales/zh-cn";
-import {Button, Card, DatePicker, Input, Tree} from "antd";
-import {FolderOutlined} from "@ant-design/icons";
+import {Button, Card, Checkbox, DatePicker, Input, Modal, Space, TimePicker, Tooltip, Tree} from "antd";
+import {BarChartOutlined, ClockCircleOutlined, ExpandOutlined, FolderOutlined, PieChartOutlined} from "@ant-design/icons";
 import dayjs from "dayjs";
 import ReactECharts from "echarts-for-react";
 import {useContext, useEffect, useMemo, useRef, useState} from "react";
+import {createRoot} from "react-dom/client";
 import "./schedule.css";
 import ScheduleApi from "../../request/scheduleApi";
 import {TypeApi} from "../../request/typeApi";
 import {ProjectApi} from "../../request/projectApi";
 import {MessageContext} from "../../provider/MessageProvider";
 import ProjectBrowser from "../../components/public/projectBrowser";
+import {UserContext} from "../../provider/UserProvider";
 
 const EVENT_EDITOR_WIDTH = 350;
 const EVENT_EDITOR_HEIGHT = 400;
 const EDITOR_VIEWPORT_OFFSET = 8;
+const HIDDEN_TIME_RANGE_STORAGE_PREFIX = "schedule-hidden-time-range";
 
 /**
  * 将项目记录的日期和时间转换为日历事件时间。
@@ -88,6 +91,130 @@ function toScheduleParam(calendarEvent) {
 function getErrorMessage(error) {
     return error?.response?.data?.message || error?.message || "日程保存失败";
 }
+
+/**
+ * 获取当前用户隐藏时间范围的本地存储键。
+ *
+ * @param {string} userName 当前登录用户名
+ * @returns {string} 本地存储键
+ */
+function getHiddenTimeRangeStorageKey(userName) {
+    return `${HIDDEN_TIME_RANGE_STORAGE_PREFIX}-${userName || "anonymous"}`;
+}
+
+/**
+ * 获取用户保存的隐藏时间范围。
+ *
+ * @param {string} userName 当前登录用户名
+ * @returns {{start: string, end: string} | null} 隐藏时间范围
+ */
+function getHiddenTimeRange(userName) {
+    try {
+        const timeRange = JSON.parse(localStorage.getItem(getHiddenTimeRangeStorageKey(userName)));
+        return timeRange?.start && timeRange?.end && timeRange.start < timeRange.end
+            ? {...timeRange, enabled: timeRange.enabled !== false} : null;
+    } catch (error) {
+        console.error("无法读取隐藏时间范围", error);
+        return null;
+    }
+}
+
+/**
+ * 将时间字符串转换为时间选择器值。
+ *
+ * @param {string} time 时间字符串，格式为 HH:mm
+ * @returns {dayjs.Dayjs} 时间选择器值
+ */
+function toTimePickerValue(time) {
+    const [hour, minute] = time.split(":").map(Number);
+    return dayjs().startOf("day").hour(hour).minute(minute);
+}
+
+/**
+ * 获取指针所在的日程时间。
+ *
+ * @param {HTMLElement} calendarElement 日程组件根元素
+ * @param {PointerEvent} pointerEvent 指针事件
+ * @returns {dayjs.Dayjs | null} 指针对应的时间
+ */
+function getPointerScheduleTime(calendarElement, pointerEvent) {
+    const timeSlot = [...calendarElement.querySelectorAll(".fc-timegrid-slot-lane[data-time]")]
+        .find((slot) => {
+            const rect = slot.getBoundingClientRect();
+            return pointerEvent.clientY >= rect.top && pointerEvent.clientY < rect.bottom;
+        });
+    if (!timeSlot) {
+        return null;
+    }
+    const timeColumn = [...calendarElement.querySelectorAll(".fc-timegrid-col[data-date]")]
+        .find((column) => {
+            const rect = column.getBoundingClientRect();
+            return pointerEvent.clientX >= rect.left && pointerEvent.clientX <= rect.right;
+        });
+    if (!timeColumn?.dataset.date || !timeSlot.dataset.time) {
+        return null;
+    }
+    const slotRect = timeSlot.getBoundingClientRect();
+    const minuteOffset = Math.min(15, Math.max(0, pointerEvent.clientY - slotRect.top) >= slotRect.height / 2 ? 15 : 0);
+    return dayjs(`${timeColumn.dataset.date}T${timeSlot.dataset.time}`).add(minuteOffset, "minute");
+}
+
+/**
+ * 构建拖动选中时间范围。
+ *
+ * @param {dayjs.Dayjs} startTime 拖动开始时间
+ * @param {dayjs.Dayjs} currentTime 当前指针时间
+ * @returns {{start: dayjs.Dayjs, end: dayjs.Dayjs}} 选中时间范围
+ */
+function getSelectionTimeRange(startTime, currentTime) {
+    return currentTime.isBefore(startTime)
+        ? {start: currentTime, end: startTime.add(15, "minute")}
+        : {start: startTime, end: currentTime.add(15, "minute")};
+}
+
+/**
+ * 判断时间轴时段是否应隐藏。
+ *
+ * @param {Date} date 时间轴时段的日期时间
+ * @param {{start: string, end: string} | null} hiddenTimeRange 隐藏时间范围
+ * @returns {boolean} 是否隐藏
+ */
+function isHiddenTimeSlot(date, hiddenTimeRange) {
+    if (!hiddenTimeRange?.enabled) {
+        return false;
+    }
+    const time = dayjs(date).format("HH:mm");
+    return time >= hiddenTimeRange.start && time < hiddenTimeRange.end;
+}
+
+/**
+ * 获取隐藏时间段设置按钮的悬浮提示。
+ *
+ * @param {{start: string, end: string} | null} hiddenTimeRange 隐藏时间范围
+ * @returns {string} 按钮悬浮提示
+ */
+function getHiddenTimeRangeHint(hiddenTimeRange) {
+    return hiddenTimeRange
+        ? `设置隐藏时间段（当前：${hiddenTimeRange.start} - ${hiddenTimeRange.end}，${hiddenTimeRange.enabled ? "已启用" : "未启用"}）`
+        : "设置隐藏时间段";
+}
+
+/**
+ * 隐藏时间范围按钮内容。
+ *
+ * @param {{hiddenTimeRange: {start: string, end: string, enabled: boolean} | null, onEnabledChange: Function}} props 按钮属性
+ * @returns {JSX.Element} 工具栏按钮内容
+ */
+const HiddenTimeRangeButtonContent = ({hiddenTimeRange, onEnabledChange}) => (
+    <span className="schedule-hidden-time-range-button-content">
+        <ClockCircleOutlined/>
+        {hiddenTimeRange && <>
+            <span>{hiddenTimeRange.start} - {hiddenTimeRange.end}</span>
+            <Checkbox className="schedule-hidden-time-range-checkbox" checked={hiddenTimeRange.enabled}
+                      onChange={(event) => onEnabledChange(event.target.checked)}/>
+        </>}
+    </span>
+);
 
 /**
  * 截断小时数至两位小数。<br>
@@ -193,48 +320,127 @@ function getProjectTimeTotalLabel(viewType) {
 }
 
 /**
- * 当前周项目时间占比图。<br>
- * <p>展示项目时间总和及各项目在本周的时间占比。</p>
+ * 格式化统计图悬浮提示。
  *
- * @param {{data: Array}} props 项目时间统计数据
- * @returns {JSX.Element} 项目时间占比图
+ * @param {Object} params 图表数据项
+ * @param {number} totalHours 项目总时长
+ * @returns {string} 悬浮提示内容
  */
-const WeeklyProjectTimePieChart = ({data}) => {
-    const totalHours = data.reduce((total, item) => total + item.value, 0);
+function formatProjectTimeTooltip(params, totalHours) {
+    const percent = totalHours === 0 ? 0 : truncateToTwoDigits(params.value / totalHours * 100);
+    return `<div style="font-size: 12px;display: flex;align-items: center">${params.marker}
+        <span style="padding: 0 10px;display: inline-block;max-width: 180px;word-break: break-all">${params.name}</span>
+        <span>${formatHours(params.value)} 小时 ${percent.toFixed(2)}%</span></div>`;
+}
+
+/**
+ * 项目时间统计图。<br>
+ * <p>支持项目时间占比饼图与按时长降序排列的柱状图。</p>
+ *
+ * @param {{data: Array, chartType: string, expanded: boolean}} props 图表属性
+ * @returns {JSX.Element} 项目时间统计图
+ */
+const ProjectTimeChart = ({data, chartType, expanded = false}) => {
+    const sortedData = [...data].sort((first, second) => second.value - first.value);
+    const totalHours = sortedData.reduce((total, item) => total + item.value, 0);
+    const isBarChart = chartType === "bar";
     const option = {
         tooltip: {
             trigger: "item",
-            formatter: (params) => {
-                const percent = totalHours === 0 ? 0 : truncateToTwoDigits(params.value / totalHours * 100);
-                return `<div style="font-size: 12px;display: flex;align-items: center">${params.marker}
-                    <span style="padding: 0 10px;display: inline-block;max-width: 120px;white-space: nowrap;
-                    text-overflow: ellipsis;overflow: hidden">${params.name}</span>
-                    <span>${formatHours(params.value)} 小时 ${percent.toFixed(2)}%</span></div>`;
+            formatter: (params) => formatProjectTimeTooltip(params, totalHours),
+        },
+        ...(isBarChart ? {
+            grid: {top: 8, right: expanded ? 96 : 52, bottom: 4, left: expanded ? 130 : 10, containLabel: expanded},
+            xAxis: {
+                type: "value",
+                axisLine: {show: false},
+                axisTick: {show: false},
+                axisLabel: {show: false},
             },
-        },
-        legend: {
-            orient: "horizontal",
-            left: "center",
-            type: "scroll",
-            top: "0%",
-        },
-        series: [{
-            name: "项目时间统计",
-            type: "pie",
-            radius: "60%",
-            center: ["50%", "60%"],
-            data,
-            emphasis: {
-                itemStyle: {
-                    shadowBlur: 10,
-                    shadowOffsetX: 0,
-                    shadowColor: "rgba(0, 0, 0, 0.5)",
+            yAxis: {
+                type: "category",
+                data: sortedData.map((item) => item.name),
+                inverse: true,
+                axisLine: {show: false},
+                axisTick: {show: false},
+                splitLine: {show: false},
+                axisLabel: {
+                    inside: !expanded,
+                    formatter: (name) => name.length > (expanded ? 16 : 9) ? `${name.slice(0, expanded ? 16 : 9)}…` : name,
                 },
             },
-        }],
+            series: [{
+                name: "项目时间统计",
+                type: "bar",
+                data: sortedData,
+                barMaxWidth: 30,
+                barCategoryGap: "35%",
+                itemStyle: {borderRadius: [0, 4, 4, 0]},
+                label: {show: true, position: "right", color: "#595959", formatter: (params) => `${formatHours(params.value)} 小时`},
+            }],
+        } : {
+            series: [{
+                name: "项目时间统计",
+                type: "pie",
+                radius: expanded ? ["38%", "63%"] : ["42%", "64%"],
+                center: ["50%", "50%"],
+                data: sortedData,
+                padAngle: 2,
+                itemStyle: {borderColor: "#fff", borderWidth: 3, borderRadius: 8},
+                label: expanded ? {
+                    show: true,
+                    formatter: (params) => `${params.name}\n${params.percent}%`,
+                    overflow: "truncate",
+                    width: 110,
+                } : {show: false},
+                labelLine: {show: expanded},
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: "rgba(0, 0, 0, 0.5)",
+                    },
+                },
+            }],
+        }),
     };
-    return <ReactECharts className="schedule-project-time-chart" option={option} notMerge/>;
+    return <ReactECharts className={expanded ? "schedule-project-time-chart-expanded" : "schedule-project-time-chart"}
+                         option={option} notMerge/>;
 };
+
+/**
+ * 项目时间图例。
+ *
+ * @param {{data: Array}} props 项目时间统计数据
+ * @returns {JSX.Element} 项目时间图例
+ */
+const ProjectTimeLegend = ({data}) => (
+    <div className="schedule-project-time-legend">
+        {[...data].sort((first, second) => second.value - first.value).map((item) => (
+            <div className="schedule-project-time-legend-item" key={item.name}>
+                <span className="schedule-project-time-legend-color" style={{backgroundColor: item.itemStyle.color}}/>
+                <Tooltip title={item.name}>
+                    <span className="schedule-project-time-legend-name">{item.name}</span>
+                </Tooltip>
+                <span>{formatHours(item.value)} 小时</span>
+            </div>
+        ))}
+    </div>
+);
+
+/**
+ * 项目时间统计内容。
+ *
+ * @param {{data: Array, totalHours: number, chartType: string, expanded: boolean, totalLabel: string}} props 统计内容属性
+ * @returns {JSX.Element} 项目时间统计内容
+ */
+const ProjectTimeStatisticsContent = ({data, totalHours, chartType, expanded = false, totalLabel}) => (
+    <>
+        <div className="schedule-project-time-total">{totalLabel}：{formatHours(totalHours)} 小时</div>
+        {!expanded && <ProjectTimeLegend data={data}/>}
+        <ProjectTimeChart data={data} chartType={chartType} expanded={expanded}/>
+    </>
+);
 
 /**
  * 判断日程编辑窗口中的内容是否发生变化。
@@ -334,11 +540,19 @@ export async function loader() {
 const SchedulePage = () => {
     const {events, projectTree, projectOptions} = useLoaderData();
     const messageApi = useContext(MessageContext);
+    const {user} = useContext(UserContext);
     const projectTreeRef = useRef(null);
     const calendarRef = useRef(null);
+    const hiddenTimeRangeButtonRootRef = useRef(null);
     const [contextMenu, setContextMenu] = useState(null);
     const [eventEditor, setEventEditor] = useState(null);
     const [scheduleEvents, setScheduleEvents] = useState(events);
+    const [hiddenTimeRange, setHiddenTimeRange] = useState(() => getHiddenTimeRange(user?.name));
+    const [hiddenTimeRangeEditor, setHiddenTimeRangeEditor] = useState(null);
+    const [isHiddenTimeRangeModalOpen, setIsHiddenTimeRangeModalOpen] = useState(false);
+    const [projectTimeChartType, setProjectTimeChartType] = useState("pie");
+    const [isProjectTimeStatisticsModalOpen, setIsProjectTimeStatisticsModalOpen] = useState(false);
+    const [selectionTimePreview, setSelectionTimePreview] = useState(null);
     const [statisticsRange, setStatisticsRange] = useState(() => ({
         ...getCurrentWeekRange(),
         viewType: "timeGridWeek",
@@ -368,10 +582,66 @@ const SchedulePage = () => {
     }, []);
 
     useEffect(() => {
+        setHiddenTimeRange(getHiddenTimeRange(user?.name));
+    }, [user?.name]);
+
+    useEffect(() => {
         const closeContextMenu = () => setContextMenu(null);
         document.addEventListener("click", closeContextMenu);
         return () => document.removeEventListener("click", closeContextMenu);
     }, []);
+
+    useEffect(() => {
+        const calendarElement = calendarRef.current?.elRef?.current;
+        if (!calendarElement) {
+            return undefined;
+        }
+        let startTime = null;
+        const handlePointerDown = (event) => {
+            startTime = getPointerScheduleTime(calendarElement, event);
+        };
+        const handlePointerMove = (event) => {
+            if (!startTime) {
+                return;
+            }
+            const currentTime = getPointerScheduleTime(calendarElement, event);
+            if (!currentTime) {
+                return;
+            }
+            const timeRange = getSelectionTimeRange(startTime, currentTime);
+            setSelectionTimePreview({...timeRange, left: event.clientX + 12, top: event.clientY + 12});
+        };
+        const clearSelectionPreview = () => {
+            startTime = null;
+            setSelectionTimePreview(null);
+        };
+        calendarElement.addEventListener("pointerdown", handlePointerDown);
+        calendarElement.addEventListener("pointermove", handlePointerMove);
+        document.addEventListener("pointerup", clearSelectionPreview);
+        return () => {
+            calendarElement.removeEventListener("pointerdown", handlePointerDown);
+            calendarElement.removeEventListener("pointermove", handlePointerMove);
+            document.removeEventListener("pointerup", clearSelectionPreview);
+        };
+    }, []);
+
+    useEffect(() => {
+        const calendarElement = calendarRef.current?.elRef?.current;
+        const button = calendarElement?.querySelector(".fc-hiddenTimeRange-button");
+        if (!button) {
+            return;
+        }
+        if (hiddenTimeRangeButtonRootRef.current?.button !== button) {
+            hiddenTimeRangeButtonRootRef.current?.root.unmount();
+            hiddenTimeRangeButtonRootRef.current = {button, root: createRoot(button)};
+        }
+        hiddenTimeRangeButtonRootRef.current.root.render(
+            <HiddenTimeRangeButtonContent hiddenTimeRange={hiddenTimeRange}
+                                          onEnabledChange={setHiddenTimeRangeEnabled}/>,
+        );
+    });
+
+    useEffect(() => () => hiddenTimeRangeButtonRootRef.current?.root.unmount(), []);
 
     const openEventEditor = (info) => {
         void saveEvent();
@@ -454,8 +724,9 @@ const SchedulePage = () => {
         if (!startTime || !endTime) {
             return;
         }
+        const selectedProject = projectOptions.find((project) => project.value === editor.projectId);
         const temporaryEvent = {
-            title: editor.title.trim() || "未命名日程",
+            title: editor.title.trim() || selectedProject?.label || "未命名日程",
             start: startTime.toDate(),
             end: endTime.toDate(),
             extendedProps: {projectId: editor.projectId, description: editor.description},
@@ -540,25 +811,77 @@ const SchedulePage = () => {
         });
     };
 
+    const openHiddenTimeRangeModal = () => {
+        setHiddenTimeRangeEditor(hiddenTimeRange
+            ? [toTimePickerValue(hiddenTimeRange.start), toTimePickerValue(hiddenTimeRange.end)]
+            : null);
+        setIsHiddenTimeRangeModalOpen(true);
+    };
+
+    const saveHiddenTimeRange = () => {
+        if (!hiddenTimeRangeEditor) {
+            localStorage.removeItem(getHiddenTimeRangeStorageKey(user?.name));
+            setHiddenTimeRange(null);
+            setIsHiddenTimeRangeModalOpen(false);
+            return;
+        }
+        const [startTime, endTime] = hiddenTimeRangeEditor;
+        if (!startTime.isBefore(endTime)) {
+            messageApi.error("隐藏时间段的结束时间必须晚于开始时间");
+            return;
+        }
+        const timeRange = {start: startTime.format("HH:mm"), end: endTime.format("HH:mm"), enabled: true};
+        localStorage.setItem(getHiddenTimeRangeStorageKey(user?.name), JSON.stringify(timeRange));
+        setHiddenTimeRange(timeRange);
+        setIsHiddenTimeRangeModalOpen(false);
+    };
+
+    const setHiddenTimeRangeEnabled = (enabled) => {
+        if (!hiddenTimeRange) {
+            return;
+        }
+        const timeRange = {...hiddenTimeRange, enabled};
+        localStorage.setItem(getHiddenTimeRangeStorageKey(user?.name), JSON.stringify(timeRange));
+        setHiddenTimeRange(timeRange);
+    };
+
     const calendarOptions = {
         plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
         initialView: "timeGridWeek",
         locale: zhCnLocale,
         firstDay: 1,
         headerToolbar: {
-            left: "prev,next today",
+            left: "prev,next today hiddenTimeRange",
             center: "title",
             right: "dayGridMonth,timeGridWeek,timeGridDay",
+        },
+        customButtons: {
+            hiddenTimeRange: {
+                text: "",
+                hint: getHiddenTimeRangeHint(hiddenTimeRange),
+                click: (event) => {
+                    if (!event.target.closest(".schedule-hidden-time-range-checkbox")) {
+                        openHiddenTimeRangeModal();
+                    }
+                },
+            },
         },
         editable: true,
         eventResizableFromStart: true,
         droppable: true,
         selectable: true,
+        selectMirror: true,
         selectMinDistance: 5,
         slotDuration: "00:30:00",
         slotLabelInterval: "01:00:00",
+        views: {
+            timeGridWeek: {snapDuration: "00:15:00"},
+        },
+        slotLaneClassNames: (info) => isHiddenTimeSlot(info.date, hiddenTimeRange)
+            ? ["schedule-hidden-time-slot"] : [],
         events: scheduleEvents,
         height: "100%",
+        expandRows: true,
         dateClick: () => {
             setContextMenu(null);
             void saveEvent();
@@ -598,14 +921,30 @@ const SchedulePage = () => {
                         <Tree treeData={projectTree} defaultExpandAll blockNode/>
                     </div>
                     <Card className="schedule-project-time-card" size="small"
-                          title={getProjectTimeStatisticsTitle(statisticsRange.viewType)}>
-                        <div className="schedule-project-time-total">
-                            {getProjectTimeTotalLabel(statisticsRange.viewType)}：{formatHours(totalProjectHours)} 小时
-                        </div>
-                        <WeeklyProjectTimePieChart data={projectTimeStatistics}/>
+                          title={getProjectTimeStatisticsTitle(statisticsRange.viewType)}
+                          extra={<Space size={0}>
+                              <Tooltip title={projectTimeChartType === "pie" ? "切换为柱状图" : "切换为饼图"}>
+                                  <Button type="text" size="small"
+                                          icon={projectTimeChartType === "pie" ? <BarChartOutlined/> : <PieChartOutlined/>}
+                                          onClick={() => setProjectTimeChartType((currentType) => currentType === "pie" ? "bar" : "pie")}/>
+                              </Tooltip>
+                              <Tooltip title="放大统计图">
+                                  <Button type="text" size="small" icon={<ExpandOutlined/>}
+                                          onClick={() => setIsProjectTimeStatisticsModalOpen(true)}/>
+                              </Tooltip>
+                          </Space>}>
+                        <ProjectTimeStatisticsContent data={projectTimeStatistics} totalHours={totalProjectHours}
+                                                      chartType={projectTimeChartType}
+                                                      totalLabel={getProjectTimeTotalLabel(statisticsRange.viewType)}/>
                     </Card>
                 </aside>
             </div>
+            {selectionTimePreview && (
+                <div className="schedule-selection-time-preview"
+                     style={{left: selectionTimePreview.left, top: selectionTimePreview.top}}>
+                    {selectionTimePreview.start.format("MM-DD HH:mm")} - {selectionTimePreview.end.format("MM-DD HH:mm")}
+                </div>
+            )}
             {contextMenu && (
                 <div className="schedule-event-context-menu"
                      style={{left: contextMenu.left, top: contextMenu.top}}
@@ -658,6 +997,25 @@ const SchedulePage = () => {
                     )}
                 </div>
             )}
+            <Modal title="隐藏时间段" open={isHiddenTimeRangeModalOpen} onOk={saveHiddenTimeRange}
+                   onCancel={() => setIsHiddenTimeRangeModalOpen(false)} okText="确定" cancelText="取消">
+                <TimePicker.RangePicker value={hiddenTimeRangeEditor} format="HH:mm" minuteStep={30}
+                                        placeholder={["开始时间", "结束时间"]}
+                                        onChange={setHiddenTimeRangeEditor}/>
+            </Modal>
+            <Modal className="schedule-project-time-modal" open={isProjectTimeStatisticsModalOpen}
+                   title={<div className="schedule-project-time-modal-title">
+                       <span>{getProjectTimeStatisticsTitle(statisticsRange.viewType)}</span>
+                       <Tooltip title={projectTimeChartType === "pie" ? "切换为条形图" : "切换为饼图"}>
+                           <Button type="text" icon={projectTimeChartType === "pie" ? <BarChartOutlined/> : <PieChartOutlined/>}
+                                   onClick={() => setProjectTimeChartType((currentType) => currentType === "pie" ? "bar" : "pie")}/>
+                       </Tooltip>
+                   </div>} footer={null} width={760}
+                   onCancel={() => setIsProjectTimeStatisticsModalOpen(false)}>
+                <ProjectTimeStatisticsContent data={projectTimeStatistics} totalHours={totalProjectHours}
+                                              chartType={projectTimeChartType} expanded
+                                              totalLabel={getProjectTimeTotalLabel(statisticsRange.viewType)}/>
+            </Modal>
         </Card>
     );
 };
