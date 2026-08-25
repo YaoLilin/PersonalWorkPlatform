@@ -36,6 +36,30 @@ function toDateTime(date, time) {
 }
 
 /**
+ * 获取外部项目拖入日历后，编辑器应依附的目标单元格区域。
+ *
+ * @param {HTMLElement | null} calendarElement 日历根元素
+ * @param {Date} eventStart 日程开始时间
+ * @returns {DOMRect | undefined} 目标单元格区域
+ */
+function getDroppedEventRect(calendarElement, eventStart) {
+    if (!calendarElement) {
+        return undefined;
+    }
+    const startTime = dayjs(eventStart);
+    const date = startTime.format("YYYY-MM-DD");
+    const time = startTime.format("HH:mm:ss");
+    const timeSlot = calendarElement.querySelector(`.fc-timegrid-slot-lane[data-time="${time}"]`);
+    const dayColumn = calendarElement.querySelector(`.fc-timegrid-col[data-date="${date}"]`);
+    if (timeSlot && dayColumn) {
+        const slotRect = timeSlot.getBoundingClientRect();
+        const columnRect = dayColumn.getBoundingClientRect();
+        return new DOMRect(columnRect.left, slotRect.top, columnRect.width, slotRect.height);
+    }
+    return calendarElement.querySelector(`.fc-daygrid-day[data-date="${date}"]`)?.getBoundingClientRect();
+}
+
+/**
  * 将项目时间记录转换为 FullCalendar 日程事件。<br>
  * <p>只保留日期、开始时间、结束时间和项目名称均有效的记录。</p>
  *
@@ -347,6 +371,9 @@ const ProjectTimeChart = ({data, chartType, expanded = false}) => {
     const option = {
         tooltip: {
             trigger: "item",
+            appendToBody: true,
+            confine: false,
+            className: "schedule-project-time-tooltip",
             formatter: (params) => formatProjectTimeTooltip(params, totalHours),
         },
         ...(isBarChart ? {
@@ -365,7 +392,7 @@ const ProjectTimeChart = ({data, chartType, expanded = false}) => {
                 axisTick: {show: false},
                 splitLine: {show: false},
                 axisLabel: {
-                    inside: !expanded,
+                    show: expanded,
                     formatter: (name) => name.length > (expanded ? 16 : 9) ? `${name.slice(0, expanded ? 16 : 9)}…` : name,
                 },
             },
@@ -776,7 +803,10 @@ const SchedulePage = () => {
     const openDroppedEventEditor = (info) => {
         void saveEvent();
         const eventEnd = info.event.end ? dayjs(info.event.end) : dayjs(info.event.start).add(1, "hour");
-        const eventRect = info.el.getBoundingClientRect();
+        const eventRect = getDroppedEventRect(calendarRef.current?.elRef?.current, info.event.start);
+        const editorLeft = eventRect && eventRect.right + EDITOR_VIEWPORT_OFFSET + EVENT_EDITOR_WIDTH <= window.innerWidth
+            ? eventRect.right + EDITOR_VIEWPORT_OFFSET
+            : (eventRect?.left || window.innerWidth / 2) - EVENT_EDITOR_WIDTH - EDITOR_VIEWPORT_OFFSET;
         info.event.remove();
         setEventEditor({
             isNew: true,
@@ -785,9 +815,9 @@ const SchedulePage = () => {
             projectId: Number(info.event.extendedProps.projectId),
             originalEvent: {title: "", description: "", projectId: undefined, start: info.event.start, end: eventEnd.toDate()},
             timeRange: [dayjs(info.event.start), eventEnd],
-            left: Math.max(EDITOR_VIEWPORT_OFFSET, Math.min(eventRect.right + EDITOR_VIEWPORT_OFFSET,
+            left: Math.max(EDITOR_VIEWPORT_OFFSET, Math.min(editorLeft,
                 window.innerWidth - EVENT_EDITOR_WIDTH - EDITOR_VIEWPORT_OFFSET)),
-            top: Math.max(EDITOR_VIEWPORT_OFFSET, Math.min(eventRect.bottom + EDITOR_VIEWPORT_OFFSET,
+            top: Math.max(EDITOR_VIEWPORT_OFFSET, Math.min((eventRect?.top || window.innerHeight / 2) + EDITOR_VIEWPORT_OFFSET,
                 window.innerHeight - EVENT_EDITOR_HEIGHT - EDITOR_VIEWPORT_OFFSET)),
         });
     };
@@ -868,6 +898,7 @@ const SchedulePage = () => {
         },
         editable: true,
         eventResizableFromStart: true,
+        eventDisplay: "block",
         droppable: true,
         selectable: true,
         selectMirror: true,

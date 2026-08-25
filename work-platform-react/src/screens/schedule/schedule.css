@@ -40,7 +40,8 @@
 .schedule-calendar-wrapper .fc .fc-hiddenTimeRange-button,
 .schedule-calendar-wrapper .fc .fc-hiddenTimeRange-button:hover,
 .schedule-calendar-wrapper .fc .fc-hiddenTimeRange-button:focus {
-    border-color: #bfbfbf;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
     background-color: transparent;
     color: #595959;
 }
@@ -58,13 +59,15 @@
 
 .schedule-calendar-wrapper .fc .fc-event,
 .schedule-calendar-wrapper .fc .fc-event:hover {
-    border-color: #67b3fb;
-    background-color: #67b3fb;
     color: #fff;
 }
 
 .schedule-calendar-wrapper .fc .fc-daygrid-event .fc-event-title {
     color: inherit;
+}
+
+.schedule-calendar-wrapper .fc .fc-daygrid-event-dot {
+    display: none;
 }
 
 .schedule-calendar-wrapper .fc .fc-timegrid-slot-minor {
@@ -76,7 +79,7 @@
 }
 
 .schedule-calendar-wrapper .fc .fc-scrollgrid {
-    border-right: 1px solid var(--fc-border-color);
+    border-right-width: 0;
 }
 
 .schedule-layout {
@@ -113,6 +116,8 @@
 
 .schedule-project-time-card {
     flex: none;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
 }
 
 .schedule-project-time-total {
@@ -157,6 +162,10 @@
 
 .schedule-project-time-chart-expanded {
     height: 420px !important;
+}
+
+.schedule-project-time-tooltip {
+    z-index: 2000 !important;
 }
 
 .schedule-project-time-modal-title {
