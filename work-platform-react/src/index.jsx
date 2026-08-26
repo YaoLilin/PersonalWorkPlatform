@@ -1,10 +1,9 @@
 import './App.css';
 import ReactDOM from "react-dom/client";
 import React from "react";
-import {createBrowserRouter, RouterProvider, ScrollRestoration} from "react-router-dom";
+import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import App from "./app";
 import ProjectList, {loader as projectsLoader} from "./screens/project/List";
-import {loader as typeLoader, TypeEditPage} from "./screens/type/EditPage";
 import WeekList, {loader as weekListLoader} from "./screens/statistics/WeekList";
 import WeekForm, {loader as stFormLoader} from "./screens/statistics/WeekForm";
 import ProjectCreate from "./screens/project/CreateForm";
@@ -40,11 +39,6 @@ const router = createBrowserRouter([
                 path: '',
                 element: <ProjectList/>,
                 loader: projectsLoader,
-            },
-            {
-                path: 'type',
-                element: <TypeEditPage/>,
-                loader: typeLoader,
             },
             {
                 path: 'schedule',

@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Button, Checkbox, Col, ColorPicker, DatePicker, Form, Input, InputNumber, Row, Select} from "antd";
 import {useNavigate} from "react-router-dom";
 import {ArrowLeftOutlined} from "@ant-design/icons";
@@ -17,13 +17,18 @@ const COLOR_PRESETS = [
 /**
  * 项目创建与编辑表单。
  *
- * @param {{data: object, onSubmit: function, type: string}} props 表单初始数据、提交回调与使用场景
+ * @param {{data: object, onSubmit: function, type: string, hideNavigation: boolean, hideSubmitButton: boolean, onFormReady: function}} props 表单初始数据、提交回调、展示方式及表单实例回调
  */
-const ProjectForm =  ({data,onSubmit,type=TYPE_CREATE}) => {
+const ProjectForm = ({data, onSubmit, type = TYPE_CREATE, hideNavigation = false, hideSubmitButton = false, onFormReady}) => {
     const navigate = useNavigate();
+    const [form] = Form.useForm();
     const [treeValue, setTreeValue] = useState();
     const [endDateDisabled,setEndDateDisabled] = useState(data?.isStartDateOnly ===1);
     const format = 'YYYY-MM-DD';
+
+    useEffect(() => {
+        onFormReady?.(form);
+    }, [form, onFormReady]);
 
     const onFinish = (values) => {
         const params = {
@@ -53,17 +58,18 @@ const ProjectForm =  ({data,onSubmit,type=TYPE_CREATE}) => {
     return (
         <>
 
-            <div>
+            {!hideNavigation && <div>
                 <ArrowLeftOutlined style={{
                     margin: '10px 20px', fontSize: '2em', color: 'grey', cursor: 'pointer'
                     , display: 'inline-block'
                 }} onClick={() => {
                     navigate('/projects')
                 }}/>
-            </div>
+            </div>}
 
             <div className={'form-card'}>
                 <Form
+                    form={form}
                     name="basic"
                     labelCol={{
                         span: 4,
@@ -199,7 +205,7 @@ const ProjectForm =  ({data,onSubmit,type=TYPE_CREATE}) => {
                                 <ColorPicker showText presets={COLOR_PRESETS}/>
                             </Form.Item>
                         </Col>
-                        <Col span={24}>
+                        {!hideSubmitButton && <Col span={24}>
                             <Form.Item
                                 wrapperCol={{
                                     offset: 8,
@@ -210,7 +216,7 @@ const ProjectForm =  ({data,onSubmit,type=TYPE_CREATE}) => {
                                     {type === 'create' ? '提交':'保存'}
                                 </Button>
                             </Form.Item>
-                        </Col>
+                        </Col>}
                     </Row>
                 </Form>
             </div>

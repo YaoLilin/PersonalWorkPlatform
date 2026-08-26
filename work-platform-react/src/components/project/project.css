@@ -17,3 +17,72 @@
 .tree_title:hover .tree_bt{
     display: inline-block;
 }
+.project-page {
+    display: flex;
+    gap: 16px;
+    height: calc(100vh - 40px);
+    min-height: 0;
+    overflow: hidden;
+}
+
+.project-type-panel,
+.project-list-panel {
+    box-sizing: border-box;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+}
+
+.project-type-panel {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    width: 280px;
+    min-height: 0;
+}
+
+.project-list-panel {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+.project-type-toolbar,
+.project-list-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.project-type-toolbar {
+    justify-content: flex-start;
+}
+
+.project-list-toolbar > div {
+    display: flex;
+    gap: 8px;
+}
+
+.project-list-filters {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) auto 130px 130px;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.project-type-tree {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+.project-list-panel .ant-table-wrapper {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}

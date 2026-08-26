@@ -1,22 +1,20 @@
 import {
-    CheckCircleOutlined,
     CalendarOutlined,
+    CheckCircleOutlined,
     FundViewOutlined,
     InfoCircleOutlined,
-    ProjectOutlined,
-    SisternodeOutlined, UserOutlined
+    ProjectOutlined
 } from '@ant-design/icons';
-import {Avatar, Button, Dropdown, Layout, Menu, Popover, theme} from 'antd';
+import {Layout, Menu, theme} from 'antd';
 import 'moment/locale/zh-cn';
-import React, {useContext, useEffect, useState} from 'react';
-import {Link, Outlet, ScrollRestoration, useLocation, useNavigate} from "react-router-dom";
+import React, {useEffect, useState} from 'react';
+import {Outlet, ScrollRestoration, useLocation, useNavigate} from "react-router-dom";
 import './App.css';
 import dayjs from "dayjs";
 import 'dayjs/locale/zh-cn';
 import updateLocale from 'dayjs/plugin/updateLocale';
 import {Content} from "antd/lib/layout/layout";
 import weekday from 'dayjs/plugin/weekday';
-import {UserContext} from "./provider/UserProvider";
 import HeadImage from "./components/user/HeadImage";
 
 dayjs.extend(weekday)
@@ -39,7 +37,6 @@ function getItem(label, path, icon, children) {
 const items = [
     getItem('项目', '/projects', <ProjectOutlined style={{fontSize: '1.2em'}}/>),
     getItem('日程', '/schedule', <CalendarOutlined style={{fontSize: '1.2em'}}/>),
-    getItem('类型', '/type', <SisternodeOutlined style={{fontSize: '1.2em'}}/>),
     getItem('问题库', '/problems', <InfoCircleOutlined style={{fontSize: '1.2em'}}/>),
     getItem('工作统计', 'count', <FundViewOutlined style={{fontSize: '1.2em'}}/>, [
         getItem('周统计', '/weeks'),
@@ -56,9 +53,6 @@ const getSelectedKey = (pathname) => {
     let defaultSelectedKey;
     if (pathname || pathname.startsWith('/projects')) {
         defaultSelectedKey = '/projects';
-    }
-    if (pathname.startsWith('/type')) {
-        defaultSelectedKey = '/type';
     }
     if (pathname.startsWith('/problems')) {
         defaultSelectedKey = '/problems';
