@@ -132,6 +132,9 @@ const SchedulePage = () => {
         if (!element) return undefined;
         let start = null;
         const down = (event) => {
+            if (event.target instanceof Element && event.target.closest(".fc-event")) {
+                return;
+            }
             start = getPointerScheduleTime(element, event);
         };
         const move = (event) => {
