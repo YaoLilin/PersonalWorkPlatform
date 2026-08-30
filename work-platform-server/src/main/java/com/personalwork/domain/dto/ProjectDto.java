@@ -21,5 +21,6 @@ public class ProjectDto {
     private ProjectState state;
     private Integer  important;
     private String color;
+    private String customColor;
     private Integer isStartDateOnly;
 }

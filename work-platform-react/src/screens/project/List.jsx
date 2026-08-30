@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useMemo, useRef, useState} from "react";
-import {Button, Checkbox, DatePicker, Input, Modal, Progress, Select, Table, Tag, Tree} from "antd";
+import {Button, Checkbox, DatePicker, Input, Modal, Pagination, Progress, Select, Table, Tag, Tree} from "antd";
 import {useLoaderData, useRevalidator} from "react-router-dom";
 import {ExclamationCircleFilled, FormOutlined, PlusCircleOutlined} from "@ant-design/icons";
 import {ProjectApi} from "../../request/projectApi";
@@ -14,8 +14,9 @@ import "../../components/project/project.css";
 const {confirm} = Modal;
 const ONLY_CURRENT_TYPE_STORAGE_PREFIX = "project-only-current-type";
 const DEFAULT_PROJECT_DATA = {
-    name: "", type: "", progress: "", state: "", important: "", color: "#1677FF", startDate: "", endDate: "", closeDate: "",
+    name: "", type: "", progress: "", state: "", important: "", color: null, startDate: "", endDate: "", closeDate: "",
 };
+const PROJECT_STATE_ORDER = {1: 0, 0: 1, 2: 2};
 
 /**
  * 获取当前用户“仅查看当前类型”设置的本地存储键。
@@ -99,6 +100,21 @@ function getParentTypeId(types, typeId, parentId = null) {
 }
 
 /**
+ * 比较两个项目指定字段的值。
+ *
+ * @param {Object} first 第一个项目
+ * @param {Object} second 第二个项目
+ * @param {string} field 排序字段
+ * @returns {number} 比较结果
+ */
+function compareProjectField(first, second, field) {
+    if (field === "startDate") {
+        return (first.startDate || "").localeCompare(second.startDate || "");
+    }
+    return Number(first[field] || 0) - Number(second[field] || 0);
+}
+
+/**
  * 项目与类型管理页面。
  *
  * @returns {JSX.Element} 类型树和项目列表
@@ -111,14 +127,41 @@ const ProjectList = () => {
     const [selectedProjectIds, setSelectedProjectIds] = useState([]);
     const [selectedTypeId, setSelectedTypeId] = useState("all");
     const [onlyCurrentType, setOnlyCurrentType] = useState(() => getOnlyCurrentTypeSetting(user?.name));
-    const [searchConditions, setSearchConditions] = useState({name: "", startDateRange: null, important: undefined, state: undefined});
+    const [searchConditions, setSearchConditions] = useState({
+        name: "",
+        startDate: null,
+        endDate: null,
+        important: undefined,
+        state: undefined,
+    });
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [editingProject, setEditingProject] = useState(null);
+    const [projectPagination, setProjectPagination] = useState({current: 1, pageSize: 50});
+    const [projectSorter, setProjectSorter] = useState({field: null, order: null});
     const createProjectFormRef = useRef(null);
     const editProjectFormRef = useRef(null);
+    const projectTableAreaRef = useRef(null);
+    const [projectTableScrollHeight, setProjectTableScrollHeight] = useState(0);
+    /**
+     * 保存当前用户的类型筛选偏好，供下次进入页面时恢复。
+     */
     useEffect(() => {
         localStorage.setItem(getOnlyCurrentTypeStorageKey(user?.name), String(onlyCurrentType));
     }, [onlyCurrentType, user?.name]);
+    /**
+     * 根据项目列表可用高度动态设置表格滚动区，使分页始终紧贴卡片底部。
+     */
+    useEffect(() => {
+        const element = projectTableAreaRef.current;
+        if (!element) {
+            return undefined;
+        }
+        const updateHeight = () => setProjectTableScrollHeight(Math.max(0, element.clientHeight - 56));
+        const resizeObserver = new ResizeObserver(updateHeight);
+        updateHeight();
+        resizeObserver.observe(element);
+        return () => resizeObserver.disconnect();
+    }, []);
     const selectedTypeIds = useMemo(() => {
         if (selectedTypeId === "all") {
             return null;
@@ -128,33 +171,60 @@ const ProjectList = () => {
     const filteredProjects = useMemo(() => projects
         .filter((project) => !selectedTypeIds || selectedTypeIds.includes(String(project.typeId)))
         .filter((project) => {
-            const {name, startDateRange, important, state} = searchConditions;
+            const {name, startDate, endDate, important, state} = searchConditions;
             if (name && !project.name.toLowerCase().includes(name.trim().toLowerCase())) {
                 return false;
             }
-            if (startDateRange) {
-                const [startDate, endDate] = startDateRange;
-                if (!project.startDate || (startDate && project.startDate < startDate.format("YYYY-MM-DD"))
-                    || (endDate && project.startDate > endDate.format("YYYY-MM-DD"))) {
-                    return false;
-                }
+            if ((startDate || endDate) && (!project.startDate
+                || (startDate && project.startDate < startDate.format("YYYY-MM-DD"))
+                || (endDate && project.startDate > endDate.format("YYYY-MM-DD")))) {
+                return false;
             }
             return (important === undefined || project.important === important)
                 && (state === undefined || project.state === state);
         })
-        .map((project) => ({...project, key: project.id})), [projects, searchConditions, selectedTypeIds]);
+        .sort((first, second) => {
+            if (projectSorter.field && projectSorter.order) {
+                const compareResult = compareProjectField(first, second, projectSorter.field);
+                return projectSorter.order === "ascend" ? compareResult : -compareResult;
+            }
+            const stateDifference = (PROJECT_STATE_ORDER[first.state] ?? Number.MAX_SAFE_INTEGER)
+                - (PROJECT_STATE_ORDER[second.state] ?? Number.MAX_SAFE_INTEGER);
+            if (stateDifference !== 0) {
+                return stateDifference;
+            }
+            return (second.startDate || "").localeCompare(first.startDate || "");
+        })
+        .map((project) => ({...project, key: project.id})), [projects, projectSorter, searchConditions, selectedTypeIds]);
     const selectedType = selectedTypeId === "all" ? null : selectedTypeId;
+    const paginatedProjects = useMemo(() => {
+        const startIndex = (projectPagination.current - 1) * projectPagination.pageSize;
+        return filteredProjects.slice(startIndex, startIndex + projectPagination.pageSize);
+    }, [filteredProjects, projectPagination]);
 
     const columns = [
         {title: "名称", dataIndex: "name", render: (text, record) => <a onClick={() => setEditingProject(record)}>{text}</a>},
-        {title: "开始日期", dataIndex: "startDate"},
+        {
+            title: "开始日期",
+            dataIndex: "startDate",
+            sorter: (first, second) => compareProjectField(first, second, "startDate"),
+            sortOrder: projectSorter.field === "startDate" ? projectSorter.order : null,
+        },
         {title: "结束日期", dataIndex: "endDate"},
         {title: "进度", dataIndex: "progress", render: (progress) => Number(progress) > 0 ? <Progress type="circle" size={48} percent={Number(progress)}/> : null},
         {title: "类型", dataIndex: "typeName"},
-        {title: "是否重要", dataIndex: "important", render: (important) => <span>{important === 0 ? "不重要" : "重要"}</span>},
+        {
+            title: "是否重要",
+            dataIndex: "important",
+            sorter: (first, second) => compareProjectField(first, second, "important"),
+            sortOrder: projectSorter.field === "important" ? projectSorter.order : null,
+            render: (important) => <span>{important === 0 ? "不重要" : "重要"}</span>,
+        },
         {
             title: "状态",
             dataIndex: "state",
+            sorter: (first, second) => compareProjectField(first, second, "state"),
+            sortOrder: projectSorter.field === "state" ? projectSorter.order : null,
             render: (state) => {
                 const stateMap = {0: ["grey", "未开始"], 1: ["blue", "已开始"], 2: ["default", "已结束"]};
                 const [color, name] = stateMap[state] || ["default", ""];
@@ -172,11 +242,13 @@ const ProjectList = () => {
         const nextTypeId = keys[0] || "all";
         setSelectedTypeId(nextTypeId);
         setSelectedProjectIds([]);
+        setProjectPagination((current) => ({...current, current: 1}));
     };
 
     const updateSearchCondition = (name, value) => {
         setSearchConditions((currentConditions) => ({...currentConditions, [name]: value}));
         setSelectedProjectIds([]);
+        setProjectPagination((current) => ({...current, current: 1}));
     };
 
     const createProject = (params) => {
@@ -239,11 +311,11 @@ const ProjectList = () => {
         }).catch(() => messageApi.error("添加失败", 5));
     };
 
-    const updateType = (name, id, parentId) => {
+    const updateType = (name, id, parentId, color) => {
         if (!name) {
             return;
         }
-        TypeApi.updateType(id, {id, name, parentId}).then(() => {
+        TypeApi.updateType(id, {id, name, parentId, color}).then(() => {
             messageApi.success("更新成功", 5);
             refreshData();
         }).catch(() => messageApi.error("更新失败", 5));
@@ -262,11 +334,19 @@ const ProjectList = () => {
     const showEditTypeDialog = (node) => {
         let name = node.title;
         let parentId = getParentTypeId(typeTree, node.key);
+        let color = node.color;
         confirm({
             title: "编辑名称",
             icon: <FormOutlined/>,
-            content: <TypeEditDialogContent name={name} parentNode={parentId} onNameChange={(event) => name = event.target.value} onNodeSelectorChanged={(value) => parentId = value}/>,
-            onOk: () => updateType(name, node.key, parentId),
+            content: <TypeEditDialogContent
+                name={name}
+                parentNode={parentId}
+                color={color}
+                onNameChange={(event) => name = event.target.value}
+                onNodeSelectorChanged={(value) => parentId = value}
+                onColorChange={(value) => color = value}
+            />,
+            onOk: () => updateType(name, node.key, parentId, color),
         });
     };
 
@@ -289,21 +369,102 @@ const ProjectList = () => {
         if (info.node.key === "all") {
             return;
         }
-        TypeApi.updateType(info.dragNode.key, {id: info.dragNode.key, name: info.dragNode.title, parentId: info.node.key})
+        TypeApi.updateType(info.dragNode.key, {
+            id: info.dragNode.key,
+            name: info.dragNode.title,
+            parentId: info.node.key,
+            color: info.dragNode.color,
+        })
             .then(refreshData).catch(() => messageApi.error("更新失败", 5));
+    };
+
+    const renderTypeTitle = (node) => {
+        if (node.key === "all") {
+            return node.title;
+        }
+        return (
+            <div className="tree_title">
+                <span className="project-type-color" style={{backgroundColor: node.color || "#1677FF"}}/>
+                <span>{node.title}</span>
+                <PlusCircleOutlined
+                    className="tree_bt"
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        showAddTypeDialog(node);
+                    }}
+                />
+                <FormOutlined
+                    className="tree_bt"
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        showEditTypeDialog(node);
+                    }}
+                />
+            </div>
+        );
     };
 
     return (
         <div className="project-page">
             <aside className="project-type-panel">
                 <div className="project-type-toolbar"><Button disabled={!selectedType} onClick={deleteType}>删除类型</Button><Button onClick={() => showAddTypeDialog()}>添加类型</Button></div>
-                <Tree className="project-type-tree" blockNode defaultExpandAll draggable={{icon: false}} selectedKeys={[selectedTypeId]} onSelect={selectType} onDrop={moveType} treeData={[{key: "all", title: "全部", selectable: true, children: typeTree}]} titleRender={(node) => node.key === "all" ? node.title : <div className="tree_title"><span>{node.title}</span><PlusCircleOutlined className="tree_bt" onClick={(event) => { event.stopPropagation(); showAddTypeDialog(node); }}/><FormOutlined className="tree_bt" onClick={(event) => { event.stopPropagation(); showEditTypeDialog(node); }}/></div>}/>
+                <Tree
+                    className="project-type-tree"
+                    blockNode
+                    defaultExpandAll
+                    draggable={{icon: false}}
+                    selectedKeys={[selectedTypeId]}
+                    onSelect={selectType}
+                    onDrop={moveType}
+                    treeData={[{key: "all", title: "全部", selectable: true, children: typeTree}]}
+                    titleRender={renderTypeTitle}
+                />
             </aside>
             <section className="project-list-panel">
-                <div className="project-list-filters"><Input allowClear placeholder="项目名称" value={searchConditions.name} onChange={(event) => updateSearchCondition("name", event.target.value)}/><DatePicker.RangePicker placeholder={["开始日期", "结束日期"]} value={searchConditions.startDateRange} onChange={(value) => updateSearchCondition("startDateRange", value)}/><Select allowClear placeholder="是否重要" value={searchConditions.important} options={[{value: 0, label: "不重要"}, {value: 1, label: "重要"}]} onChange={(value) => updateSearchCondition("important", value)}/><Select allowClear placeholder="状态" value={searchConditions.state} options={[{value: 0, label: "未开始"}, {value: 1, label: "已开始"}, {value: 2, label: "已结束"}]} onChange={(value) => updateSearchCondition("state", value)}/></div>
+                <div className="project-list-filters">
+                    <Input allowClear placeholder="项目名称" value={searchConditions.name}
+                           onChange={(event) => updateSearchCondition("name", event.target.value)}/>
+                    <DatePicker
+                        placeholder="开始日期"
+                        value={searchConditions.startDate}
+                        onChange={(value) => updateSearchCondition("startDate", value)}
+                    />
+                    <DatePicker
+                        placeholder="结束日期"
+                        value={searchConditions.endDate}
+                        onChange={(value) => updateSearchCondition("endDate", value)}
+                    />
+                    <Select allowClear placeholder="是否重要" value={searchConditions.important}
+                            options={[{value: 0, label: "不重要"}, {value: 1, label: "重要"}]}
+                            onChange={(value) => updateSearchCondition("important", value)}/>
+                    <Select allowClear placeholder="状态" value={searchConditions.state}
+                            options={[{value: 0, label: "未开始"}, {value: 1, label: "已开始"}, {value: 2, label: "已结束"}]}
+                            onChange={(value) => updateSearchCondition("state", value)}/>
+                </div>
                 <div className="project-list-toolbar"><Checkbox checked={onlyCurrentType} disabled={!selectedType} onChange={(event) => setOnlyCurrentType(event.target.checked)}>仅查看当前类型</Checkbox><div><Button onClick={() => setIsCreateModalOpen(true)}>添加</Button><Button type="primary" disabled={!selectedProjectIds.length} onClick={showDeleteProjectsConfirm}>删除</Button></div></div>
-                <Table columns={columns} dataSource={filteredProjects} rowSelection={{selectedRowKeys: selectedProjectIds, onChange: setSelectedProjectIds}}
-                       pagination={{defaultPageSize: 50, showSizeChanger: true, pageSizeOptions: ["50", "100", "200"], showQuickJumper: true}}/>
+                <div className="project-list-table-area" ref={projectTableAreaRef}>
+                    <Table
+                        columns={columns}
+                        dataSource={paginatedProjects}
+                        rowSelection={{selectedRowKeys: selectedProjectIds, onChange: setSelectedProjectIds}}
+                        scroll={projectTableScrollHeight ? {y: projectTableScrollHeight} : undefined}
+                        pagination={false}
+                        onChange={(pagination, filters, sorter) => setProjectSorter({
+                            field: sorter.field || null,
+                            order: sorter.order || null,
+                        })}
+                    />
+                </div>
+                <Pagination
+                    className="project-list-pagination"
+                    current={projectPagination.current}
+                    pageSize={projectPagination.pageSize}
+                    total={filteredProjects.length}
+                    showSizeChanger
+                    pageSizeOptions={["50", "100", "200"]}
+                    showQuickJumper
+                    onChange={(current, pageSize) => setProjectPagination({current, pageSize})}
+                />
             </section>
             <Modal title="添加项目" open={isCreateModalOpen} destroyOnClose onCancel={() => setIsCreateModalOpen(false)} onOk={() => createProjectFormRef.current?.submit()} okText="保存" cancelText="取消" width={760}>
                 <ProjectForm data={DEFAULT_PROJECT_DATA} type="create" onSubmit={createProject} hideNavigation hideSubmitButton onFormReady={(form) => createProjectFormRef.current = form}/>

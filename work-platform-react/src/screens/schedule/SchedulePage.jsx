@@ -85,8 +85,10 @@ const SchedulePage = () => {
     const projectTreeRef = useRef(null);
     const toolbarRootRef = useRef(null);
     const hiddenRange = useHiddenTimeRange({userName: user?.name, messageApi});
-    const schedule = useScheduleManagement({calendarRef, projectOptions,
-        messageApi, initialEvents: events});
+    const schedule = useScheduleManagement({
+        calendarRef, projectOptions,
+        messageApi, initialEvents: events
+    });
     const [selectionPreview, setSelectionPreview] = useState(null);
     const [chartType, setChartType] = useState("pie");
     const [isStatisticsOpen, setIsStatisticsOpen] = useState(false);
@@ -95,7 +97,7 @@ const SchedulePage = () => {
         viewType: "timeGridWeek"
     }));
     const statistics = useMemo(() =>
-        getProjectTimeStatistics(schedule.scheduleEvents, statisticsRange),
+            getProjectTimeStatistics(schedule.scheduleEvents, statisticsRange),
         [schedule.scheduleEvents, statisticsRange]);
     const totalHours = statistics.reduce((sum, item) => sum + item.value, 0);
 

@@ -78,6 +78,10 @@ public class ProjectService {
         BeanUtils.copyProperties(project,projectDto);
         projectDto.setTypeName(project.getType().getName());
         projectDto.setTypeId(project.getType().getId());
+        projectDto.setCustomColor(project.getColor());
+        if (project.getColor() == null) {
+            projectDto.setColor(project.getType().getColor() == null ? DEFAULT_PROJECT_COLOR : project.getType().getColor());
+        }
         return projectDto;
     }
 
@@ -91,9 +95,6 @@ public class ProjectService {
         UserDetail loginUser = Objects.requireNonNull(UserUtil.getLoginUser());
         ProjectDo project = new ProjectDo();
         BeanUtils.copyProperties(projectParam,project);
-        if (project.getColor() == null) {
-            project.setColor(DEFAULT_PROJECT_COLOR);
-        }
         project.setUserId(loginUser.getId());
         if ("".equals(projectParam.getEndDate())) {
             project.setEndDate(null);

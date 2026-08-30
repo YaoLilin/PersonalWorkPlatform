@@ -72,8 +72,18 @@ const ProjectTimeChart = ({data, chartType, expanded = false}) => {
         }],
     };
 
-    return <ReactECharts className={expanded ? "schedule-project-time-chart-expanded" : "schedule-project-time-chart"}
-                         option={option} notMerge/>;
+    const resizeAfterContainerVisible = (chart) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => chart.resize()));
+    };
+
+    return (
+        <ReactECharts
+            className={expanded ? "schedule-project-time-chart-expanded" : "schedule-project-time-chart"}
+            option={option}
+            notMerge
+            onChartReady={resizeAfterContainerVisible}
+        />
+    );
 };
 
 /**

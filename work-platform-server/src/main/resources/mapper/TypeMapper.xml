@@ -13,7 +13,7 @@
         select * from type where name = #{name} and parentid is null and user_id = #{userId} limit 1
     </select>
     <insert id="addType" parameterType="com.personalwork.domain.entity.TypeDo">
-        insert into type (name,parentid,user_id) values(#{name},#{parentId},#{userId});
+        insert into type (name,parentid,color,user_id) values(#{name},#{parentId},#{color},#{userId});
     </insert>
     <delete id="deleteType" >
         delete from type where id = #{id};
@@ -22,7 +22,8 @@
         update type
         <set>
             name = #{name},
-            parentid =#{parentId}
+            parentid =#{parentId},
+            color = #{color}
         </set>
         where id = #{id};
     </update>

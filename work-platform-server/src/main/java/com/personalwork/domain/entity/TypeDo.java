@@ -16,6 +16,7 @@ public class TypeDo {
     private Integer id;
     private String name;
     private Integer parentId ;
+    private String color;
     private Integer userId;
 
     @Override

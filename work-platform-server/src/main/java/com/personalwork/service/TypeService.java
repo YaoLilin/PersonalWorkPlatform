@@ -70,6 +70,7 @@ public class TypeService {
                 node.setValue(item.getId());
                 node.setKey(item.getId());
                 node.setTitle(item.getName());
+                node.setColor(item.getColor());
                 node.setChildren(getChildrenNode(item.getId(),typeList));
                 parentNodes.add(node);
             }
@@ -85,6 +86,7 @@ public class TypeService {
                 node.setValue(item.getId());
                 node.setKey(item.getId());
                 node.setTitle(item.getName());
+                node.setColor(item.getColor());
                 node.setChildren(getChildrenNode(item.getId(),typeList));
                 result.add(node);
             }

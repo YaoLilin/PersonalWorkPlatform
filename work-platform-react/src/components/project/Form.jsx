@@ -9,7 +9,6 @@ import dayjs from "dayjs"
 
 const TYPE_CREATE = "create";
 const TYPE_EDIT = "edit";
-const DEFAULT_PROJECT_COLOR = '#1677FF';
 const COLOR_PRESETS = [
     {label: '常用颜色', colors: ['#1677FF', '#52C41A', '#FAAD14', '#FF4D4F', '#722ED1', '#13C2C2', '#EB2F96', '#FA8C16', '#A0D911', '#2F54EB']},
 ];
@@ -26,6 +25,9 @@ const ProjectForm = ({data, onSubmit, type = TYPE_CREATE, hideNavigation = false
     const [endDateDisabled,setEndDateDisabled] = useState(data?.isStartDateOnly ===1);
     const format = 'YYYY-MM-DD';
 
+    /**
+     * 将表单实例提供给弹窗页脚按钮调用。
+     */
     useEffect(() => {
         onFormReady?.(form);
     }, [form, onFormReady]);
@@ -36,7 +38,7 @@ const ProjectForm = ({data, onSubmit, type = TYPE_CREATE, hideNavigation = false
             name: values.name,
             progress: values.progress ? Number(values.progress) : 0,
             important: values.important ,
-            color: values.color || DEFAULT_PROJECT_COLOR,
+            color: values.color || null,
             state: values.state,
             type: values.type,
             startDate: values.startDate.format('YYYY-MM-DD'),
@@ -199,10 +201,15 @@ const ProjectForm = ({data, onSubmit, type = TYPE_CREATE, hideNavigation = false
                                 label="颜色"
                                 name="color"
                                 labelAlign={'left'}
-                                initialValue={data.color || DEFAULT_PROJECT_COLOR}
+                                initialValue={data.customColor !== undefined ? data.customColor : data.color}
                                 getValueFromEvent={(color, hex) => hex}
                             >
-                                <ColorPicker showText presets={COLOR_PRESETS}/>
+                                <ColorPicker
+                                    allowClear
+                                    showText
+                                    presets={COLOR_PRESETS}
+                                    onClear={() => form.setFieldValue("color", null)}
+                                />
                             </Form.Item>
                         </Col>
                         {!hideSubmitButton && <Col span={24}>

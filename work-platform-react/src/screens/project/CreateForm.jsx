@@ -23,7 +23,7 @@ const CreateForm = () => {
         progress:'',
         state:'',
         important:'',
-        color: '#1677FF',
+        color: null,
         startDate :'',
         endDate:'',
         closeDate:'',
