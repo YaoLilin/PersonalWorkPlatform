@@ -1,7 +1,7 @@
 package com.personalwork.service.count;
 
-import com.personalwork.dao.ProjectMapper;
 import com.personalwork.constants.CountType;
+import com.personalwork.dao.ProjectMapper;
 import com.personalwork.domain.dto.MonthProjectCountDto;
 import com.personalwork.domain.dto.MonthRecordDto;
 import com.personalwork.domain.dto.WorkTimeProportionDto;
@@ -44,13 +44,13 @@ public class ChartService {
                         continue;
                     }
                     workTime = workTimeMap.computeIfAbsent(projectCount.getProjectId(),
-                            k -> new WorkTimeProportionDto(projectDo, null, projectCount.getMinute()));
+                            k -> new WorkTimeProportionDto(projectDo, null, 0));
                 }else {
                     if (!ParamUtil.inParamTypes(param, projectDo)) {
                         continue;
                     }
                     workTime = workTimeMap.computeIfAbsent(projectDo.getType().getId(),
-                            k -> new WorkTimeProportionDto(null, projectDo.getType(), projectCount.getMinute()));
+                            k -> new WorkTimeProportionDto(null, projectDo.getType(), 0));
                 }
                 workTime.setMinutes(workTime.getMinutes() + projectCount.getMinute());
             }
