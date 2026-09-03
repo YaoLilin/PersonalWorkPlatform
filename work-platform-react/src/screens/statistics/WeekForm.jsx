@@ -1,13 +1,11 @@
-import React, {useContext, useEffect, useMemo, useState} from "react";
+import React, {useContext, useMemo, useState} from "react";
 import {useLoaderData, useNavigate, useParams} from "react-router-dom";
 import {Form, Row} from "antd";
 import FormTitle from "../../components/ui/FormTitle";
-import ProjectTable from "../../components/statistics/form/ProjectTable";
 import {WeeksApi} from "../../request/weeksApi";
 import dayjs from "dayjs";
 import FormFrame from "../../components/statistics/form/FormFrame";
 import {useForm} from "antd/es/form/Form";
-import TimeCountChart from "../../components/statistics/form/TimeCountChart";
 import ProjectCount from "../../components/statistics/ProjectCount";
 import GoalApi from "../../request/goalApi";
 import GoalList from "../../components/goal/List";
@@ -23,22 +21,29 @@ import useDeleteDialog from "./useDeleteDialog";
 import useHeadMenus from "./useHeadMenus";
 import handleLoaderError from "../../util/handleLoaderError";
 import ProjectProgressList from "@/components/statistics/form/ProjectProgressList";
+import WorkTimePieChart from "../../components/statistics/charts/WorkTimePieChart";
+import DateUtil from "../../util/DateUtil";
+import ScheduleApi from "../../request/scheduleApi";
+import WeekSchedule from "./WeekSchedule";
 
 
 export async function loader({params}) {
     try {
         const weekId = params.weekId;
-        const formData = weekId ? await WeeksApi.getForm(weekId) : {};
+        const [formData, scheduleEvents] = await Promise.all([
+            weekId ? WeeksApi.getForm(weekId) : {},
+            ScheduleApi.getSchedule(),
+        ]);
         const goalsResult = await GoalApi.getWeekGoals({weekDate:formData.date});
         const goals = goalsResult.length > 0 ? goalsResult[0].goals : [];
-        return {formData, goals};
+        return {formData, goals, scheduleEvents};
     } catch (e) {
         handleLoaderError(e);
     }
 }
 
 const WeekForm = ({isFormCreate = false}) => {
-    const {formData,goals:goalList} = useLoaderData();
+    const {formData,goals:goalList, scheduleEvents} = useLoaderData();
     const {date, mark, summary,projectProgressList} = formData;
     const navigate = useNavigate();
     const [form] = useForm();
@@ -49,7 +54,7 @@ const WeekForm = ({isFormCreate = false}) => {
         }
         return [];
     }, [formData?.projectTime]);
-    const [tableData, setTableData] = useState(projectTimeData);
+    const [tableData] = useState(projectTimeData);
     const [theWeekProblems, setTheWeekProblems] = useState(formData?.theWeekProblems ? formData.theWeekProblems : []);
     const [nowProblems, setNowProblems] = useState(formData.nowProblems);
     const [weekValue, setWeekValue] = useState(date ? dayjs(date) : null);
@@ -61,20 +66,12 @@ const WeekForm = ({isFormCreate = false}) => {
     const projectTimeCount = useMemo(()=>{
         return merger(tableData);
     },[tableData]);
-    const chartData = useMemo(() => {
-        return projectTimeCount.map(i => ({ projectName: i.name, minutes: i.minutes }));
-    }, [projectTimeCount]);
-
     const handleSubmit = useWeekFormSubmit(isFormCreate, tableData, theWeekProblems, projectTimeCount, weekIdFromParam
                          ,projectProgress);
     const {deleteDialog, setDeleteDialogOpen} = useDeleteDialog(weekIdFromParam);
     const {headButtons,dropMenu,editAble} =
         useHeadMenus(form, isFormCreate,()=> setDeleteDialogOpen(true));
     debugger
-
-    const onTableChange = (data) => {
-        setTableData(data.slice());
-    }
 
     const fetchGoals = async (date)=>{
         const year = dayjs(date).year();
@@ -99,6 +96,16 @@ const WeekForm = ({isFormCreate = false}) => {
             setGoals(goals);
         }
     }
+
+    /**
+     * <p>获取当前周的利用时间占比统计条件。</p>
+     *
+     * @returns {Object} 当前周的自定义日期统计条件
+     */
+    const getChartCondition = () => {
+        const {startDate, endDate} = DateUtil.getWeekRangeByDate(date);
+        return {dateRangeType: 3, startDate, endDate};
+    };
 
     return (
         <FormFrame backEvent={() => navigate('/weeks')}
@@ -134,7 +141,10 @@ const WeekForm = ({isFormCreate = false}) => {
                 </Row>
                 <FormTitle name='项目情况'/>
                 <FullRow>
-                    <ProjectTable onChange={onTableChange} data={tableData} week={weekValue} isEdit={editAble}/>
+                    <WeekSchedule
+                        weekDate={weekValue?.format("YYYY-MM-DD")}
+                        scheduleEvents={scheduleEvents}
+                    />
                 </FullRow>
                 <FormTitle name='任务统计'/>
                 <Row gutter={0}>
@@ -143,7 +153,13 @@ const WeekForm = ({isFormCreate = false}) => {
                 <Row>
                     {
                         !editAble && projectTimeCount.length > 0 ?
-                            <TimeCountChart projectTime={chartData} weekId={weekIdFromParam}/> : null
+                            <div style={{width: 500, height: 300}}>
+                                <WorkTimePieChart
+                                    showCondition={false}
+                                    showLegend={false}
+                                    defaultCondition={getChartCondition()}
+                                />
+                            </div> : null
                     }
                 </Row>
                 <FormTitle name='项目成果'/>
@@ -173,4 +189,3 @@ const WeekForm = ({isFormCreate = false}) => {
 }
 
 export default WeekForm;
-

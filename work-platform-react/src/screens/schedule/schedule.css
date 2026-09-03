@@ -18,6 +18,11 @@
     height: 100%;
 }
 
+.week-schedule {
+    height: 640px;
+    min-height: 0;
+}
+
 .schedule-calendar-wrapper .fc .fc-button-primary,
 .schedule-calendar-wrapper .fc .fc-button-primary:disabled {
     border-color: #67b3fb;

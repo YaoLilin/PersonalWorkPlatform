@@ -4,8 +4,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin, {Draggable} from "@fullcalendar/interaction";
 import zhCnLocale from "@fullcalendar/core/locales/zh-cn";
-import {Card, Checkbox, Tree} from "antd";
-import {ClockCircleOutlined} from "@ant-design/icons";
+import {Card, Tree} from "antd";
 import dayjs from "dayjs";
 import {createRoot} from "react-dom/client";
 import {useContext, useEffect, useMemo, useRef, useState} from "react";
@@ -16,6 +15,7 @@ import {ProjectApi} from "../../request/projectApi";
 import {MessageContext} from "@/provider/MessageProvider";
 import {UserContext} from "@/provider/UserProvider";
 import {ScheduleOverlays} from "./components/ScheduleOverlays";
+import HiddenTimeRangeButton from "./components/HiddenTimeRangeButton";
 import {ScheduleStatisticsCard} from "./components/ScheduleStatistics";
 import {useHiddenTimeRange} from "./hooks/useHiddenTimeRange";
 import {useScheduleManagement} from "./hooks/useScheduleManagement";
@@ -29,30 +29,6 @@ import {
     toProjectTree,
     toScheduleEvents
 } from "./utils/scheduleUtils";
-
-/**
- * 隐藏时间段工具栏内容。
- *
- * @param {{range: Object|null, onEnabledChange: Function}} props 时间段参数
- * @param {Object|null} props.range 当前隐藏时间段设置
- * @param {string} props.range.start 隐藏时间段的开始时间
- * @param {string} props.range.end 隐藏时间段的结束时间
- * @param {boolean} props.range.enabled 是否启用隐藏时间段
- * @param {Function} props.onEnabledChange 切换隐藏时间段启用状态的回调
- * @returns {JSX.Element} 按钮内容
- */
-const HiddenTimeRangeButton = ({range, onEnabledChange}) => (
-    <span className="schedule-hidden-time-range-button-content">
-        <ClockCircleOutlined/>
-        {range && (
-            <>
-                <span>{range.start} - {range.end}</span>
-                <Checkbox className="schedule-hidden-time-range-checkbox" checked={range.enabled}
-                          onChange={(event) => onEnabledChange(event.target.checked)}/>
-            </>
-        )}
-    </span>
-);
 
 /**
  * 加载日程页面所需的事件和项目数据。

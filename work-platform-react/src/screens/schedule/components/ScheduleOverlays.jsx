@@ -1,8 +1,9 @@
 import {BarChartOutlined, PieChartOutlined} from "@ant-design/icons";
-import {Button, DatePicker, Input, Modal, TimePicker} from "antd";
+import {Button, DatePicker, Input, Modal} from "antd";
 import ProjectBrowser from "../../../components/public/projectBrowser";
 import {getProjectTimeStatisticsTitle} from "../utils/scheduleUtils";
 import {ProjectTimeStatisticsContent} from "./ScheduleStatistics";
+import HiddenTimeRangeModal from "./HiddenTimeRangeModal";
 
 /**
  * 日程编辑浮层。
@@ -106,22 +107,13 @@ export const ScheduleOverlays = ({
         )}
         {editor && <ScheduleEventEditor editor={editor} projectOptions={projectOptions} onChange={setEditor}
                                         onSave={onSaveEditor}/>} 
-        <Modal
-            title="隐藏时间段"
+        <HiddenTimeRangeModal
             open={isHiddenRangeOpen}
-            onOk={onSaveHiddenRange}
-            onCancel={onCloseHiddenRange}
-            okText="确定"
-            cancelText="取消"
-        >
-            <TimePicker.RangePicker
-                value={hiddenRangeEditor}
-                format="HH:mm"
-                minuteStep={30}
-                placeholder={["开始时间", "结束时间"]}
-                onChange={setHiddenRangeEditor}
-            />
-        </Modal>
+            value={hiddenRangeEditor}
+            onChange={setHiddenRangeEditor}
+            onSave={onSaveHiddenRange}
+            onClose={onCloseHiddenRange}
+        />
         <Modal
             className="schedule-project-time-modal"
             open={isStatisticsOpen}
