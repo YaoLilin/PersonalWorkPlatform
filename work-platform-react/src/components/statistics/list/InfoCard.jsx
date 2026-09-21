@@ -1,8 +1,11 @@
 import {Tag} from "antd";
-import {useNavigate} from "react-router-dom";
-import DateUtil from "../../../util/DateUtil";
-
-const InfoCard = ({data,title,onClick,bottomFlag,style}) => {
+/**
+ * 月统计记录展示卡片。
+ *
+ * @param {{data: Object, title: React.ReactNode, onClick: Function, bottomFlag?: React.ReactNode, style?: Object}} props 卡片展示数据、标题、交互回调和可选内容。
+ * @returns {JSX.Element} 可点击的统计记录卡片。
+ */
+const InfoCard = ({data, title, onClick, bottomFlag, style}) => {
     const {mark, hours,minutes, projectTime, summary,id} = data;
 
     const getMarkColor = (mark)=>{
@@ -25,23 +28,16 @@ const InfoCard = ({data,title,onClick,bottomFlag,style}) => {
         }
     }
 
-    if (projectTime) {
-        projectTime.sort((a,b) => b.minutes - a.minutes);
-    }
+    const sortedProjectTime = [...(projectTime ?? [])].sort((firstProject, secondProject) =>
+        secondProject.minutes - firstProject.minutes);
 
     return (
-        <div style={{
+        <article className="statistics-info-card" style={{
             width: 350,
-            height: 350,
-            backgroundColor: "white",
-            borderRadius: "12px",
-            padding: "20px",
-            cursor: "pointer",
-            marginRight:'40px',
             position:"relative",
             overflow:"hidden",
             ...style
-        }} onClick={()=>onClick(id)}>
+        }} onClick={() => onClick(id)}>
             <div>
                 {title}
             </div>
@@ -59,7 +55,7 @@ const InfoCard = ({data,title,onClick,bottomFlag,style}) => {
                 项目时间：
             </div>
             <div>
-                {projectTime.map((item,index) =>{
+                {sortedProjectTime.map((item,index) =>{
                     return (
                         <div style={{display: "flex", paddingTop: 4}} key={index}>
                             <div style={{flex:2, overflow: "hidden"}}>{item.projectName}</div>
@@ -81,7 +77,7 @@ const InfoCard = ({data,title,onClick,bottomFlag,style}) => {
                 {summary}
             </div>
             {bottomFlag}
-        </div>
+        </article>
     );
 }
 export default InfoCard;

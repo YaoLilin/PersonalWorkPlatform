@@ -1,10 +1,10 @@
-import {useLoaderData} from "react-router-dom";
+import {useLoaderData, useRevalidator} from "react-router-dom";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin, {Draggable} from "@fullcalendar/interaction";
 import zhCnLocale from "@fullcalendar/core/locales/zh-cn";
-import {Card, Tree} from "antd";
+import {Card, Tabs, Tree} from "antd";
 import dayjs from "dayjs";
 import {createRoot} from "react-dom/client";
 import {useContext, useEffect, useMemo, useRef, useState} from "react";
@@ -12,20 +12,24 @@ import "./schedule.css";
 import ScheduleApi from "../../request/scheduleApi";
 import {TypeApi} from "../../request/typeApi";
 import {ProjectApi} from "../../request/projectApi";
+import {ChecklistApi} from "../../request/checklistApi";
 import {MessageContext} from "@/provider/MessageProvider";
 import {UserContext} from "@/provider/UserProvider";
 import {ScheduleOverlays} from "./components/ScheduleOverlays";
+import ChecklistEditorModal from "../checklist/ChecklistEditorModal";
 import HiddenTimeRangeButton from "./components/HiddenTimeRangeButton";
 import {ScheduleStatisticsCard} from "./components/ScheduleStatistics";
 import {useHiddenTimeRange} from "./hooks/useHiddenTimeRange";
 import {useScheduleManagement} from "./hooks/useScheduleManagement";
 import {
     getCurrentWeekRange,
+    getChecklistTypeColors,
     getHiddenTimeRangeHint,
     getPointerScheduleTime,
     getProjectTimeStatistics,
     getSelectionTimeRange,
     isHiddenTimeSlot,
+    toChecklistTree,
     toProjectTree,
     toScheduleEvents
 } from "./utils/scheduleUtils";
@@ -36,14 +40,23 @@ import {
  * @returns {Promise<Object>} 页面初始化数据
  */
 export async function loader() {
-    const [projectTimes,
-        typeTree, projects] =
-        await Promise.all([ScheduleApi.getSchedule(), TypeApi.getTypeTree({}), ProjectApi.getProjects({})]);
+    const [projectTimes, typeTree, projects, checklistTypeTree, checklists] = await Promise.all([
+        ScheduleApi.getSchedule(),
+        TypeApi.getTypeTree({}),
+        ProjectApi.getProjects({}),
+        ChecklistApi.getTypeTree(),
+        ChecklistApi.getChecklists(),
+    ]);
     const activeProjects = projects.filter((project) => project.state === 1);
+    const checklistTypeColors = getChecklistTypeColors(checklistTypeTree, checklists);
     return {
-        events: toScheduleEvents(projectTimes),
+        events: toScheduleEvents(projectTimes, checklistTypeColors),
         projectTree: toProjectTree(typeTree, activeProjects),
-        projectOptions: activeProjects.map((project) => ({value: project.id, label: project.name}))
+        projectOptions: activeProjects.map((project) => ({value: project.id, label: project.name})),
+        projects,
+        checklistTypeTree,
+        checklistTypeColors,
+        checklistTree: toChecklistTree(checklistTypeTree, checklists),
     };
 }
 
@@ -54,7 +67,8 @@ export async function loader() {
  * @returns {JSX.Element} 页面内容
  */
 const SchedulePage = () => {
-    const {events, projectTree, projectOptions} = useLoaderData();
+    const {events, projectTree, projectOptions, projects, checklistTree, checklistTypeTree, checklistTypeColors} = useLoaderData();
+    const {revalidate} = useRevalidator();
     const messageApi = useContext(MessageContext);
     const {user} = useContext(UserContext);
     const calendarRef = useRef(null);
@@ -62,10 +76,16 @@ const SchedulePage = () => {
     const toolbarRootRef = useRef(null);
     const hiddenRange = useHiddenTimeRange({userName: user?.name, messageApi});
     const schedule = useScheduleManagement({
-        calendarRef, projectOptions,
-        messageApi, initialEvents: events
+        calendarRef,
+        projectOptions,
+        messageApi,
+        initialEvents: events,
+        checklistTypeColors,
+        onChecklistCreated: revalidate,
     });
     const [selectionPreview, setSelectionPreview] = useState(null);
+    const [sidebarTab, setSidebarTab] = useState("checklists");
+    const [editingChecklist, setEditingChecklist] = useState(null);
     const [chartType, setChartType] = useState("pie");
     const [isStatisticsOpen, setIsStatisticsOpen] = useState(false);
     const [statisticsRange, setStatisticsRange] = useState(() => ({
@@ -83,11 +103,15 @@ const SchedulePage = () => {
     useEffect(() => {
         if (!projectTreeRef.current) return undefined;
         const draggable = new Draggable(projectTreeRef.current, {
-            itemSelector: ".schedule-project-item",
+            itemSelector: ".schedule-project-item, .schedule-checklist-item",
             eventData: (element) => ({
-                title: element.dataset.projectName,
+                title: element.dataset.scheduleName || element.dataset.projectName,
                 duration: "01:00",
-                extendedProps: {projectId: element.dataset.projectId}
+                extendedProps: {
+                    projectId: element.dataset.projectId || undefined,
+                    checklistId: element.dataset.checklistId || undefined,
+                    createChecklist: element.classList.contains("schedule-project-item"),
+                }
             })
         });
         return () => draggable.destroy();
@@ -211,6 +235,9 @@ const SchedulePage = () => {
         }
     };
     const toggleChart = () => setChartType((current) => current === "pie" ? "bar" : "pie");
+    const openChecklistEditor = (_, info) => {
+        if (info.node.checklist) setEditingChecklist(info.node.checklist);
+    };
     return (
         <Card className="schedule-page" bordered={false}>
             <div className="schedule-layout">
@@ -219,8 +246,27 @@ const SchedulePage = () => {
                 </div>
                 <aside className="schedule-sidebar" ref={projectTreeRef}>
                     <div className="schedule-project-tree">
-                        <div className="schedule-project-tree-title">项目列表</div>
-                        <Tree treeData={projectTree} defaultExpandAll blockNode/>
+                        <Tabs
+                            activeKey={sidebarTab}
+                            onChange={setSidebarTab}
+                            items={[
+                                {
+                                    key: "checklists",
+                                    label: "清单列表",
+                                    children: <Tree
+                                        treeData={checklistTree}
+                                        defaultExpandAll
+                                        blockNode
+                                        onSelect={openChecklistEditor}
+                                    />,
+                                },
+                                {
+                                    key: "projects",
+                                    label: "项目列表",
+                                    children: <Tree treeData={projectTree} defaultExpandAll blockNode/>,
+                                },
+                            ]}
+                        />
                     </div>
                     <ScheduleStatisticsCard
                         data={statistics}
@@ -252,6 +298,17 @@ const SchedulePage = () => {
                 viewType={statisticsRange.viewType}
                 chartType={chartType}
                 onChartTypeChange={toggleChart}
+            />
+            <ChecklistEditorModal
+                open={Boolean(editingChecklist)}
+                checklist={editingChecklist}
+                projects={projects}
+                typeTree={checklistTypeTree}
+                onCancel={() => setEditingChecklist(null)}
+                onSaved={() => {
+                    setEditingChecklist(null);
+                    revalidate();
+                }}
             />
         </Card>
     );

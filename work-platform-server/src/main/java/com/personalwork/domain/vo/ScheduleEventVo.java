@@ -14,6 +14,9 @@ public class ScheduleEventVo {
     private Integer projectId;
     private String projectName;
     private String projectColor;
+    private Integer checklistId;
+    private String checklistName;
+    private String checklistTypeColor;
     private String scheduleName;
     private String description;
     private String date;

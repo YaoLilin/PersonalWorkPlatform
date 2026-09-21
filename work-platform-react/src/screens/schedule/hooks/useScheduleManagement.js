@@ -1,4 +1,4 @@
-import {useCallback, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import dayjs from "dayjs";
 import ScheduleApi from "../../../request/scheduleApi";
 import {
@@ -16,17 +16,30 @@ const VIEWPORT_OFFSET = 8;
 /**
  * 管理日程的编辑、创建、删除与拖拽更新。
  *
- * @param {{calendarRef: Object, projectOptions: Array, messageApi: Object, initialEvents: Array}} options 业务依赖
+ * @param {{calendarRef: Object, projectOptions: Array, messageApi: Object, initialEvents: Array, checklistTypeColors: Object, onChecklistCreated: Function}} options 业务依赖
  * @returns {Object} 日程状态与操作
  */
-export function useScheduleManagement({calendarRef, projectOptions, messageApi, initialEvents}) {
+export function useScheduleManagement({
+    calendarRef,
+    projectOptions,
+    messageApi,
+    initialEvents,
+    checklistTypeColors,
+    onChecklistCreated,
+}) {
     const [scheduleEvents, setScheduleEvents] = useState(initialEvents);
     const [contextMenu, setContextMenu] = useState(null);
     const [eventEditor, setEventEditor] = useState(null);
+
+    /**
+     * 路由数据重新加载后，以服务端最新的日程和清单类型颜色更新日历。
+     */
+    useEffect(() => setScheduleEvents(initialEvents), [initialEvents]);
+
     const replaceEvent = useCallback((scheduleEvent) => {
-        const [updated] = toScheduleEvents([scheduleEvent]);
+        const [updated] = toScheduleEvents([scheduleEvent], checklistTypeColors);
         setScheduleEvents((items) => items.map((item) => item.id === updated.id ? updated : item));
-    }, []);
+    }, [checklistTypeColors]);
     const closeEditor = useCallback(() => setEventEditor(null), []);
     const editorPosition = (left, top) => ({
         left: Math.max(VIEWPORT_OFFSET, Math.min(left, window.innerWidth - EDITOR_WIDTH - VIEWPORT_OFFSET)),
@@ -41,11 +54,17 @@ export function useScheduleManagement({calendarRef, projectOptions, messageApi, 
             title: editor.title.trim() || project?.label || "未命名日程",
             start: start.toDate(),
             end: end.toDate(),
-            extendedProps: {projectId: editor.projectId, description: editor.description}
+            extendedProps: {
+                projectId: editor.projectId,
+                checklistId: editor.checklistId,
+                createChecklist: editor.createChecklist,
+                description: editor.description,
+            }
         };
         try {
             const saved = await ScheduleApi.createSchedule(toScheduleParam(event));
-            setScheduleEvents((items) => [...items, toScheduleEvents([saved])[0]]);
+            setScheduleEvents((items) => [...items, toScheduleEvents([saved], checklistTypeColors)[0]]);
+            if (editor.createChecklist && saved.checklistId) onChecklistCreated();
         } catch (error) {
             messageApi.error(getErrorMessage(error), 5);
         }
@@ -77,11 +96,13 @@ export function useScheduleManagement({calendarRef, projectOptions, messageApi, 
         event.setEnd(end.toDate());
         event.setExtendedProp("description", editor.description);
         event.setExtendedProp("projectId", editor.projectId);
+        event.setExtendedProp("checklistId", editor.checklistId);
         setEventEditor(null);
         try {
             const saved = await ScheduleApi.updateSchedule(event.extendedProps.scheduleId || event.id, toScheduleParam(event));
-            event.setProp("backgroundColor", saved.projectColor || "#1677FF");
-            event.setProp("borderColor", saved.projectColor || "#1677FF");
+            const [savedEvent] = toScheduleEvents([saved], checklistTypeColors);
+            event.setProp("backgroundColor", savedEvent.backgroundColor);
+            event.setProp("borderColor", savedEvent.borderColor);
             replaceEvent(saved);
         } catch (error) {
             event.setProp("title", editor.originalEvent.title);
@@ -110,12 +131,14 @@ export function useScheduleManagement({calendarRef, projectOptions, messageApi, 
             title: info.event.title,
             description: info.event.extendedProps.description || "",
             projectId: info.event.extendedProps.projectId,
+            checklistId: info.event.extendedProps.checklistId,
             originalEvent: {
                 title: info.event.title,
                 start: info.event.start,
                 end: end.toDate(),
                 description: info.event.extendedProps.description || "",
                 projectId: info.event.extendedProps.projectId,
+                checklistId: info.event.extendedProps.checklistId,
                 backgroundColor: info.event.backgroundColor,
                 borderColor: info.event.borderColor
             },
@@ -158,11 +181,14 @@ export function useScheduleManagement({calendarRef, projectOptions, messageApi, 
             isNew: true,
             title: info.event.title,
             description: info.event.extendedProps.description || "",
-            projectId: Number(info.event.extendedProps.projectId),
+            projectId: info.event.extendedProps.projectId ? Number(info.event.extendedProps.projectId) : undefined,
+            checklistId: info.event.extendedProps.checklistId ? Number(info.event.extendedProps.checklistId) : undefined,
+            createChecklist: Boolean(info.event.extendedProps.createChecklist),
             originalEvent: {
                 title: "",
                 description: "",
                 projectId: undefined,
+                checklistId: undefined,
                 start: info.event.start,
                 end: end.toDate()
             },

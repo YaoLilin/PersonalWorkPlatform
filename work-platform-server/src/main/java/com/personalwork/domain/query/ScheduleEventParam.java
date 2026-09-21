@@ -6,13 +6,15 @@ import lombok.Data;
 
 /**
  * 日程新增和编辑参数。<br>
- * <p>日程名称独立于项目名称保存，避免编辑日程时影响项目本身。</p>
+ * <p>日程名称独立于项目名称保存；关联清单时，名称将同步为清单名称。</p>
  *
  * @author 姚礼林
  */
 @Data
 public class ScheduleEventParam {
     private Integer projectId;
+    private Integer checklistId;
+    private Boolean createChecklist;
     @NotBlank(message = "日程名称不能为空")
     @Size(max = 255, message = "日程名称不能超过255个字符")
     private String scheduleName;

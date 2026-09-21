@@ -3,12 +3,15 @@ package com.personalwork.service;
 import com.personalwork.dao.ProjectMapper;
 import com.personalwork.dao.ProjectTimeMapper;
 import com.personalwork.dao.TypeMapper;
+import com.personalwork.dao.ChecklistMapper;
 import com.personalwork.constants.ProjectState;
 import com.personalwork.domain.entity.ProjectDo;
 import com.personalwork.domain.entity.ProjectTimeDo;
 import com.personalwork.domain.entity.TypeDo;
+import com.personalwork.domain.entity.ChecklistDo;
 import com.personalwork.domain.query.ScheduleEventParam;
 import com.personalwork.domain.vo.ScheduleEventVo;
+import com.personalwork.exception.DbOperateException;
 import com.personalwork.exception.MethodParamInvalidException;
 import com.personalwork.security.bean.UserDetail;
 import com.personalwork.util.UserUtil;
@@ -46,6 +49,7 @@ public class ScheduleService {
     private final ProjectTimeMapper projectTimeMapper;
     private final ProjectMapper projectMapper;
     private final TypeMapper typeMapper;
+    private final ChecklistMapper checklistMapper;
     private final WeekFormService weekFormService;
 
     /**
@@ -67,9 +71,12 @@ public class ScheduleService {
     public ScheduleEventVo createSchedule(ScheduleEventParam param) {
         LocalDateTimeRange timeRange = validateTimeRange(param);
         ProjectDo project = getUserProject(param.getProjectId());
+        ChecklistDo checklist = getChecklist(param.getChecklistId());
+        checklist = createChecklistForProject(param, project, checklist);
+        updateChecklistName(checklist, param.getScheduleName().trim());
         Set<LocalDate> weekStarts = getWeekStarts(timeRange);
         weekStarts.forEach(weekFormService::ensureWeekForm);
-        ProjectTimeDo projectTime = buildProjectTime(param, project, timeRange);
+        ProjectTimeDo projectTime = buildProjectTime(param, project, checklist, timeRange);
         projectTime.setWeekId(weekFormService.ensureWeekForm(getWeekStart(timeRange.startDate())).getId());
         projectTimeMapper.insert(projectTime);
         recalculateWeeks(weekStarts);
@@ -87,11 +94,13 @@ public class ScheduleService {
     public ScheduleEventVo updateSchedule(Integer id, ScheduleEventParam param) {
         ProjectTimeDo originalProjectTime = getSchedule(id);
         LocalDateTimeRange newTimeRange = validateTimeRange(param);
+        ChecklistDo checklist = getChecklist(param.getChecklistId());
+        updateChecklistName(checklist, param.getScheduleName().trim());
         ProjectDo project = getUserProject(param.getProjectId());
         Set<LocalDate> weekStarts = getWeekStarts(originalProjectTime);
         weekStarts.addAll(getWeekStarts(newTimeRange));
         weekStarts.forEach(weekFormService::ensureWeekForm);
-        ProjectTimeDo projectTime = buildProjectTime(param, project, newTimeRange);
+        ProjectTimeDo projectTime = buildProjectTime(param, project, checklist, newTimeRange);
         projectTime.setId(id);
         projectTime.setWeekId(weekFormService.ensureWeekForm(getWeekStart(newTimeRange.startDate())).getId());
         projectTimeMapper.updateSchedule(projectTime);
@@ -126,6 +135,9 @@ public class ScheduleService {
         scheduleEvent.setProjectId(projectTime.getProject().getId());
         scheduleEvent.setProjectName(projectTime.getProject().getName());
         scheduleEvent.setProjectColor(projectTime.getProject().getColor());
+        scheduleEvent.setChecklistId(projectTime.getChecklistId());
+        scheduleEvent.setChecklistName(projectTime.getChecklistName());
+        scheduleEvent.setChecklistTypeColor(projectTime.getChecklistTypeColor());
         scheduleEvent.setScheduleName(projectTime.getScheduleName());
         scheduleEvent.setDescription(projectTime.getDescription());
         scheduleEvent.setDate(projectTime.getDate());
@@ -182,16 +194,70 @@ public class ScheduleService {
         return Objects.requireNonNull(projectMapper.getProjectByName(INBOX_NAME, userId));
     }
 
-    private ProjectTimeDo buildProjectTime(ScheduleEventParam param, ProjectDo project, LocalDateTimeRange timeRange) {
+    private ProjectTimeDo buildProjectTime(ScheduleEventParam param, ProjectDo project, ChecklistDo checklist,
+                                           LocalDateTimeRange timeRange) {
         ProjectTimeDo projectTime = new ProjectTimeDo();
         projectTime.setProject(project);
         projectTime.setDate(timeRange.startDate().format(DATE_FORMATTER));
         projectTime.setEndDate(timeRange.endDate().format(DATE_FORMATTER));
         projectTime.setStartTime(timeRange.startTime().toString());
         projectTime.setEndTime(timeRange.endTime().toString());
-        projectTime.setScheduleName(param.getScheduleName().trim());
+        projectTime.setChecklistId(checklist == null ? null : checklist.getId());
+        projectTime.setScheduleName(checklist == null ? param.getScheduleName().trim() : checklist.getName());
         projectTime.setDescription(param.getDescription());
         return projectTime;
+    }
+
+    private ChecklistDo getChecklist(Integer checklistId) {
+        if (checklistId == null) {
+            return null;
+        }
+        ChecklistDo checklist = checklistMapper.getByIdAndUserId(checklistId, getLoginUser().getId());
+        if (checklist == null) {
+            throw new MethodParamInvalidException("清单不存在或无权操作");
+        }
+        return checklist;
+    }
+
+    /**
+     * 为拖入日程的项目创建默认收集箱清单。
+     *
+     * @param param 日程参数
+     * @param project 已校验的关联项目
+     * @param checklist 已关联的清单
+     * @return 原有或新建的清单
+     */
+    private ChecklistDo createChecklistForProject(ScheduleEventParam param, ProjectDo project, ChecklistDo checklist) {
+        if (checklist != null || !Boolean.TRUE.equals(param.getCreateChecklist())) {
+            return checklist;
+        }
+        ChecklistDo createdChecklist = new ChecklistDo();
+        createdChecklist.setName(param.getScheduleName().trim());
+        createdChecklist.setProjectId(project.getId());
+        createdChecklist.setIsDone(0);
+        createdChecklist.setUserId(getLoginUser().getId());
+        if (!checklistMapper.insert(createdChecklist)) {
+            throw new DbOperateException("创建项目清单失败");
+        }
+        return createdChecklist;
+    }
+
+    /**
+     * 将日程编辑后的标题同步到关联清单及其所有日程。
+     *
+     * @param checklist 当前关联清单；未关联清单时为空
+     * @param scheduleName 用户输入的日程标题
+     */
+    private void updateChecklistName(ChecklistDo checklist, String scheduleName) {
+        if (checklist == null || Objects.equals(checklist.getName(), scheduleName)) {
+            return;
+        }
+        boolean updated = checklistMapper.updateNameByIdAndUserId(checklist.getId(), scheduleName, getLoginUser().getId());
+        if (!updated) {
+            throw new MethodParamInvalidException("清单名称更新失败");
+        }
+        checklist.setName(scheduleName);
+        projectTimeMapper.updateScheduleNameByChecklistId(checklist.getId(), scheduleName);
     }
 
     private LocalDateTimeRange validateTimeRange(ScheduleEventParam param) {

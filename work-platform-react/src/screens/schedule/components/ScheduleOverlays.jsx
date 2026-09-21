@@ -22,8 +22,12 @@ export const ScheduleEventEditor = ({editor, projectOptions, onChange, onSave}) 
     return (
         <div className="schedule-event-editor" style={{left: editor.left, top: editor.top}}
              onClick={(event) => event.stopPropagation()}>
-            <Input className="schedule-event-editor-title" value={editor.title} placeholder="日程名称"
-                   onChange={(event) => update({title: event.target.value})}/>
+            <Input
+                className="schedule-event-editor-title"
+                value={editor.title}
+                placeholder="日程名称"
+                onChange={(event) => update({title: event.target.value})}
+            />
             <DatePicker.RangePicker
                 className="schedule-event-editor-field"
                 value={editor.timeRange}
@@ -31,12 +35,14 @@ export const ScheduleEventEditor = ({editor, projectOptions, onChange, onSave}) 
                 format="YYYY-MM-DD HH:mm"
                 onChange={(timeRange) => timeRange && update({timeRange})}
             />
-            <div className="schedule-event-project-field">
-                <span>项目：</span>
-                <ProjectBrowser value={selectedProject ? {id: selectedProject.value, name: selectedProject.label} : null}
-                                style={{width: "100%"}}
-                                onChange={(project) => update({projectId: project?.id})}/>
-            </div>
+            {!editor.checklistId && (
+                <div className="schedule-event-project-field">
+                    <span>项目：</span>
+                    <ProjectBrowser value={selectedProject ? {id: selectedProject.value, name: selectedProject.label} : null}
+                                    style={{width: "100%"}}
+                                    onChange={(project) => update({projectId: project?.id})}/>
+                </div>
+            )}
             <Input.TextArea className="schedule-event-editor-field" value={editor.description} placeholder="日程描述"
                             onChange={(event) => update({description: event.target.value})}/>
             {editor.isNew && (

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personalwork.dao.ChecklistMapper">
+    <select id="listByUserId" resultType="com.personalwork.domain.dto.ChecklistDto">
+        select cl.id, cl.name, cl.project_id, p.name as project_name, cl.is_done, cl.checklist_type_id,
+               coalesce(ct.name, '收集箱') as checklist_type_name
+        from checklist cl
+        left join checklist_type ct on cl.checklist_type_id = ct.id
+        left join project p on cl.project_id = p.id
+        where cl.user_id = #{userId}
+        order by cl.checklist_type_id, cl.is_done, cl.id desc
+    </select>
+    <select id="getByIdAndUserId" resultType="com.personalwork.domain.entity.ChecklistDo">
+        select * from checklist where id = #{id} and user_id = #{userId}
+    </select>
+    <insert id="insert" parameterType="com.personalwork.domain.entity.ChecklistDo" useGeneratedKeys="true" keyProperty="id">
+        insert into checklist (name, project_id, is_done, checklist_type_id, user_id)
+        values (#{name}, #{projectId}, #{isDone}, #{checklistTypeId}, #{userId})
+    </insert>
+    <update id="update" parameterType="com.personalwork.domain.entity.ChecklistDo">
+        update checklist set name = #{name}, project_id = #{projectId}, checklist_type_id = #{checklistTypeId}
+        where id = #{id} and user_id = #{userId}
+    </update>
+    <update id="updateNameByIdAndUserId">
+        update checklist set name = #{name} where id = #{id} and user_id = #{userId}
+    </update>
+    <update id="updateState">
+        update checklist set is_done = #{isDone} where id = #{id} and user_id = #{userId}
+    </update>
+    <delete id="deleteByIdAndUserId">
+        delete from checklist where id = #{id} and user_id = #{userId}
+    </delete>
+</mapper>

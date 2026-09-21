@@ -2,6 +2,9 @@ import dayjs from "dayjs";
 import {FolderOutlined} from "@ant-design/icons";
 
 export const HIDDEN_TIME_RANGE_STORAGE_PREFIX = "schedule-hidden-time-range";
+export const INBOX_CHECKLIST_TYPE_KEY = "inbox-checklist-type";
+export const INBOX_CHECKLIST_TYPE_NAME = "收集箱";
+export const INBOX_CHECKLIST_TYPE_COLOR = "#8C8C8C";
 
 /**
  * 将日期和时间转换为日历事件时间。
@@ -20,16 +23,33 @@ export function toDateTime(date, time) {
  * @param {Array} projectTimes 项目时间记录
  * @returns {Array} 日历事件
  */
-export function toScheduleEvents(projectTimes) {
+export function toScheduleEvents(projectTimes, checklistTypeColors = {}) {
     return projectTimes.filter((item) => item.date && item.startTime && item.endTime && item.projectName).map((item) => ({
         id: String(item.id), title: item.scheduleName || item.projectName,
         start: toDateTime(item.date, item.startTime), end: toDateTime(item.endDate || item.date, item.endTime),
-        backgroundColor: item.projectColor || "#1677FF", borderColor: item.projectColor || "#1677FF",
+        backgroundColor: getScheduleColor(item, checklistTypeColors),
+        borderColor: getScheduleColor(item, checklistTypeColors),
         extendedProps: {
             projectId: item.projectId, projectName: item.projectName, projectColor: item.projectColor || "#1677FF",
+            checklistId: item.checklistId, checklistName: item.checklistName,
+            checklistTypeColor: item.checklistTypeColor || checklistTypeColors[item.checklistId] || INBOX_CHECKLIST_TYPE_COLOR,
             description: item.description || "", scheduleId: item.id
         },
     }));
+}
+
+/**
+ * 获取一个日程的展示颜色。
+ *
+ * @param {Object} item 日程接口数据
+ * @param {Object} checklistTypeColors 清单编号到类型颜色的映射
+ * @returns {string} 日程颜色
+ */
+function getScheduleColor(item, checklistTypeColors) {
+    if (item.checklistId) {
+        return item.checklistTypeColor || checklistTypeColors[item.checklistId] || INBOX_CHECKLIST_TYPE_COLOR;
+    }
+    return item.projectColor || "#1677FF";
 }
 
 /**
@@ -43,6 +63,8 @@ export function toScheduleParam(event) {
     const endTime = event.end ? dayjs(event.end) : startTime.add(1, "hour");
     return {
         projectId: event.extendedProps.projectId,
+        checklistId: event.extendedProps.checklistId,
+        createChecklist: event.extendedProps.createChecklist,
         scheduleName: event.title,
         description: event.extendedProps.description || "",
         date: startTime.format("YYYY-MM-DD"),
@@ -228,6 +250,64 @@ export function toProjectTree(types, projects) {
 }
 
 /**
+ * 将清单放入清单类型树。
+ *
+ * @param {Array} types 清单类型树
+ * @param {Array} checklists 清单列表
+ * @returns {Array} 树节点
+ */
+export function toChecklistTree(types, checklists) {
+    const toNode = (checklist, typeColor) => ({
+        key: `checklist-${checklist.id}`,
+        checklist,
+        title: <span className="schedule-checklist-item" data-checklist-id={checklist.id}
+                     data-project-id={checklist.projectId || ""} data-schedule-name={checklist.name}>
+            <span className="schedule-project-color" style={{backgroundColor: typeColor || "#1677FF"}}/>{checklist.name}
+        </span>,
+        isLeaf: true,
+    });
+    const toTypes = (items) => items.map((type) => ({
+        key: `checklist-type-${type.value}`,
+        title: <span><FolderOutlined className="schedule-type-icon"/>{type.title}</span>,
+        children: [
+            ...(type.children ? toTypes(type.children) : []),
+            ...checklists
+                .filter((checklist) => checklist.checklistTypeId === type.value)
+                .map((checklist) => toNode(checklist, type.color)),
+        ],
+    }));
+    const inboxChecklists = checklists.filter((checklist) => !checklist.checklistTypeId);
+    const inboxNode = inboxChecklists.length ? [{
+        key: INBOX_CHECKLIST_TYPE_KEY,
+        title: <span><FolderOutlined className="schedule-type-icon"/>{INBOX_CHECKLIST_TYPE_NAME}</span>,
+        children: inboxChecklists.map((checklist) => toNode(checklist, INBOX_CHECKLIST_TYPE_COLOR)),
+    }] : [];
+    return [...inboxNode, ...toTypes(types)];
+}
+
+/**
+ * 构建清单编号到所属类型颜色的映射。
+ *
+ * @param {Array} types 清单类型树
+ * @param {Array} checklists 清单列表
+ * @returns {Object} 键为清单编号、值为类型颜色的映射
+ */
+export function getChecklistTypeColors(types, checklists) {
+    const typeColors = {};
+    const addTypeColors = (items) => items.forEach((type) => {
+        typeColors[type.value] = type.color || "#1677FF";
+        addTypeColors(type.children || []);
+    });
+    addTypeColors(types);
+    return checklists.reduce((colors, checklist) => ({
+        ...colors,
+        [checklist.id]: checklist.checklistTypeId
+            ? typeColors[checklist.checklistTypeId] || INBOX_CHECKLIST_TYPE_COLOR
+            : INBOX_CHECKLIST_TYPE_COLOR,
+    }), {});
+}
+
+/**
  * 获取当前周范围。
  *
  * @returns {Object} 起止时间
@@ -250,12 +330,16 @@ export function getProjectTimeStatistics(events, {start: rangeStart, end: rangeE
     events.forEach((event) => {
         const start = dayjs(event.start), end = dayjs(event.end);
         if (!start.isValid() || !end.isValid() || !end.isAfter(start) || !start.isBefore(rangeEnd) || !end.isAfter(rangeStart)) return;
-        const name = event.extendedProps?.projectName || event.title;
-        const key = event.extendedProps?.projectId === undefined ? name : String(event.extendedProps.projectId);
+        const checklistId = event.extendedProps?.checklistId;
+        const name = checklistId ? event.extendedProps?.checklistName || event.title
+            : event.extendedProps?.projectName || event.title;
+        const key = checklistId ? `checklist-${checklistId}`
+            : event.extendedProps?.projectId === undefined ? name : `project-${event.extendedProps.projectId}`;
         const item = statistics.get(key) || {
             name,
             value: 0,
-            itemStyle: {color: event.extendedProps?.projectColor || event.backgroundColor || "#1677FF"}
+            itemStyle: {color: checklistId ? event.extendedProps?.checklistTypeColor || INBOX_CHECKLIST_TYPE_COLOR
+                : event.extendedProps?.projectColor || event.backgroundColor || "#1677FF"}
         };
         item.value += (end.isBefore(rangeEnd) ? end : rangeEnd).diff(start.isAfter(rangeStart) ? start : rangeStart, "minute", true) / 60;
         statistics.set(key, item);
@@ -290,7 +374,7 @@ export function formatHours(hours) {
  * @returns {string} 标题
  */
 export function getProjectTimeStatisticsTitle(viewType) {
-    return viewType === "dayGridMonth" ? "本月项目时间占比" : viewType === "timeGridDay" ? "当日项目时间占比" : "本周项目时间占比";
+    return viewType === "dayGridMonth" ? "本月日程时间占比" : viewType === "timeGridDay" ? "当日日程时间占比" : "本周日程时间占比";
 }
 
 /**

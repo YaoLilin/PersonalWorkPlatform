@@ -21,4 +21,7 @@ public class ProjectTimeDo {
     private String scheduleName;
     private String description;
     private Integer weekId;
+    private Integer checklistId;
+    private String checklistName;
+    private String checklistTypeColor;
 }

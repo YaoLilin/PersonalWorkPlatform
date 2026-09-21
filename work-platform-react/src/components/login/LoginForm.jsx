@@ -8,7 +8,14 @@ import UserUtil from "../../util/UserUtil";
 import JSEncrypt from "jsencrypt";
 const encryptor = new JSEncrypt();
 
+/**
+ * 登录表单。
+ *
+ * @param {{onClickRegister: Function, style?: Object}} props 注册切换回调及可选的外部样式。
+ * @returns {JSX.Element} 登录表单。
+ */
 const LoginForm = ({onClickRegister,style})=>{
+    // 初始化登录所需的 RSA 公钥，确保密码提交前完成加密。
     useEffect(()=>{
         AuthApi.getRSAPublicKey().then(result =>{
             encryptor.setPublicKey(result);
@@ -48,19 +55,19 @@ const LoginForm = ({onClickRegister,style})=>{
 
     return(
         <Form onFinish={handleLogin} style={{...style}}>
-            <h1 className={'text-2xl text-blue-500 text-center'}>登陆</h1>
+            <h2 className="auth-form__title">登录</h2>
             <Form.Item name={'username'} className={'pt-7'} rules={[{required: true, message: '请输入用户名'}]}>
                 <Input placeholder={'请输入用户名'}/>
             </Form.Item>
             <Form.Item name={'password'} className={'m-0'} rules={[{required: true, message: '请输入密码'}]}>
                 <Input.Password placeholder={'请输入密码'}/>
             </Form.Item>
-            <div className={'pt-4 text-blue-500 overflow-hidden'}>
-                <a href={'#'} className={'block float-left'} onClick={onClickRegister}>注册</a>
-                <Link to={'#'} className={'block float-right'}>忘记密码</Link>
+            <div className="auth-form__links">
+                <a href={'#'} onClick={onClickRegister}>注册</a>
+                <Link to={'#'}>忘记密码</Link>
             </div>
-            <div className={'pt-10'}>
-                <Button className={'w-full'} type={'primary'} htmlType="submit"
+            <div className="auth-form__submit">
+                <Button className="auth-form__submit-button" type={'primary'} htmlType="submit"
                         loading={loading}>登陆</Button>
             </div>
         </Form>

@@ -3,6 +3,7 @@ package com.personalwork.dao;
 import com.personalwork.domain.entity.ProjectTimeDo;
 import com.personalwork.domain.vo.ScheduleEventVo;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -27,6 +28,9 @@ public interface ProjectTimeMapper {
     List<ScheduleEventVo> listScheduleByUser(Integer userId);
     ProjectTimeDo getScheduleById(Integer id, Integer userId);
     boolean updateSchedule(ProjectTimeDo projectTimeDo);
+    boolean updateScheduleNameByChecklistId(@Param("checklistId") Integer checklistId,
+                                            @Param("scheduleName") String scheduleName);
+    boolean clearChecklistIdByChecklistId(@Param("checklistId") Integer checklistId);
     boolean deleteScheduleById(Integer id, Integer userId);
     List<ProjectTimeDo> getProjectTimesByWeekRange(String startDate, String endDate, Integer userId);
     List<ProjectTimeDo> getProjectTimesByRange(String startDate,String endDate,Integer userId);

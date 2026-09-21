@@ -3,6 +3,7 @@ import {
     CheckCircleOutlined,
     FundViewOutlined,
     InfoCircleOutlined,
+    UnorderedListOutlined,
     ProjectOutlined
 } from '@ant-design/icons';
 import {Layout, Menu, theme} from 'antd';
@@ -36,6 +37,7 @@ function getItem(label, path, icon, children) {
 
 const items = [
     getItem('项目', '/projects', <ProjectOutlined style={{fontSize: '1.2em'}}/>),
+    getItem('清单', '/checklists', <UnorderedListOutlined style={{fontSize: '1.2em'}}/>),
     getItem('日程', '/schedule', <CalendarOutlined style={{fontSize: '1.2em'}}/>),
     getItem('问题库', '/problems', <InfoCircleOutlined style={{fontSize: '1.2em'}}/>),
     getItem('工作统计', 'count', <FundViewOutlined style={{fontSize: '1.2em'}}/>, [
@@ -59,6 +61,9 @@ const getSelectedKey = (pathname) => {
     }
     if (pathname.startsWith('/projects')) {
         defaultSelectedKey = '/projects';
+    }
+    if (pathname.startsWith('/checklists')) {
+        defaultSelectedKey = '/checklists';
     }
     if (pathname.startsWith('/schedule')) {
         defaultSelectedKey = '/schedule';
@@ -127,7 +132,11 @@ const App = () => {
                           items={items}
                           onClick={({key}) => navigate(key)}/>
                 </Sider>
-                <Content style={{padding: 20, minHeight: '100vh', marginLeft: paddingLeft}} key={pathname}>
+                <Content
+                    className="app-content"
+                    style={{padding: 20, minHeight: '100vh', marginLeft: paddingLeft}}
+                    key={pathname}
+                >
                     <Outlet/>
                 </Content>
             </Layout>

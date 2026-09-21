@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/work-platform-server/sql/upgrade/20260719/scheduleEventTableChange_20260719.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/work-platform-server/sql/upgrade/20260818/projectColor_20260818.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/work-platform-server/sql/upgrade/createProjectProgressWeekTable.sql" dialect="MySQL" />
   </component>

@@ -69,7 +69,7 @@ const ProjectForm = ({data, onSubmit, type = TYPE_CREATE, hideNavigation = false
                 }}/>
             </div>}
 
-            <div className={'form-card'}>
+            <div className={hideNavigation ? 'project-form--modal' : 'form-card'}>
                 <Form
                     form={form}
                     name="basic"

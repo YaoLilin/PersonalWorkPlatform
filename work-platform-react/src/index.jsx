@@ -4,6 +4,7 @@ import React from "react";
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import App from "./app";
 import ProjectList, {loader as projectsLoader} from "./screens/project/List";
+import ChecklistList, {loader as checklistLoader} from "./screens/checklist/List";
 import WeekList, {loader as weekListLoader} from "./screens/statistics/WeekList";
 import WeekForm, {loader as stFormLoader} from "./screens/statistics/WeekForm";
 import ProjectCreate from "./screens/project/CreateForm";
@@ -34,6 +35,11 @@ const router = createBrowserRouter([
                 path: 'projects',
                 element: <ProjectList/>,
                 loader: projectsLoader,
+            },
+            {
+                path: 'checklists',
+                element: <ChecklistList/>,
+                loader: checklistLoader,
             },
             {
                 path: '',
@@ -112,10 +118,30 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
         <ConfigProvider locale={zhCN}
                         theme={{
+                            token: {
+                                colorPrimary: '#0071e3',
+                                colorInfo: '#0071e3',
+                                colorBgBase: '#ffffff',
+                                colorBgLayout: '#f5f5f7',
+                                colorTextBase: '#1d1d1f',
+                                colorBorder: '#e6e6e6',
+                                borderRadius: 12,
+                                fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif'
+                            },
                             components: {
                                 Layout: {
                                     siderBg: '#fff',
-                                    triggerBg: '#67b3fb'
+                                    triggerBg: '#1d1d1f'
+                                },
+                                Button: {
+                                    borderRadius: 999,
+                                    controlHeight: 40
+                                },
+                                Card: {
+                                    borderRadiusLG: 20
+                                },
+                                Input: {
+                                    borderRadius: 12
                                 },
                             },
                         }}>

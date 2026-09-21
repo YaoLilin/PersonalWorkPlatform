@@ -25,14 +25,14 @@
 
 .schedule-calendar-wrapper .fc .fc-button-primary,
 .schedule-calendar-wrapper .fc .fc-button-primary:disabled {
-    border-color: #67b3fb;
-    background-color: #67b3fb;
+    border-color: #0071e3;
+    background-color: #0071e3;
 }
 
 .schedule-calendar-wrapper .fc .fc-button-primary:hover,
 .schedule-calendar-wrapper .fc .fc-button-primary:not(:disabled).fc-button-active {
-    border-color: #3b8edb;
-    background-color: #3b8edb;
+    border-color: #0077ed;
+    background-color: #0077ed;
 }
 
 .schedule-calendar-wrapper .fc .fc-button:focus,
@@ -90,7 +90,7 @@
 .schedule-layout {
     display: flex;
     height: 100%;
-    gap: 16px;
+    gap: 20px;
 }
 
 .schedule-sidebar {
@@ -98,7 +98,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
     min-height: 0;
 }
 
@@ -106,10 +106,12 @@
     flex: 1;
     min-height: 0;
     box-sizing: border-box;
-    padding: 12px;
+    padding: 20px;
     overflow-y: auto;
     border: 1px solid #e6e6e6;
-    border-radius: 8px;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
 }
 
 .schedule-project-tree-title {
@@ -122,7 +124,7 @@
 .schedule-project-time-card {
     flex: none;
     border: 1px solid #e6e6e6;
-    border-radius: 8px;
+    border-radius: 20px;
 }
 
 .schedule-project-time-total {
@@ -199,7 +201,8 @@
     color: #67b3fb;
 }
 
-.schedule-project-item {
+.schedule-project-item,
+.schedule-checklist-item {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -212,7 +215,8 @@
     border-radius: 50%;
 }
 
-.schedule-project-item:active {
+.schedule-project-item:active,
+.schedule-checklist-item:active {
     cursor: grabbing;
 }
 

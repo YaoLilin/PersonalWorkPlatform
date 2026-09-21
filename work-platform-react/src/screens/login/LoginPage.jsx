@@ -1,11 +1,7 @@
-import React, {useContext, useState} from 'react';
-import {Button, Form, Input} from "antd";
-import {Link, useLoaderData, useNavigate} from "react-router-dom";
+import React, {useState} from 'react';
 import {AuthApi} from "../../request/authApi";
 import JSEncrypt from 'jsencrypt';
-import {MessageContext, MessageProvider} from "../../provider/MessageProvider";
-import {UserContext} from "../../provider/UserProvider";
-import UserUtil from "../../util/UserUtil";
+import {MessageProvider} from "../../provider/MessageProvider";
 import LoginForm from "../../components/login/LoginForm";
 import RegisterUser from "../../components/login/RegisterUser";
 
@@ -20,18 +16,21 @@ function LoginPage() {
     const [isRegister, setIsRegister] = useState(false);
 
     return (
-        <div className={'h-screen flex flex-row-reverse items-center bg-blue-100'}>
+        <main className="auth-page">
             <MessageProvider>
-                <p className={'fixed text-5xl top-1/3 text-blue-500 left-32'}>个人工作平台</p>
-                <div className={'bg-white mr-60 p-10 rounded-xl shadow-xl'}
-                     style={{maxWidth:330,maxHeight:800}}>
+                <section className="auth-page__intro">
+                    <p>PERSONAL WORKSPACE</p>
+                    <h1>个人工作平台</h1>
+                    <span>专注于重要的事，清晰地规划每一天。</span>
+                </section>
+                <div className="auth-page__card">
                     {
                         isRegister ? <RegisterUser onClickBack={() => setIsRegister(false)} /> :
                             <LoginForm onClickRegister={() => setIsRegister(true)}/>
                     }
                 </div>
             </MessageProvider>
-        </div>
+        </main>
     );
 }
 

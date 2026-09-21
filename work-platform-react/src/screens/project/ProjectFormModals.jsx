@@ -29,6 +29,7 @@ const ProjectFormModals = ({
 }) => (
     <>
         <Modal
+            className="project-form-modal"
             title="添加项目"
             open={isCreateModalOpen}
             destroyOnClose
@@ -48,6 +49,7 @@ const ProjectFormModals = ({
             />
         </Modal>
         <Modal
+            className="project-form-modal"
             title="编辑项目"
             open={Boolean(editingProject)}
             destroyOnClose

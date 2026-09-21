@@ -3,59 +3,72 @@ import {MonthsApi} from "../../request/monthsApi";
 import {useLoaderData, useNavigate} from "react-router-dom";
 import InfoCard from "../../components/statistics/list/InfoCard";
 import ListTitle from "../../components/ui/ListTitle";
-import {useContext} from "react";
+import {useContext, useEffect, useMemo, useState} from "react";
 import {MessageContext} from "../../provider/MessageProvider";
+import "./month-list.css";
 
+/**
+ * 加载月统计列表数据。
+ *
+ * @returns {Promise<Array>} 月统计记录。
+ */
 export async function loader() {
     return await MonthsApi.getMonthList({});
 }
 
+/**
+ * 月统计记录列表页面。
+ *
+ * @returns {JSX.Element} 按年份分组的月统计卡片及年份导航。
+ */
 const MonthList = () => {
     const data = useLoaderData();
     const navigate = useNavigate();
     const messageApi = useContext(MessageContext);
-    // 对月份记录按年来分组
-    const cardMap = new Map();
-    data.forEach(month => {
-        const year = month.year;
-        if (cardMap.has(year)) {
-            const monthList = cardMap.get(year);
+    const [activeYear, setActiveYear] = useState();
+    const yearGroups = useMemo(() => {
+        // key：年份；value：该年份下的月统计记录。
+        const cardMap = new Map();
+        data.forEach((month) => {
+            const monthList = cardMap.get(month.year) ?? [];
             monthList.push(month);
-        } else {
-            const monthList = [month];
-            cardMap.set(year, monthList);
-        }
-    });
+            cardMap.set(month.year, monthList);
+        });
+        return Array.from(cardMap, ([year, months]) => ({
+            year,
+            months,
+            targetId: `month-year-${year}`
+        }));
+    }, [data]);
+
+    // 根据年份分区的滚动位置同步左侧年份导航的高亮状态。
+    useEffect(() => {
+        const updateActiveYear = () => {
+            const currentGroup = yearGroups.reduce((current, group) => {
+                const groupElement = document.getElementById(group.targetId);
+                return groupElement?.getBoundingClientRect().top <= 150 ? group : current;
+            }, yearGroups[0]);
+            setActiveYear(currentGroup?.year);
+        };
+
+        updateActiveYear();
+        window.addEventListener("scroll", updateActiveYear, true);
+        return () => window.removeEventListener("scroll", updateActiveYear, true);
+    }, [yearGroups]);
+
+    /**
+     * 平滑滚动至选择的年份分区。
+     *
+     * @param {string} targetId 年份分区的页面元素标识。
+     */
+    const scrollToYear = (targetId) => {
+        document.getElementById(targetId)?.scrollIntoView({behavior: "smooth", block: "start"});
+    };
 
     const bottomFlag = <Tag color={'red'}
                             style={{position: 'absolute', bottom: '30px', right: "20px", fontSize: '1em'}}>
         未总结
     </Tag>
-
-    const getCards = (cardMap) => {
-        const cards = [];
-        cardMap.forEach((value, key) => {
-            const box =
-                <div key={key} style={{paddingTop: 20}}>
-                    <ListTitle title={key + '年'}/>
-                    <div style={{display: "flex", flexWrap: 'wrap'}}>
-                        {
-                            value.map(item => {
-                                return <InfoCard key={item.id}
-                                                 title={<span style={{fontSize: "1.5em"}}>{item.month}月</span>}
-                                                 data={item}
-                                                 style={{marginTop: 20}}
-                                                 bottomFlag={!item.isSummarize ? bottomFlag : null}
-                                                 onClick={id => navigate('form/' + id)}
-                                />
-                            })
-                        }
-                    </div>
-                </div>
-            cards.push(box);
-        });
-        return cards;
-    }
 
     const reCount = () => {
         MonthsApi.reCount().then(() => {
@@ -67,14 +80,48 @@ const MonthList = () => {
     }
 
     return (
-        <div>
-            <Button style={{width: '100px', float: "right", marginRight: '5%'}}
-                    onClick={() => reCount()}>重新统计</Button>
-            <div style={{paddingTop: 30}}>
-                {getCards(cardMap).map(item => item)}
+        <main className="month-list">
+            <Button
+                className="month-list__recount-button"
+                onClick={reCount}
+            >
+                重新统计
+            </Button>
+            <div className="month-list__body">
+                <aside aria-label="月记录年份导航" className="month-time-navigation">
+                    {yearGroups.map((group) => (
+                        <Button
+                            className={`month-time-navigation__year${activeYear === group.year ? " month-time-navigation__year--active" : ""}`}
+                            key={group.year}
+                            type="text"
+                            onClick={() => scrollToYear(group.targetId)}
+                        >
+                            {group.year}
+                        </Button>
+                    ))}
+                </aside>
+                <div className="month-list__content">
+                    {yearGroups.map((group) => (
+                        <section className="month-list__year-section" id={group.targetId} key={group.year}>
+                            <ListTitle title={`${group.year}年`}/>
+                            <div className="statistics-list-grid">
+                                {group.months.map((item) => (
+                                    <InfoCard
+                                        bottomFlag={!item.isSummarize ? bottomFlag : null}
+                                        data={item}
+                                        key={item.id}
+                                        style={{marginTop: 0}}
+                                        title={<span style={{fontSize: "1.5em"}}>{item.month}月</span>}
+                                        onClick={(id) => navigate(`form/${id}`)}
+                                    />
+                                ))}
+                            </div>
+                        </section>
+                    ))}
+                </div>
             </div>
-        </div>
-    )
-}
+        </main>
+    );
+};
 
 export default MonthList;
