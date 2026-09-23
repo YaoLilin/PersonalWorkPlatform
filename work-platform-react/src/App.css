@@ -101,7 +101,8 @@ body{
 }
 
 #root .ant-layout-sider-trigger {
-  border-top: 1px solid #e6e6e6;
+  border-top: 0;
+  border-right: 1px solid #e6e6e6;
   background: #fff !important;
   color: #1d1d1f;
 }
@@ -110,8 +111,7 @@ body{
   color: #0071e3;
 }
 
-#root .ant-btn:not(:disabled):active,
-#root .ant-card:not(.ant-card-bordered):active {
+#root .ant-btn:not(:disabled):active {
   transform: scale(.98);
 }
 

@@ -81,12 +81,19 @@ const MonthList = () => {
 
     return (
         <main className="month-list">
-            <Button
-                className="month-list__recount-button"
-                onClick={reCount}
-            >
-                重新统计
-            </Button>
+            <header className="month-list__hero">
+                <div>
+                    <p className="month-list__eyebrow">WORK INSIGHTS</p>
+                    <h1>月统计</h1>
+                    <p>聚合每月投入的时间，观察持续积累带来的变化。</p>
+                </div>
+                <Button
+                    className="month-list__recount-button"
+                    onClick={reCount}
+                >
+                    重新统计
+                </Button>
+            </header>
             <div className="month-list__body">
                 <aside aria-label="月记录年份导航" className="month-time-navigation">
                     {yearGroups.map((group) => (
@@ -110,7 +117,7 @@ const MonthList = () => {
                                         bottomFlag={!item.isSummarize ? bottomFlag : null}
                                         data={item}
                                         key={item.id}
-                                        style={{marginTop: 0}}
+                                        style={{marginTop: 0, width: "100%"}}
                                         title={<span style={{fontSize: "1.5em"}}>{item.month}月</span>}
                                         onClick={(id) => navigate(`form/${id}`)}
                                     />

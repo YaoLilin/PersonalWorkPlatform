@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import {useContext, useState} from "react";
 import {MessageContext} from "../../provider/MessageProvider";
 import handleLoaderError from "../../util/handleLoaderError";
+import "./goal-list.css";
 
 export async function loader(){
     try {
@@ -36,20 +37,24 @@ const WeekGoalList = () => {
     }
 
     return (
-        <div>
-            <div style={{padding:'10px 0'}}>
-                <Button icon={<PlusOutlined />} onClick={onClickAdd}>添加</Button>
-            </div>
-
-            {
-                list.map((item,index)=>{
-                    return(
-                        <GoalList data={item.goals}
-                                  weekDate={item.weekDate}
-                                  goalType={'week'}
-                                  key={index}
-                                  style={{paddingTop:10}}
-                                  onChange={(newData) => {
+        <main className="goal-page">
+            <header className="goal-page__hero">
+                <div>
+                    <p className="goal-page__eyebrow">GOALS</p>
+                    <h1>周目标</h1>
+                    <p>将每周的重要计划收拢到清晰可执行的节奏中。</p>
+                </div>
+                <Button className="goal-page__create-button" icon={<PlusOutlined/>} type="primary" onClick={onClickAdd}>添加本周目标</Button>
+            </header>
+            <div className="goal-page__grid">
+                {list.map((item, index) => (
+                    <GoalList
+                        cardMode
+                        data={item.goals}
+                        goalType={'week'}
+                        key={index}
+                        weekDate={item.weekDate}
+                        onChange={(newData) => {
                                         const newList = list.slice();
                                         newList.forEach(i => {
                                             if (i.weekDate === item.weekDate) {
@@ -57,12 +62,12 @@ const WeekGoalList = () => {
                                             }
                                         });
                                         setList(newList);
-                        }}/>
-                    )
-                })
-            }
-        </div>
-    )
-}
+                        }}
+                    />
+                ))}
+            </div>
+        </main>
+    );
+};
 
 export default WeekGoalList;

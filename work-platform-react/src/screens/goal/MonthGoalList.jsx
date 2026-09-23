@@ -7,6 +7,7 @@ import {PlusOutlined} from "@ant-design/icons";
 import GoalList from "../../components/goal/List";
 import {MessageContext} from "../../provider/MessageProvider";
 import handleLoaderError from "../../util/handleLoaderError";
+import "./goal-list.css";
 
 export async function loader(){
     try {
@@ -36,20 +37,25 @@ const MonthGoalList = ()=>{
     }
 
     return (
-        <div>
-            <div style={{padding:'10px 0'}}>
-                <Button icon={<PlusOutlined />} onClick={onClickAdd}>添加</Button>
-            </div>
-            {
-                list.map((item,index)=>{
-                    return(
-                        <GoalList data={item.goals}
-                                  month={item.month}
-                                  year={item.year}
-                                  goalType={'month'}
-                                  style={{paddingTop:10}}
-                                  key={index}
-                                  onChange={(newData) => {
+        <main className="goal-page">
+            <header className="goal-page__hero">
+                <div>
+                    <p className="goal-page__eyebrow">GOALS</p>
+                    <h1>月目标</h1>
+                    <p>以月为单位沉淀方向，让长期计划持续向前推进。</p>
+                </div>
+                <Button className="goal-page__create-button" icon={<PlusOutlined/>} type="primary" onClick={onClickAdd}>添加本月目标</Button>
+            </header>
+            <div className="goal-page__grid">
+                {list.map((item, index) => (
+                    <GoalList
+                        cardMode
+                        data={item.goals}
+                        goalType={'month'}
+                        key={index}
+                        month={item.month}
+                        year={item.year}
+                        onChange={(newData) => {
                                         const newList = list.slice();
                                         newList.forEach(i => {
                                             if (i.year === item.year && i.month === item.month) {
@@ -57,12 +63,12 @@ const MonthGoalList = ()=>{
                                             }
                                         });
                                         setList(newList);
-                         }}/>
-                    )
-                })
-            }
-        </div>
-    )
-}
+                         }}
+                    />
+                ))}
+            </div>
+        </main>
+    );
+};
 
 export default MonthGoalList;

@@ -1,6 +1,5 @@
 import ListTitle from "../ui/ListTitle";
-import DateUtil from "../../util/DateUtil";
-import {Button, message} from "antd";
+import {Button} from "antd";
 import {AppstoreAddOutlined} from "@ant-design/icons";
 import ListItem from "./ListItem";
 import {useContext, useState} from "react";
@@ -11,8 +10,14 @@ import {MessageContext} from "../../provider/MessageProvider";
 import {ThemeContext} from "../../provider/ThemProvider";
 import dayjs from "dayjs";
 
-const GoalList = ({weekDate='',month=1,year,goalType ='week',data=[],
-                      showTitle = true,onChange,style}) => {
+/**
+ * 目标周期列表。
+ *
+ * @param {{weekDate?: string, month?: number, year?: number, goalType?: string, data?: Array, showTitle?: boolean, onChange: Function, style?: Object, cardMode?: boolean}} props 周期、目标数据和显示选项。
+ * @returns {JSX.Element} 目标列表或周期卡片。
+ */
+const GoalList = ({weekDate='', month=1, year, goalType ='week', data=[],
+                      showTitle = true, onChange, style, cardMode = false}) => {
     const [checkAble, setCheckAble] = useState(false);
     const [editGoals, setEditGoals] = useState([]);
     const [selectedIds, setSelectedIds] = useState([]);
@@ -108,7 +113,7 @@ const GoalList = ({weekDate='',month=1,year,goalType ='week',data=[],
     }
 
     return (
-        <div style={{...style}}>{
+        <section className={cardMode ? "goal-period-card" : undefined} style={{...style}}>{
             showTitle && <ListTitle
                 title={goalType ==='week' ? weekDate + '周' : month +'月'}
                 littleTitle={getLittleTitle()}
@@ -117,7 +122,7 @@ const GoalList = ({weekDate='',month=1,year,goalType ='week',data=[],
             {
                 !showTitle && <div>{operationButtons}</div>
             }
-            <div style={{paddingTop: 10}}>
+            <div className={cardMode ? "goal-period-card__content" : undefined} style={{paddingTop: 10}}>
                 {
                     data.map((item, index) => {
                         return (
@@ -144,7 +149,7 @@ const GoalList = ({weekDate='',month=1,year,goalType ='week',data=[],
                 }
             </div>
 
-        </div>
+        </section>
 
     )
 }

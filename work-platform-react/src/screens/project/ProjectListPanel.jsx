@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useMemo, useRef, useState} from "react";
 import {Button, Checkbox, DatePicker, Input, Modal, Pagination, Progress, Select, Table, Tag} from "antd";
-import {ExclamationCircleFilled} from "@ant-design/icons";
+import {DeleteOutlined, ExclamationCircleFilled, PlusOutlined} from "@ant-design/icons";
 import {ProjectApi} from "../../request/projectApi";
 import {MessageContext} from "../../provider/MessageProvider";
 import {UserContext} from "../../provider/UserProvider";
@@ -222,11 +222,19 @@ const ProjectListPanel = ({
                 >
                     仅查看当前类型
                 </Checkbox>
-                <div>
-                    <Button onClick={onCreateProject}>添加</Button>
+                <div className="project-list-toolbar__actions">
                     <Button
+                        className="project-action-button project-action-button--create"
+                        icon={<PlusOutlined/>}
                         type="primary"
+                        onClick={onCreateProject}
+                    >
+                        添加
+                    </Button>
+                    <Button
+                        className="project-action-button project-action-button--delete"
                         disabled={!selectedProjectIds.length}
+                        icon={<DeleteOutlined/>}
                         onClick={showDeleteProjectsConfirm}
                     >
                         删除

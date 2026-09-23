@@ -6,7 +6,7 @@ const ListItem =({data,num,checkAble,onChange,onChecked})=>{
     const {id,projectId,projectName,content,isDone} = data;
 
     return(
-        <div style={{display: 'flex',alignItems:'center',paddingTop:14}}>
+        <div className="goal-period-card__item" style={{display: 'flex',alignItems:'center',paddingTop:14}}>
             {checkAble && <Checkbox style={{marginRight:20}} onChange={(e) => onChecked(id,e.target.checked)}/>}
             <OrderNumber number={num} style={{backgroundColor:'#ff8e3e',width:20,height:20,lineHeight:'20px'}}/>
             <div style={{paddingLeft:20}}>{projectName} : {content}</div>
