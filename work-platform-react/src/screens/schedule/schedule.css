@@ -30,9 +30,16 @@
 }
 
 .schedule-calendar-wrapper .fc .fc-button-primary:hover,
-.schedule-calendar-wrapper .fc .fc-button-primary:not(:disabled).fc-button-active {
+.schedule-calendar-wrapper .fc .fc-button-primary:not(:disabled):active {
     border-color: #0077ed;
     background-color: #0077ed;
+}
+
+.schedule-calendar-wrapper .fc .fc-button-primary:not(:disabled).fc-button-active,
+.schedule-calendar-wrapper .fc .fc-button-primary:not(:disabled).fc-button-active:hover {
+    border-color: #83bdff;
+    background-color: #d8ebff;
+    color: #004a92;
 }
 
 .schedule-calendar-wrapper .fc .fc-button:focus,
@@ -65,6 +72,11 @@
 .schedule-calendar-wrapper .fc .fc-event,
 .schedule-calendar-wrapper .fc .fc-event:hover {
     color: #fff;
+}
+
+.schedule-calendar-wrapper .fc .fc-event.schedule-checklist-completed,
+.schedule-calendar-wrapper .fc .fc-event.schedule-checklist-completed:hover {
+    color: #262626;
 }
 
 .schedule-calendar-wrapper .fc .fc-daygrid-event .fc-event-title {
@@ -107,11 +119,43 @@
     min-height: 0;
     box-sizing: border-box;
     padding: 20px;
-    overflow-y: auto;
+    overflow: hidden;
     border: 1px solid #e6e6e6;
     border-radius: 20px;
     background: #fff;
     box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
+}
+
+.schedule-project-tree .ant-tabs {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.schedule-project-tree .ant-tabs-content-holder {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+}
+
+.schedule-project-tree .ant-tabs-content-holder.is-scrolling {
+    scrollbar-color: #a1a1a6 transparent;
+}
+
+.schedule-project-tree .ant-tabs-content-holder::-webkit-scrollbar {
+    width: 6px;
+}
+
+.schedule-project-tree .ant-tabs-content-holder::-webkit-scrollbar-thumb {
+    border-radius: 3px;
+    background: transparent;
+}
+
+.schedule-project-tree .ant-tabs-content-holder.is-scrolling::-webkit-scrollbar-thumb {
+    background: #a1a1a6;
 }
 
 .schedule-project-tree-title {
@@ -210,6 +254,9 @@
 }
 
 .schedule-project-color {
+    display: inline-block;
+    flex: 0 0 10px;
+    box-sizing: border-box;
     width: 10px;
     height: 10px;
     border-radius: 50%;
@@ -230,6 +277,10 @@
     box-shadow: 0 6px 16px rgb(0 0 0 / 15%);
 }
 
+.schedule-event-editor {
+    border-radius: 20px;
+}
+
 .schedule-event-context-menu {
     padding: 4px;
 }
@@ -237,35 +288,48 @@
 .schedule-event-editor {
     display: flex;
     flex-direction: column;
+    gap: 12px;
     width: 350px;
-    height: 400px;
+    height: 450px;
     box-sizing: border-box;
     padding: 16px;
 }
 
-.schedule-event-editor-title {
+.schedule-event-editor-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#root .schedule-event-editor .schedule-event-editor-title {
+    flex: 1;
+    min-width: 0;
     padding: 0;
-    border: 0;
-    box-shadow: none;
+    border: 0 !important;
+    border-radius: 0;
+    box-shadow: none !important;
     font-size: 16px;
     font-weight: 600;
+    background: transparent !important;
 }
 
-.schedule-event-editor-title:focus,
-.schedule-event-editor-title:hover {
-    border: 0;
-    box-shadow: none;
+#root .schedule-event-editor .schedule-event-editor-title:focus,
+#root .schedule-event-editor .schedule-event-editor-title:hover {
+    border: 0 !important;
+    border-radius: 0;
+    box-shadow: none !important;
+    background: transparent !important;
 }
 
-.schedule-event-editor-title + .schedule-event-editor-field {
-    margin-top: 4px;
+.schedule-event-editor-heading + .schedule-event-editor-field {
+    margin-top: 0;
 }
 
 .schedule-event-project-field {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-top: 12px;
+    margin-top: 0;
 }
 
 .schedule-event-project-field > span {
@@ -273,9 +337,25 @@
     color: #262626;
 }
 
+.schedule-event-editor-type {
+    flex: 1;
+    min-width: 0;
+}
+
 .schedule-event-editor-field {
     width: 100%;
-    margin-top: 12px;
+    margin-top: 0;
+}
+
+#root .schedule-event-editor .ant-picker,
+#root .schedule-event-editor textarea.ant-input,
+#root .schedule-event-editor .ant-select-selector {
+    background: #fff !important;
+}
+
+#root .schedule-event-editor .ant-select-selection-item,
+#root .schedule-event-editor .ant-select-selection-placeholder {
+    color: #262626;
 }
 
 textarea.schedule-event-editor-field {
@@ -286,5 +366,5 @@ textarea.schedule-event-editor-field {
 
 .schedule-event-editor-confirm {
     align-self: flex-end;
-    margin-top: 12px;
+    margin-top: 0;
 }

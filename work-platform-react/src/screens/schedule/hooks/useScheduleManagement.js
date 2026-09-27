@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useState} from "react";
 import dayjs from "dayjs";
 import ScheduleApi from "../../../request/scheduleApi";
+import {ChecklistApi} from "../../../request/checklistApi";
 import {
     getDroppedEventRect,
     getErrorMessage,
@@ -10,22 +11,26 @@ import {
 } from "../utils/scheduleUtils";
 
 const EDITOR_WIDTH = 350;
-const EDITOR_HEIGHT = 400;
+const EDITOR_HEIGHT = 450;
+const MENU_WIDTH = 120;
+const MENU_HEIGHT = 44;
 const VIEWPORT_OFFSET = 8;
 
 /**
  * 管理日程的编辑、创建、删除与拖拽更新。
  *
- * @param {{calendarRef: Object, projectOptions: Array, messageApi: Object, initialEvents: Array, checklistTypeColors: Object, onChecklistCreated: Function}} options 业务依赖
+ * @param {{calendarRef: Object, projectOptions: Array, checklists: Array, messageApi: Object, initialEvents: Array, checklistTypeColors: Object, onChecklistCreated: Function, onChecklistChanged: Function}} options 业务依赖
  * @returns {Object} 日程状态与操作
  */
 export function useScheduleManagement({
     calendarRef,
     projectOptions,
+    checklists,
     messageApi,
     initialEvents,
     checklistTypeColors,
     onChecklistCreated,
+    onChecklistChanged,
 }) {
     const [scheduleEvents, setScheduleEvents] = useState(initialEvents);
     const [contextMenu, setContextMenu] = useState(null);
@@ -57,14 +62,15 @@ export function useScheduleManagement({
             extendedProps: {
                 projectId: editor.projectId,
                 checklistId: editor.checklistId,
-                createChecklist: editor.createChecklist,
+                createChecklist: !editor.checklistId,
                 description: editor.description,
             }
         };
         try {
             const saved = await ScheduleApi.createSchedule(toScheduleParam(event));
             setScheduleEvents((items) => [...items, toScheduleEvents([saved], checklistTypeColors)[0]]);
-            if (editor.createChecklist && saved.checklistId) onChecklistCreated();
+            if (saved.checklistId && !editor.checklistId) onChecklistCreated();
+            else if (saved.checklistId) onChecklistChanged();
         } catch (error) {
             messageApi.error(getErrorMessage(error), 5);
         }
@@ -99,18 +105,33 @@ export function useScheduleManagement({
         event.setExtendedProp("checklistId", editor.checklistId);
         setEventEditor(null);
         try {
+            const checklist = checklists.find((item) => item.id === editor.checklistId);
+            if (checklist && (checklist.checklistTypeId ?? undefined) !== editor.checklistTypeId) {
+                await ChecklistApi.updateChecklist(checklist.id, {
+                    name: checklist.name,
+                    projectId: checklist.projectId,
+                    checklistTypeId: editor.checklistTypeId,
+                });
+            }
             const saved = await ScheduleApi.updateSchedule(event.extendedProps.scheduleId || event.id, toScheduleParam(event));
             const [savedEvent] = toScheduleEvents([saved], checklistTypeColors);
             event.setProp("backgroundColor", savedEvent.backgroundColor);
             event.setProp("borderColor", savedEvent.borderColor);
+            event.setProp("textColor", savedEvent.textColor);
             replaceEvent(saved);
+            if (checklist && ((checklist.checklistTypeId ?? undefined) !== editor.checklistTypeId
+                || editor.title.trim() !== editor.originalEvent.title)) onChecklistChanged();
         } catch (error) {
             event.setProp("title", editor.originalEvent.title);
             event.setStart(editor.originalEvent.start);
             event.setEnd(editor.originalEvent.end);
             event.setProp("backgroundColor", editor.originalEvent.backgroundColor);
             event.setProp("borderColor", editor.originalEvent.borderColor);
+            event.setProp("textColor", editor.originalEvent.textColor);
             event.setExtendedProp("description", editor.originalEvent.description);
+            event.setExtendedProp("projectId", editor.originalEvent.projectId);
+            event.setExtendedProp("checklistId", editor.originalEvent.checklistId);
+            onChecklistChanged();
             messageApi.error(getErrorMessage(error), 5);
         }
     };
@@ -125,6 +146,7 @@ export function useScheduleManagement({
         const end = info.event.end ? dayjs(info.event.end) : dayjs(info.event.start).add(1, "hour");
         const rect = info.el.getBoundingClientRect();
         const left = rect.right + VIEWPORT_OFFSET + EDITOR_WIDTH <= window.innerWidth ? rect.right + VIEWPORT_OFFSET : rect.left - EDITOR_WIDTH - 2;
+        const checklist = checklists.find((item) => item.id === info.event.extendedProps.checklistId);
         setContextMenu(null);
         setEventEditor({
             eventId: info.event.id,
@@ -132,6 +154,7 @@ export function useScheduleManagement({
             description: info.event.extendedProps.description || "",
             projectId: info.event.extendedProps.projectId,
             checklistId: info.event.extendedProps.checklistId,
+            checklistTypeId: checklist?.checklistTypeId ?? undefined,
             originalEvent: {
                 title: info.event.title,
                 start: info.event.start,
@@ -139,8 +162,10 @@ export function useScheduleManagement({
                 description: info.event.extendedProps.description || "",
                 projectId: info.event.extendedProps.projectId,
                 checklistId: info.event.extendedProps.checklistId,
+                checklistTypeId: checklist?.checklistTypeId ?? undefined,
                 backgroundColor: info.event.backgroundColor,
-                borderColor: info.event.borderColor
+                borderColor: info.event.borderColor,
+                textColor: info.event.textColor,
             },
             timeRange: [dayjs(info.event.start), end], ...editorPosition(left, rect.bottom + VIEWPORT_OFFSET)
         });
@@ -183,7 +208,6 @@ export function useScheduleManagement({
             description: info.event.extendedProps.description || "",
             projectId: info.event.extendedProps.projectId ? Number(info.event.extendedProps.projectId) : undefined,
             checklistId: info.event.extendedProps.checklistId ? Number(info.event.extendedProps.checklistId) : undefined,
-            createChecklist: Boolean(info.event.extendedProps.createChecklist),
             originalEvent: {
                 title: "",
                 description: "",
@@ -204,6 +228,7 @@ export function useScheduleManagement({
     const updateTime = async (info) => {
         try {
             replaceEvent(await ScheduleApi.updateSchedule(info.event.extendedProps.scheduleId || info.event.id, toScheduleParam(info.event)));
+            if (info.event.extendedProps.checklistId) onChecklistChanged();
         } catch (error) {
             info.revert();
             messageApi.error(getErrorMessage(error), 5);
@@ -224,6 +249,7 @@ export function useScheduleManagement({
             await ScheduleApi.deleteSchedule(event.extendedProps.scheduleId || event.id);
             event.remove();
             setScheduleEvents((items) => items.filter((item) => item.id !== event.id));
+            if (event.extendedProps.checklistId) onChecklistChanged();
         } catch (error) {
             messageApi.error(getErrorMessage(error), 5);
         }
@@ -232,7 +258,13 @@ export function useScheduleManagement({
         event.preventDefault();
         void saveEditor();
         setEventEditor(null);
-        setContextMenu({calendarEvent, ...editorPosition(event.clientX, event.clientY)});
+        setContextMenu({
+            calendarEvent,
+            left: Math.max(VIEWPORT_OFFSET, Math.min(event.clientX + VIEWPORT_OFFSET,
+                window.innerWidth - MENU_WIDTH - VIEWPORT_OFFSET)),
+            top: Math.max(VIEWPORT_OFFSET, Math.min(event.clientY + VIEWPORT_OFFSET,
+                window.innerHeight - MENU_HEIGHT - VIEWPORT_OFFSET)),
+        });
     };
     return {
         scheduleEvents,

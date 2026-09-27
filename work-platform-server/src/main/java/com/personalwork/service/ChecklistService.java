@@ -3,6 +3,7 @@ package com.personalwork.service;
 import com.personalwork.dao.ChecklistMapper;
 import com.personalwork.dao.ProjectTimeMapper;
 import com.personalwork.domain.dto.ChecklistDto;
+import com.personalwork.domain.dto.ChecklistScheduleTimeDto;
 import com.personalwork.domain.entity.ChecklistDo;
 import com.personalwork.domain.query.ChecklistParam;
 import com.personalwork.exception.DbOperateException;
@@ -13,6 +14,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>清单管理服务。</p>
@@ -29,7 +32,15 @@ public class ChecklistService {
      * @return 清单列表
      */
     public List<ChecklistDto> list() {
-        return checklistMapper.listByUserId(UserUtil.getLoginUserId());
+        List<ChecklistDto> checklists = checklistMapper.listByUserId(UserUtil.getLoginUserId());
+        List<ChecklistScheduleTimeDto> scheduleTimes = projectTimeMapper
+                .listChecklistScheduleTimesByUser(UserUtil.getLoginUserId());
+        // key: 清单编号；value: 该清单关联的全部日程时间段。
+        Map<Integer, List<ChecklistScheduleTimeDto>> scheduleTimesByChecklistId = scheduleTimes.stream()
+                .collect(Collectors.groupingBy(ChecklistScheduleTimeDto::getChecklistId));
+        checklists.forEach(checklist -> checklist.setScheduleTimes(
+                scheduleTimesByChecklistId.getOrDefault(checklist.getId(), List.of())));
+        return checklists;
     }
 
     /**

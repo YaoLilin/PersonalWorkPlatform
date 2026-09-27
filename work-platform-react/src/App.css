@@ -212,7 +212,6 @@ body .ant-modal .ant-modal-header {
 }
 
 .auth-page__intro h1 {
-  max-width: 420px;
   margin: 0;
   color: #1d1d1f;
   font-size: clamp(44px, 6vw, 78px);

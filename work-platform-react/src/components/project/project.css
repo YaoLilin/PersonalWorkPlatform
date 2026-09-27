@@ -132,6 +132,14 @@
     margin-bottom: 12px;
 }
 
+#root .project-list-filters .ant-input-affix-wrapper .ant-input,
+#root .project-list-filters .ant-input-affix-wrapper .ant-input:focus {
+    border: 0 !important;
+    outline: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
 .project-type-tree {
     flex: 1;
     min-height: 0;

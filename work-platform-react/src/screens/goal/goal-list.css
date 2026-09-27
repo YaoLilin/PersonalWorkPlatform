@@ -1,0 +1,109 @@
+.goal-page {
+    box-sizing: border-box;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 48px 32px 96px;
+    color: #1d1d1f;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+}
+
+.goal-page__hero {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 24px 0 52px;
+}
+
+.goal-page__eyebrow {
+    margin: 0 0 10px;
+    color: #0071e3;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .12em;
+}
+
+.goal-page__hero h1 {
+    margin: 0;
+    font-size: clamp(40px, 5vw, 64px);
+    font-weight: 600;
+    letter-spacing: -.055em;
+    line-height: 1.05;
+}
+
+.goal-page__hero > div > p:last-child {
+    max-width: 440px;
+    margin: 16px 0 0;
+    color: #6e6e73;
+    font-size: 17px;
+}
+
+.goal-page__create-button.ant-btn {
+    height: 44px;
+    padding: 0 20px;
+    border-radius: 999px;
+    box-shadow: none;
+    font-weight: 500;
+}
+
+.goal-page__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 20px;
+}
+
+.goal-period-card {
+    min-height: 220px;
+    padding: 24px;
+    border: 1px solid #e6e6e6;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
+}
+
+.goal-period-card .list-section-title {
+    min-height: 42px;
+}
+
+.goal-period-card .list-section-title__main {
+    font-size: 24px;
+}
+
+.goal-period-card .list-section-title__actions {
+    margin-left: auto;
+}
+
+.goal-period-card__content {
+    padding-top: 12px !important;
+}
+
+.goal-period-card__item {
+    min-height: 32px;
+    padding: 10px 0 !important;
+}
+
+.goal-period-card__item + .goal-period-card__item {
+    border-top: 1px solid #f0f0f0;
+}
+
+@media (max-width: 820px) {
+    .goal-page {
+        padding: 28px 20px 64px;
+    }
+
+    .goal-page__hero {
+        align-items: start;
+        flex-direction: column;
+        padding-bottom: 36px;
+    }
+}
+
+@media (max-width: 580px) {
+    .goal-page__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .goal-page__hero h1 {
+        font-size: 42px;
+    }
+}

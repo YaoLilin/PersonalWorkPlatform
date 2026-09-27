@@ -24,4 +24,6 @@ public class ProjectTimeDo {
     private Integer checklistId;
     private String checklistName;
     private String checklistTypeColor;
+    /** 清单完成状态：0 未完成，1 已完成。 */
+    private Integer checklistIsDone;
 }

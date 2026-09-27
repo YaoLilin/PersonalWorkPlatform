@@ -4,7 +4,7 @@ import {FolderOutlined} from "@ant-design/icons";
 export const HIDDEN_TIME_RANGE_STORAGE_PREFIX = "schedule-hidden-time-range";
 export const INBOX_CHECKLIST_TYPE_KEY = "inbox-checklist-type";
 export const INBOX_CHECKLIST_TYPE_NAME = "收集箱";
-export const INBOX_CHECKLIST_TYPE_COLOR = "#8C8C8C";
+export const INBOX_CHECKLIST_TYPE_COLOR = "#1677FF";
 
 /**
  * 将日期和时间转换为日历事件时间。
@@ -21,21 +21,44 @@ export function toDateTime(date, time) {
  * 将项目时间记录转换为日历事件。
  *
  * @param {Array} projectTimes 项目时间记录
+ * @param {Object} checklistTypeColors 清单编号到类型颜色的映射
  * @returns {Array} 日历事件
  */
 export function toScheduleEvents(projectTimes, checklistTypeColors = {}) {
-    return projectTimes.filter((item) => item.date && item.startTime && item.endTime && item.projectName).map((item) => ({
-        id: String(item.id), title: item.scheduleName || item.projectName,
-        start: toDateTime(item.date, item.startTime), end: toDateTime(item.endDate || item.date, item.endTime),
-        backgroundColor: getScheduleColor(item, checklistTypeColors),
-        borderColor: getScheduleColor(item, checklistTypeColors),
-        extendedProps: {
-            projectId: item.projectId, projectName: item.projectName, projectColor: item.projectColor || "#1677FF",
-            checklistId: item.checklistId, checklistName: item.checklistName,
-            checklistTypeColor: item.checklistTypeColor || checklistTypeColors[item.checklistId] || INBOX_CHECKLIST_TYPE_COLOR,
-            description: item.description || "", scheduleId: item.id
-        },
-    }));
+    return projectTimes.filter((item) => item.date && item.startTime && item.endTime && item.projectName).map((item) => {
+        const completed = Boolean(item.checklistId && item.checklistIsDone === 1);
+        const originalColor = getScheduleColor(item, checklistTypeColors);
+        const displayColor = completed ? getMutedScheduleColor(originalColor) : originalColor;
+        return {
+            id: String(item.id), title: item.scheduleName || item.projectName,
+            start: toDateTime(item.date, item.startTime), end: toDateTime(item.endDate || item.date, item.endTime),
+            backgroundColor: displayColor,
+            borderColor: displayColor,
+            textColor: completed ? "#262626" : "#fff",
+            classNames: completed ? ["schedule-checklist-completed"] : [],
+            extendedProps: {
+                projectId: item.projectId, projectName: item.projectName, projectColor: item.projectColor || "#1677FF",
+                checklistId: item.checklistId, checklistName: item.checklistName,
+                checklistTypeColor: item.checklistTypeColor || checklistTypeColors[item.checklistId] || INBOX_CHECKLIST_TYPE_COLOR,
+                checklistIsDone: item.checklistIsDone,
+                description: item.description || "", scheduleId: item.id
+            },
+        };
+    });
+}
+
+/**
+ * 将已完成清单的原色与浅灰色混合，保持颜色来源仍可辨认。
+ *
+ * @param {string} color 清单类型的 HEX 颜色
+ * @returns {string} 降低饱和度后的颜色
+ */
+function getMutedScheduleColor(color) {
+    if (!/^#[0-9a-fA-F]{6}$/.test(color)) return color;
+    const channels = [1, 3, 5].map((offset) => Math.round(
+        parseInt(color.slice(offset, offset + 2), 16) * 0.4 + 217 * 0.6
+    ).toString(16).padStart(2, "0"));
+    return `#${channels.join("")}`;
 }
 
 /**
@@ -189,7 +212,12 @@ export function getSelectionTimeRange(start, current) {
  */
 export function hasEventEditorChanged(editor) {
     const [start, end] = editor.timeRange || [];
-    return (editor.title.trim() || "未命名日程") !== editor.originalEvent.title || editor.description !== editor.originalEvent.description || editor.projectId !== editor.originalEvent.projectId || !start?.isSame(editor.originalEvent.start) || !end?.isSame(editor.originalEvent.end);
+    return (editor.title.trim() || "未命名日程") !== editor.originalEvent.title
+        || editor.description !== editor.originalEvent.description
+        || editor.projectId !== editor.originalEvent.projectId
+        || editor.checklistTypeId !== editor.originalEvent.checklistTypeId
+        || !start?.isSame(editor.originalEvent.start)
+        || !end?.isSame(editor.originalEvent.end);
 }
 
 /**
@@ -232,8 +260,10 @@ export function toProjectTree(types, projects) {
     const toNode = (project) => ({
         key: `project-${project.id}`,
         title: <span className="schedule-project-item" data-project-id={project.id}
-                     data-project-name={project.name}><span className="schedule-project-color"
-                                                            style={{backgroundColor: project.color || "#1677FF"}}/>{project.name}</span>,
+                     data-project-name={project.name} data-schedule-color={project.color || "#1677FF"}>
+            <span className="schedule-project-color" style={{backgroundColor: project.color || "#1677FF"}}/>
+            {project.name}
+        </span>,
         isLeaf: true
     });
     const toTypes = (items) => items.map((type) => ({
@@ -260,9 +290,17 @@ export function toChecklistTree(types, checklists) {
     const toNode = (checklist, typeColor) => ({
         key: `checklist-${checklist.id}`,
         checklist,
-        title: <span className="schedule-checklist-item" data-checklist-id={checklist.id}
-                     data-project-id={checklist.projectId || ""} data-schedule-name={checklist.name}>
-            <span className="schedule-project-color" style={{backgroundColor: typeColor || "#1677FF"}}/>{checklist.name}
+        title: <span
+            className="schedule-checklist-item"
+            data-checklist-id={checklist.id}
+            data-project-id={checklist.projectId || ""}
+            data-schedule-name={checklist.name}
+            data-schedule-color={checklist.isDone === 1
+                ? getMutedScheduleColor(typeColor || "#1677FF") : typeColor || "#1677FF"}
+            data-schedule-text-color={checklist.isDone === 1 ? "#262626" : "#fff"}
+        >
+            <span className="schedule-project-color" style={{backgroundColor: typeColor || "#1677FF"}}/>
+            {checklist.name}
         </span>,
         isLeaf: true,
     });
@@ -277,11 +315,11 @@ export function toChecklistTree(types, checklists) {
         ],
     }));
     const inboxChecklists = checklists.filter((checklist) => !checklist.checklistTypeId);
-    const inboxNode = inboxChecklists.length ? [{
+    const inboxNode = [{
         key: INBOX_CHECKLIST_TYPE_KEY,
         title: <span><FolderOutlined className="schedule-type-icon"/>{INBOX_CHECKLIST_TYPE_NAME}</span>,
         children: inboxChecklists.map((checklist) => toNode(checklist, INBOX_CHECKLIST_TYPE_COLOR)),
-    }] : [];
+    }];
     return [...inboxNode, ...toTypes(types)];
 }
 

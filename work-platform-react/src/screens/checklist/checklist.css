@@ -17,6 +17,8 @@
 .checklist-list-toolbar {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
     margin-bottom: 12px;
 }
 
@@ -28,6 +30,18 @@
 
 .checklist-type-groups-all {
     grid-template-columns: minmax(0, 1fr);
+}
+
+.checklist-completed-trigger {
+    padding-inline: 0;
+}
+
+.checklist-completed-table {
+    margin-top: 16px;
+}
+
+.checklist-completed-table .ant-table-tbody > tr {
+    cursor: pointer;
 }
 
 .checklist-type-group {
@@ -42,6 +56,10 @@
     gap: 8px;
 }
 
+.checklist-type-group .ant-card-body {
+    padding-block: 12px;
+}
+
 .checklist-type-color {
     width: 10px;
     height: 10px;
@@ -52,8 +70,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    min-height: 36px;
-    padding: 6px 0;
+    min-height: 32px;
+    padding: 3px 0;
 }
 
 .checklist-item + .checklist-item {
@@ -69,7 +87,40 @@
     cursor: pointer;
 }
 
-.checklist-item-done {
+.checklist-type-completed-section {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.checklist-type-completed-trigger,
+.checklist-type-completed-all {
+    padding-inline: 0;
+}
+
+.checklist-completed-item {
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+}
+
+.checklist-completed-item + .checklist-completed-item {
+    border-top: 1px solid #f0f0f0;
+}
+
+#root .checklist-completed-name,
+#root .checklist-completed-name.ant-btn:not(:disabled):hover {
     color: #8c8c8c;
-    text-decoration: line-through;
+}
+
+#root .checklist-completed-name.ant-btn {
+    padding-inline: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.checklist-completed-empty {
+    display: block;
+    color: #8c8c8c;
+    padding-block: 8px;
 }

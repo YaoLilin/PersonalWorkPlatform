@@ -7,7 +7,7 @@ export function getChecklistGroups(checklists, typeTree, selectedTypeIds) {
         .forEach((item) => {
             const group = groups.get(item.checklistTypeId) || {
                 id: item.checklistTypeId, name: item.checklistTypeName,
-                color: item.checklistTypeId ? findTypeColor(typeTree, item.checklistTypeId) : "#8C8C8C", items: [],
+                color: item.checklistTypeId ? findTypeColor(typeTree, item.checklistTypeId) : "#1677FF", items: [],
             };
             group.items.push(item);
             groups.set(item.checklistTypeId, group);

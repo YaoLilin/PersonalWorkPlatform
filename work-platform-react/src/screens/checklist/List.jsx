@@ -1,6 +1,6 @@
 import React, {useContext, useMemo, useState} from "react";
-import {Button, Card, Checkbox, Form, Input, Modal, Select, Tag} from "antd";
-import {DeleteOutlined, FormOutlined, PlusCircleOutlined, PlusOutlined} from "@ant-design/icons";
+import {Button, Form, Input, Modal, Select} from "antd";
+import {FormOutlined, PlusCircleOutlined, PlusOutlined} from "@ant-design/icons";
 import {useLoaderData, useRevalidator} from "react-router-dom";
 import {ChecklistApi} from "../../request/checklistApi";
 import {ProjectApi} from "../../request/projectApi";
@@ -10,6 +10,8 @@ import TypeEditDialogContent from "../../components/type/TypeEditDialogContent";
 import ProjectTypePanel from "../project/ProjectTypePanel";
 import {getParentTypeId, getTypeAndDescendantIds} from "../project/projectListUtils";
 import {flattenTypes, getChecklistGroups} from "./checklistUtils";
+import CompletedChecklistModal from "./CompletedChecklistModal";
+import ChecklistTypeCard from "./ChecklistTypeCard";
 import "../../components/project/project.css";
 import "./checklist.css";
 
@@ -41,11 +43,17 @@ const ChecklistList = () => {
     const [selectedTypeId, setSelectedTypeId] = useState("all");
     const [editingChecklist, setEditingChecklist] = useState(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [completedScope, setCompletedScope] = useState(null);
     const [form] = Form.useForm();
     const selectedTypeIds = useMemo(() => selectedTypeId === "all" ? null
         : getTypeAndDescendantIds(typeTree, selectedTypeId), [selectedTypeId, typeTree]);
     const checklistGroups = useMemo(() => getChecklistGroups(checklists, typeTree, selectedTypeIds),
         [checklists, selectedTypeIds, typeTree]);
+    const completedChecklists = useMemo(() => checklists.filter((item) => item.isDone === 1), [checklists]);
+    const completedModalChecklists = useMemo(() => completedScope?.typeId === undefined
+        ? completedChecklists
+        : completedChecklists.filter((item) => item.checklistTypeId === completedScope.typeId),
+    [completedChecklists, completedScope]);
 
     /**
      * <p>重新加载清单页面数据。</p>
@@ -188,6 +196,15 @@ const ChecklistList = () => {
         });
     };
 
+    /**
+     * <p>打开全局或指定清单类型的已完成清单弹窗。</p>
+     *
+     * @param {Object} [group] 指定类型；不传时展示全部类型
+     */
+    const openCompletedModal = (group) => setCompletedScope(group
+        ? {typeId: group.id, title: `${group.name} · 已完成清单`}
+        : {typeId: undefined, title: "已完成清单"});
+
     return (
         <div className="checklist-page">
             <ProjectTypePanel
@@ -201,29 +218,33 @@ const ChecklistList = () => {
             />
             <section className="checklist-list-panel">
                 <div className="checklist-list-toolbar">
+                    <Button
+                        className="checklist-completed-trigger"
+                        type="link"
+                        onClick={() => openCompletedModal()}
+                    >查看已完成</Button>
                     <Button type="primary" icon={<PlusOutlined/>} onClick={() => openChecklistModal()}>添加清单</Button>
                 </div>
                 <div className={`checklist-type-groups ${selectedTypeId === "all" ? "checklist-type-groups-all" : ""}`}>
                     {checklistGroups.map((group) => (
-                        <Card
-                            className="checklist-type-group"
-                            key={group.id}
-                            title={<><span className="checklist-type-color" style={{backgroundColor: group.color || "#1677FF"}}/>{group.name}</>}
-                        >
-                            {group.items.map((item) => (
-                                <div className="checklist-item" key={item.id}>
-                                    <Checkbox checked={item.isDone === 1}
-                                              onChange={(event) => changeChecklistState(item, event.target.checked)}/>
-                                    <span className={`checklist-item-name ${item.isDone === 1 ? "checklist-item-done" : ""}`}
-                                          onClick={() => openChecklistModal(item)}>{item.name}</span>
-                                    {item.projectName && <Tag>{item.projectName}</Tag>}
-                                    <Button type="text" danger icon={<DeleteOutlined/>} onClick={() => deleteChecklist(item)}/>
-                                </div>
-                            ))}
-                        </Card>
+                        <ChecklistTypeCard
+                            key={group.id ?? "inbox"}
+                            group={group}
+                            onEdit={openChecklistModal}
+                            onDelete={deleteChecklist}
+                            onStateChange={changeChecklistState}
+                            onViewAll={openCompletedModal}
+                        />
                     ))}
                 </div>
             </section>
+            <CompletedChecklistModal
+                open={Boolean(completedScope)}
+                title={completedScope?.title || "已完成清单"}
+                checklists={completedModalChecklists}
+                onClose={() => setCompletedScope(null)}
+                onSelect={openChecklistModal}
+            />
             <Modal
                 title={editingChecklist ? "编辑清单" : "添加清单"}
                 open={isCreateModalOpen || Boolean(editingChecklist)}

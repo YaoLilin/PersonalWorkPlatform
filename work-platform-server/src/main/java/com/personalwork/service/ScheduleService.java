@@ -1,14 +1,14 @@
 package com.personalwork.service;
 
+import com.personalwork.constants.ProjectState;
+import com.personalwork.dao.ChecklistMapper;
 import com.personalwork.dao.ProjectMapper;
 import com.personalwork.dao.ProjectTimeMapper;
 import com.personalwork.dao.TypeMapper;
-import com.personalwork.dao.ChecklistMapper;
-import com.personalwork.constants.ProjectState;
+import com.personalwork.domain.entity.ChecklistDo;
 import com.personalwork.domain.entity.ProjectDo;
 import com.personalwork.domain.entity.ProjectTimeDo;
 import com.personalwork.domain.entity.TypeDo;
-import com.personalwork.domain.entity.ChecklistDo;
 import com.personalwork.domain.query.ScheduleEventParam;
 import com.personalwork.domain.vo.ScheduleEventVo;
 import com.personalwork.exception.DbOperateException;
@@ -138,6 +138,7 @@ public class ScheduleService {
         scheduleEvent.setChecklistId(projectTime.getChecklistId());
         scheduleEvent.setChecklistName(projectTime.getChecklistName());
         scheduleEvent.setChecklistTypeColor(projectTime.getChecklistTypeColor());
+        scheduleEvent.setChecklistIsDone(projectTime.getChecklistIsDone());
         scheduleEvent.setScheduleName(projectTime.getScheduleName());
         scheduleEvent.setDescription(projectTime.getDescription());
         scheduleEvent.setDate(projectTime.getDate());

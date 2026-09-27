@@ -22,17 +22,29 @@ import {ScheduleStatisticsCard} from "./components/ScheduleStatistics";
 import {useHiddenTimeRange} from "./hooks/useHiddenTimeRange";
 import {useScheduleManagement} from "./hooks/useScheduleManagement";
 import {
-    getCurrentWeekRange,
     getChecklistTypeColors,
+    getCurrentWeekRange,
     getHiddenTimeRangeHint,
     getPointerScheduleTime,
     getProjectTimeStatistics,
     getSelectionTimeRange,
+    INBOX_CHECKLIST_TYPE_KEY,
     isHiddenTimeSlot,
     toChecklistTree,
     toProjectTree,
-    toScheduleEvents
+    toScheduleEvents,
+    toScheduleParam
 } from "./utils/scheduleUtils";
+
+/**
+ * 获取清单树中初始展开的分类节点。
+ *
+ * @param {Array} nodes 清单树节点
+ * @returns {Array<string>} 分类节点键值
+ */
+function getChecklistGroupKeys(nodes) {
+    return nodes.flatMap((node) => node.isLeaf ? [] : [node.key, ...getChecklistGroupKeys(node.children || [])]);
+}
 
 /**
  * 加载日程页面所需的事件和项目数据。
@@ -52,11 +64,12 @@ export async function loader() {
     return {
         events: toScheduleEvents(projectTimes, checklistTypeColors),
         projectTree: toProjectTree(typeTree, activeProjects),
-        projectOptions: activeProjects.map((project) => ({value: project.id, label: project.name})),
+        projectOptions: projects.map((project) => ({value: project.id, label: project.name})),
         projects,
         checklistTypeTree,
         checklistTypeColors,
-        checklistTree: toChecklistTree(checklistTypeTree, checklists),
+        checklistTree: toChecklistTree(checklistTypeTree, checklists.filter((item) => item.isDone !== 1)),
+        checklists,
     };
 }
 
@@ -67,7 +80,7 @@ export async function loader() {
  * @returns {JSX.Element} 页面内容
  */
 const SchedulePage = () => {
-    const {events, projectTree, projectOptions, projects, checklistTree, checklistTypeTree, checklistTypeColors} = useLoaderData();
+    const {events, projectTree, projectOptions, projects, checklistTree, checklistTypeTree, checklistTypeColors, checklists} = useLoaderData();
     const {revalidate} = useRevalidator();
     const messageApi = useContext(MessageContext);
     const {user} = useContext(UserContext);
@@ -75,13 +88,20 @@ const SchedulePage = () => {
     const projectTreeRef = useRef(null);
     const toolbarRootRef = useRef(null);
     const hiddenRange = useHiddenTimeRange({userName: user?.name, messageApi});
+    const [expandedChecklistKeys, setExpandedChecklistKeys] = useState(() => getChecklistGroupKeys(checklistTree));
     const schedule = useScheduleManagement({
         calendarRef,
         projectOptions,
+        checklists,
         messageApi,
         initialEvents: events,
         checklistTypeColors,
-        onChecklistCreated: revalidate,
+        onChecklistCreated: () => {
+            setExpandedChecklistKeys((keys) => keys.includes(INBOX_CHECKLIST_TYPE_KEY)
+                ? keys : [...keys, INBOX_CHECKLIST_TYPE_KEY]);
+            revalidate();
+        },
+        onChecklistChanged: revalidate,
     });
     const [selectionPreview, setSelectionPreview] = useState(null);
     const [sidebarTab, setSidebarTab] = useState("checklists");
@@ -107,14 +127,35 @@ const SchedulePage = () => {
             eventData: (element) => ({
                 title: element.dataset.scheduleName || element.dataset.projectName,
                 duration: "01:00",
+                backgroundColor: element.dataset.scheduleColor,
+                borderColor: element.dataset.scheduleColor,
+                textColor: element.dataset.scheduleTextColor || "#fff",
                 extendedProps: {
                     projectId: element.dataset.projectId || undefined,
                     checklistId: element.dataset.checklistId || undefined,
-                    createChecklist: element.classList.contains("schedule-project-item"),
                 }
             })
         });
         return () => draggable.destroy();
+    }, []);
+
+    /**
+     * 侧栏清单与项目列表滚动时临时显示滚动条，停止滚动后隐藏。
+     */
+    useEffect(() => {
+        const holder = projectTreeRef.current?.querySelector(".ant-tabs-content-holder");
+        if (!holder) return undefined;
+        let hideTimer;
+        const showScrollbar = () => {
+            holder.classList.add("is-scrolling");
+            clearTimeout(hideTimer);
+            hideTimer = window.setTimeout(() => holder.classList.remove("is-scrolling"), 700);
+        };
+        holder.addEventListener("scroll", showScrollbar, {passive: true});
+        return () => {
+            holder.removeEventListener("scroll", showScrollbar);
+            clearTimeout(hideTimer);
+        };
     }, []);
 
     /**
@@ -238,6 +279,23 @@ const SchedulePage = () => {
     const openChecklistEditor = (_, info) => {
         if (info.node.checklist) setEditingChecklist(info.node.checklist);
     };
+    const updateScheduleTime = async (scheduleTimeId, range, checklistName) => {
+        const event = schedule.scheduleEvents.find((item) => item.id === String(scheduleTimeId));
+        if (!event) throw new Error("关联日程不存在，请刷新页面后重试");
+        await ScheduleApi.updateSchedule(scheduleTimeId, {
+            ...toScheduleParam({...event, start: range[0].toDate(), end: range[1].toDate()}),
+            scheduleName: checklistName,
+        });
+        revalidate();
+    };
+    const toggleChecklistState = async (checklistId, checked) => {
+        try {
+            await ChecklistApi.updateChecklistState(checklistId, checked ? 1 : 0);
+            revalidate();
+        } catch (error) {
+            messageApi.error(error?.response?.data?.message || error?.message || "清单状态保存失败", 5);
+        }
+    };
     return (
         <Card className="schedule-page" bordered={false}>
             <div className="schedule-layout">
@@ -255,7 +313,9 @@ const SchedulePage = () => {
                                     label: "清单列表",
                                     children: <Tree
                                         treeData={checklistTree}
-                                        defaultExpandAll
+                                        expandedKeys={expandedChecklistKeys}
+                                        onExpand={setExpandedChecklistKeys}
+                                        autoExpandParent={false}
                                         blockNode
                                         onSelect={openChecklistEditor}
                                     />,
@@ -283,9 +343,12 @@ const SchedulePage = () => {
                 contextMenu={schedule.contextMenu}
                 onDelete={() => void schedule.deleteEvent()}
                 editor={schedule.eventEditor}
+                checklist={checklists.find((item) => item.id === schedule.eventEditor?.checklistId)}
+                checklistTypeTree={checklistTypeTree}
                 projectOptions={projectOptions}
                 setEditor={schedule.setEventEditor}
                 onSaveEditor={() => void schedule.saveEditor(true)}
+                onToggleChecklistState={toggleChecklistState}
                 isHiddenRangeOpen={hiddenRange.isOpen}
                 hiddenRangeEditor={hiddenRange.editor}
                 setHiddenRangeEditor={hiddenRange.setEditor}
@@ -305,10 +368,8 @@ const SchedulePage = () => {
                 projects={projects}
                 typeTree={checklistTypeTree}
                 onCancel={() => setEditingChecklist(null)}
-                onSaved={() => {
-                    setEditingChecklist(null);
-                    revalidate();
-                }}
+                onChanged={revalidate}
+                onUpdateScheduleTime={updateScheduleTime}
             />
         </Card>
     );

@@ -1,5 +1,6 @@
 package com.personalwork.dao;
 
+import com.personalwork.domain.dto.ChecklistScheduleTimeDto;
 import com.personalwork.domain.entity.ProjectTimeDo;
 import com.personalwork.domain.vo.ScheduleEventVo;
 import org.apache.ibatis.annotations.Mapper;
@@ -26,6 +27,7 @@ public interface ProjectTimeMapper {
     List<ProjectTimeDo> getProjectTimeByWeek(Integer weekId);
     List<ProjectTimeDo> list(Integer userId);
     List<ScheduleEventVo> listScheduleByUser(Integer userId);
+    List<ChecklistScheduleTimeDto> listChecklistScheduleTimesByUser(Integer userId);
     ProjectTimeDo getScheduleById(Integer id, Integer userId);
     boolean updateSchedule(ProjectTimeDo projectTimeDo);
     boolean updateScheduleNameByChecklistId(@Param("checklistId") Integer checklistId,
