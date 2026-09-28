@@ -85,6 +85,7 @@ const SchedulePage = () => {
     const messageApi = useContext(MessageContext);
     const {user} = useContext(UserContext);
     const calendarRef = useRef(null);
+    const calendarContainerRef = useRef(null);
     const projectTreeRef = useRef(null);
     const toolbarRootRef = useRef(null);
     const hiddenRange = useHiddenTimeRange({userName: user?.name, messageApi});
@@ -116,6 +117,26 @@ const SchedulePage = () => {
             getProjectTimeStatistics(schedule.scheduleEvents, statisticsRange),
         [schedule.scheduleEvents, statisticsRange]);
     const totalHours = statistics.reduce((sum, item) => sum + item.value, 0);
+
+    /** 菜单收起或展开改变日历容器宽度时，重新计算 FullCalendar 的列宽。 */
+    useEffect(() => {
+        const container = calendarContainerRef.current;
+        if (!container) return undefined;
+        let frame;
+        let previousWidth;
+        const observer = new ResizeObserver(([entry]) => {
+            const width = entry.contentRect.width;
+            if (width === previousWidth) return;
+            previousWidth = width;
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(() => calendarRef.current?.getApi()?.updateSize());
+        });
+        observer.observe(container);
+        return () => {
+            observer.disconnect();
+            cancelAnimationFrame(frame);
+        };
+    }, []);
 
     /**
      * 初始化项目树的外部拖拽能力，并在组件卸载时销毁拖拽实例。
@@ -299,7 +320,7 @@ const SchedulePage = () => {
     return (
         <Card className="schedule-page" bordered={false}>
             <div className="schedule-layout">
-                <div className="schedule-calendar-wrapper">
+                <div className="schedule-calendar-wrapper" ref={calendarContainerRef}>
                     <FullCalendar ref={calendarRef} {...calendarOptions}/>
                 </div>
                 <aside className="schedule-sidebar" ref={projectTreeRef}>

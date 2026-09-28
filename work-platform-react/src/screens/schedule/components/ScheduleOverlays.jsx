@@ -1,7 +1,6 @@
 import {BarChartOutlined, PieChartOutlined} from "@ant-design/icons";
-import {Button, Checkbox, DatePicker, Input, Modal, Select} from "antd";
+import {Button, Checkbox, DatePicker, Input, Modal, TreeSelect} from "antd";
 import ProjectBrowser from "../../../components/public/projectBrowser";
-import {flattenTypes} from "../../checklist/checklistUtils";
 import {getProjectTimeStatisticsTitle} from "../utils/scheduleUtils";
 import {ProjectTimeStatisticsContent} from "./ScheduleStatistics";
 import HiddenTimeRangeModal from "./HiddenTimeRangeModal";
@@ -54,14 +53,15 @@ export const ScheduleEventEditor = ({editor, checklist, checklistTypeTree, proje
                     onChange={(project) => update({projectId: project?.id})}
                 />
             </div>
-            {!editor.isNew && checklist && <div className="schedule-event-project-field">
+            {(editor.isNew || checklist) && <div className="schedule-event-project-field">
                 <span>清单类型：</span>
-                <Select
+                <TreeSelect
                     allowClear
                     className="schedule-event-editor-type"
                     value={editor.checklistTypeId}
                     placeholder="收集箱"
-                    options={flattenTypes(checklistTypeTree)}
+                    treeData={checklistTypeTree}
+                    treeDefaultExpandAll
                     onChange={(value) => update({checklistTypeId: value})}
                 />
             </div>}

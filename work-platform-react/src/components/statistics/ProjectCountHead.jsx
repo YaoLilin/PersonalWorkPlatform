@@ -1,15 +1,19 @@
 import PropTypes from "prop-types";
 import ProjectCountFoot from "./ProjectCountFoot";
 
-const ProjectCountHead = ({cellStyle,borderColor}) => {
+/**
+ * 汇总表表头。
+ * @param {{cellStyle: Object, borderColor: string, columnName?: string}} props 单元格样式及标题。
+ */
+const ProjectCountHead = ({cellStyle,borderColor,columnName = '项目'}) => {
     return (
-        <div style={{backgroundColor: 'rgb(250, 250, 250)'}}>
+        <div style={{display: 'flex', backgroundColor: 'rgb(250, 250, 250)'}}>
             <div style={{
                 ...cellStyle,
                 borderRight: borderColor,
                 borderBottom: borderColor
             }}>
-                项目
+                {columnName}
             </div>
             <div style={{
                 ...cellStyle,

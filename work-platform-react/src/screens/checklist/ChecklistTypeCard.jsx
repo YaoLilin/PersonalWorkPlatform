@@ -13,9 +13,10 @@ const COMPLETED_PREVIEW_LIMIT = 20;
  * @param {Function} props.onDelete 删除清单的回调
  * @param {Function} props.onStateChange 修改清单状态的回调
  * @param {Function} props.onViewAll 查看该类型全部已完成清单的回调
+ * @param {Function} props.onAddChecklist 在当前类型新增清单的回调
  * @returns {JSX.Element} 清单类型卡片
  */
-const ChecklistTypeCard = ({group, onEdit, onDelete, onStateChange, onViewAll}) => {
+const ChecklistTypeCard = ({group, onEdit, onDelete, onStateChange, onViewAll, onAddChecklist}) => {
     const [completedExpanded, setCompletedExpanded] = useState(false);
     const activeItems = group.items.filter((item) => item.isDone !== 1);
     const completedItems = group.items.filter((item) => item.isDone === 1);
@@ -23,6 +24,7 @@ const ChecklistTypeCard = ({group, onEdit, onDelete, onStateChange, onViewAll}) 
     return (
         <Card
             className="checklist-type-group"
+            extra={<Button type="link" onClick={() => onAddChecklist(group)}>添加清单</Button>}
             title={<>
                 <span className="checklist-type-color" style={{backgroundColor: group.color || "#1677FF"}}/>
                 {group.name}
@@ -39,7 +41,7 @@ const ChecklistTypeCard = ({group, onEdit, onDelete, onStateChange, onViewAll}) 
                     <Button type="text" danger icon={<DeleteOutlined/>} onClick={() => onDelete(item)}/>
                 </div>
             ))}
-            <div className="checklist-type-completed-section">
+            <div className={`checklist-type-completed-section ${activeItems.length === 0 ? "checklist-type-completed-section--without-active" : ""}`}>
                 <Button
                     type="link"
                     className="checklist-type-completed-trigger"
@@ -49,10 +51,17 @@ const ChecklistTypeCard = ({group, onEdit, onDelete, onStateChange, onViewAll}) 
                     {completedItems.slice(0, COMPLETED_PREVIEW_LIMIT).map((item) => (
                         <div className="checklist-completed-item" key={item.id}>
                             <Button
-                                type="text"
+                                type="link"
                                 className="checklist-completed-name"
                                 onClick={() => onEdit(item)}
                             >{item.name}</Button>
+                            <Button
+                                type="text"
+                                danger
+                                icon={<DeleteOutlined/>}
+                                aria-label={`删除清单 ${item.name}`}
+                                onClick={() => onDelete(item)}
+                            />
                         </div>
                     ))}
                     {completedItems.length === 0 && <span className="checklist-completed-empty">暂无已完成清单</span>}

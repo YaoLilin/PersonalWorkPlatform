@@ -14,6 +14,7 @@ import lombok.Data;
 public class ScheduleEventParam {
     private Integer projectId;
     private Integer checklistId;
+    private Integer checklistTypeId;
     private Boolean createChecklist;
     @NotBlank(message = "日程名称不能为空")
     @Size(max = 255, message = "日程名称不能超过255个字符")

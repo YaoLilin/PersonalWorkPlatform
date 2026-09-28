@@ -16,6 +16,9 @@ public class ScheduleEventVo {
     private String projectColor;
     private Integer checklistId;
     private String checklistName;
+    /** 清单关联的项目编号；为空时按清单统计。 */
+    private Integer checklistProjectId;
+    private String checklistProjectName;
     private String checklistTypeColor;
     /** 清单完成状态：0 未完成，1 已完成。 */
     private Integer checklistIsDone;

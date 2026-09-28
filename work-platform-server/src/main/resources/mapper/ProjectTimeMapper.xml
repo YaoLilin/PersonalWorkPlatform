@@ -38,13 +38,16 @@
     </select>
     <select id="listScheduleByUser" resultType="com.personalwork.domain.vo.ScheduleEventVo">
         select pt.id, pt.project_id, p.name as project_name, p.color as project_color, pt.checklist_id,
-               cl.name as checklist_name, ct.color as checklist_type_color, cl.is_done as checklist_is_done,
+               cl.name as checklist_name, cl.project_id as checklist_project_id,
+               cp.name as checklist_project_name,
+               ct.color as checklist_type_color, cl.is_done as checklist_is_done,
                pt.schedule_name, pt.description,
                pt.date, coalesce(pt.end_date, pt.date) as end_date, pt.start_time, pt.end_time
         from project_time pt
         join record_week rw on pt.week_id = rw.id
         join project p on pt.project_id = p.id
         left join checklist cl on pt.checklist_id = cl.id
+        left join project cp on cl.project_id = cp.id
         left join checklist_type ct on cl.checklist_type_id = ct.id
         where rw.user_id = #{userId}
         order by pt.date, pt.start_time

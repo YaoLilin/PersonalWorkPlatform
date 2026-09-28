@@ -17,6 +17,7 @@ import WorkTimePieChart from "../../components/statistics/charts/WorkTimePieChar
 import GoalList from "../../components/goal/List";
 import FullRow from "../../components/statistics/form/FullRow";
 import GoalApi from "../../request/goalApi";
+import "./week-form.css";
 
 export async function loader({params}) {
     try {
@@ -32,6 +33,10 @@ export async function loader({params}) {
     }
 }
 
+/**
+ * 月统计表单。
+ * @returns {JSX.Element} 月记录详情与编辑表单。
+ */
 const MonthForm = () => {
     const navigate = useNavigate();
     const {monthData,problemList : problems,goalList} = useLoaderData();
@@ -92,6 +97,7 @@ const MonthForm = () => {
 
     return (
         <Form
+            className="month-statistics-form"
             name="basic"
             labelCol={{
                 span: 4,
@@ -105,55 +111,58 @@ const MonthForm = () => {
             method={'post'}
             initialValues={{mark,summary}}
         >
-            <FormFrame buttons={headButtons} backEvent={() => navigate('/months')}>
-                <div style={{maxWidth: '1000px', margin: '0 auto'}}>
-                    <Row gutter={0} justify="start">
-                        <Col span={12}>
-                            <>
-                                <span style={{fontSize: '2em'}}>{month}月</span>
-                                <span style={{paddingLeft: '10px'}}>{year}年</span>
-                            </>
+            <FormFrame
+                buttons={headButtons}
+                backEvent={() => navigate('/months')}
+                hideBack={isEdit}
+                title={
+                    <Row gutter={24} align="middle" className="week-form-frame__fields">
+                        <Col>
+                            <div className="statistics-period-title">
+                                <strong>{month}月</strong>
+                                <span>{year}年</span>
+                            </div>
                         </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                label="评价"
-                                name="mark"
-                                labelAlign={'left'}
-                            >
+                        <Col>
+                            <Form.Item label="评价" name="mark" labelAlign="left">
                                 {getMark()}
                             </Form.Item>
                         </Col>
                     </Row>
-                    <FormTitle name='任务统计'/>
-                    <Row>
-                        <ProjectCount data={countData}/>
-                    </Row>
-                    {
-                        projectTime.length > 0 &&
-                        <Row>
-                            <div style={{width:500,height:300}}>
-                                <WorkTimePieChart showCondition={false} showLegend={false} defaultCondition={getChartCondition}/>
-                            </div>
-                        </Row>
-                    }
-                    <FormTitle name='目标'/>
-                    <FullRow>
-                        <GoalList data={goals}
-                                  showTitle={false}
-                                  goalType={'month'}
-                                  month={monthData.month}
-                                  year={monthData.year}
-                                  onChange={(data) => setGoals(data)}/>
-                    </FullRow>
-                    <FormTitle name='问题'/>
-                    <Row>
-                        <ProblemList data={problemList} onChange={(newData) => setProblemList(newData)}/>
-                    </Row>
-                    <FormTitle name='总结'/>
-                    <Row gutter={0}>
-                        <SummaryTextArea editAble={isEdit} value={summary}/>
-                    </Row>
-                </div>
+                }
+            >
+                <FormTitle name="任务统计" variant="apple"/>
+                <Row>
+                    <ProjectCount data={countData}/>
+                </Row>
+                {projectTime.length > 0 && <Row>
+                    <div style={{width: 500, height: 300}}>
+                        <WorkTimePieChart
+                            showCondition={false}
+                            showLegend={false}
+                            defaultCondition={getChartCondition()}
+                        />
+                    </div>
+                </Row>}
+                <FormTitle name="目标" variant="apple"/>
+                <FullRow>
+                    <GoalList
+                        data={goals}
+                        showTitle={false}
+                        goalType="month"
+                        month={monthData.month}
+                        year={monthData.year}
+                        onChange={(data) => setGoals(data)}
+                    />
+                </FullRow>
+                <FormTitle name="问题" variant="apple"/>
+                <Row>
+                    <ProblemList data={problemList} onChange={(newData) => setProblemList(newData)}/>
+                </Row>
+                <FormTitle name="总结" variant="apple"/>
+                <Row gutter={0}>
+                    <SummaryTextArea editAble={isEdit} value={summary}/>
+                </Row>
             </FormFrame>
         </Form>
     )

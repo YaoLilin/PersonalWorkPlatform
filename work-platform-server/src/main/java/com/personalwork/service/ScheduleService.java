@@ -1,10 +1,7 @@
 package com.personalwork.service;
 
 import com.personalwork.constants.ProjectState;
-import com.personalwork.dao.ChecklistMapper;
-import com.personalwork.dao.ProjectMapper;
-import com.personalwork.dao.ProjectTimeMapper;
-import com.personalwork.dao.TypeMapper;
+import com.personalwork.dao.*;
 import com.personalwork.domain.entity.ChecklistDo;
 import com.personalwork.domain.entity.ProjectDo;
 import com.personalwork.domain.entity.ProjectTimeDo;
@@ -50,6 +47,7 @@ public class ScheduleService {
     private final ProjectMapper projectMapper;
     private final TypeMapper typeMapper;
     private final ChecklistMapper checklistMapper;
+    private final ChecklistTypeMapper checklistTypeMapper;
     private final WeekFormService weekFormService;
 
     /**
@@ -237,6 +235,12 @@ public class ScheduleService {
         createdChecklist.setProjectId(project.getId());
         createdChecklist.setIsDone(0);
         createdChecklist.setUserId(getLoginUser().getId());
+        if (param.getChecklistTypeId() != null) {
+            if (checklistTypeMapper.getByIdAndUserId(param.getChecklistTypeId(), getLoginUser().getId()) == null) {
+                throw new MethodParamInvalidException("清单类型不存在或无权操作");
+            }
+            createdChecklist.setChecklistTypeId(param.getChecklistTypeId());
+        }
         if (!checklistMapper.insert(createdChecklist)) {
             throw new DbOperateException("创建项目清单失败");
         }

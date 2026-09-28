@@ -1,0 +1,103 @@
+.week-statistics-form,
+.month-statistics-form {height: calc(100vh - 40px);}
+
+.week-form-frame.form-card {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 40px);
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.week-form-frame__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex: none;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e6e6e6;
+}
+
+.week-form-frame__title {
+    min-width: 0;
+    flex: 1;
+}
+
+.week-form-frame__fields {width: 100%;}
+.week-form-frame__fields > .ant-col {flex: 0 0 auto; max-width: none;}
+.week-form-frame__fields .ant-form-item {margin-bottom: 0;}
+.week-form-frame__fields .ant-form-item-row {align-items: center; flex-wrap: nowrap;}
+.week-form-frame__fields .ant-form-item-label {flex: 0 0 auto; max-width: none; padding: 0 8px 0 0;}
+.week-form-frame__fields .ant-form-item-control {flex: 0 0 auto; max-width: none;}
+.week-form-frame__fields .ant-picker {width: 100%;}
+.week-form-frame__fields .ant-select {width: 140px;}
+.week-form-frame__fields .ant-tag {margin: 0;}
+
+.statistics-period-title {display: flex; align-items: baseline; gap: 12px; white-space: nowrap;}
+.statistics-period-title strong {font-size: 32px; font-weight: 500;}
+.statistics-period-title span {font-size: 16px; color: #6e6e73;}
+
+.week-form-section-title {padding: 30px 0 16px;}
+.week-form-section-title h2 {
+    margin: 0;
+    color: #1d1d1f;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -.02em;
+    line-height: 1.3;
+}
+
+.week-form-frame__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.week-form-frame__actions .ant-btn {
+    float: none !important;
+    margin-right: 0 !important;
+}
+
+.week-form-frame__body {
+    min-height: 0;
+    overflow-y: auto;
+    padding: 32px;
+}
+
+.week-form-frame__body > * {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+#root .week-form-frame .ant-input,
+#root .week-form-frame .ant-input-affix-wrapper,
+#root .week-form-frame .ant-select-selector,
+#root .week-form-frame .ant-picker {
+    background: #fff !important;
+    color: #1d1d1f !important;
+}
+
+.week-form-frame .ant-picker-input > input,
+.week-form-frame .ant-picker-input > input[disabled],
+.week-form-frame .ant-select-selection-item,
+.week-form-frame .ant-input[disabled] {
+    color: #1d1d1f !important;
+    -webkit-text-fill-color: #1d1d1f;
+}
+
+.week-form-frame .statistics-summary-readonly {
+    min-height: 56px;
+    line-height: 22px;
+    white-space: pre-wrap;
+}
+
+@media (max-width: 768px) {
+    .week-form-frame__header {align-items: flex-start; flex-direction: column; padding: 16px 20px;}
+    .week-form-frame__title {width: 100%;}
+    .week-form-frame__fields > .ant-col {flex: 0 0 100%; max-width: 100%;}
+    .week-form-frame__body {padding: 20px;}
+}

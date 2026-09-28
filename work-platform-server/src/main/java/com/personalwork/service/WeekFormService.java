@@ -6,10 +6,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.personalwork.constants.ProblemLevel;
 import com.personalwork.constants.ProblemState;
 import com.personalwork.dao.*;
-import com.personalwork.exception.ProblemAddException;
 import com.personalwork.domain.dto.WeekFormDto;
 import com.personalwork.domain.entity.*;
 import com.personalwork.domain.query.WeekFormParam;
+import com.personalwork.exception.ProblemAddException;
 import com.personalwork.security.bean.UserDetail;
 import com.personalwork.system.cache.RedisKeyConstants;
 import com.personalwork.util.RedisUtil;
@@ -68,14 +68,22 @@ public class WeekFormService {
 
     @Transactional(rollbackFor = Exception.class)
     public boolean saveForm(Integer id, WeekFormParam param) {
-        projectTimeMapper.deleteWeekProjectTime(id);
-        countMapper.deleteByWeek(id);
+        boolean preserveScheduleTimes = Boolean.TRUE.equals(param.getPreserveScheduleTimes());
+        if (!preserveScheduleTimes) {
+            projectTimeMapper.deleteWeekProjectTime(id);
+            countMapper.deleteByWeek(id);
+        }
         RecordWeekDo recordWeekDo = convertToRecordWeekDo(param);
         recordWeekDo.setId(id);
+        if (preserveScheduleTimes) {
+            recordWeekDo.setTime(recordWeekMapper.getWorkWeekById(id).getTime());
+        }
         recordWeekMapper.updateWorkWeek(recordWeekDo);
         insertProblems(param.getAddProblems());
-        insertProjectTimeCount(id, param);
-        insertProjectTime(id, param);
+        if (!preserveScheduleTimes) {
+            insertProjectTimeCount(id, param);
+            insertProjectTime(id, param);
+        }
         handleProjectProgressSave(param,id);
         // 重新对本月的数据进行统计
         String[] date = param.getDate().split("-");

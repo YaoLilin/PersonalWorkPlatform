@@ -37,9 +37,9 @@
 
 .schedule-calendar-wrapper .fc .fc-button-primary:not(:disabled).fc-button-active,
 .schedule-calendar-wrapper .fc .fc-button-primary:not(:disabled).fc-button-active:hover {
-    border-color: #83bdff;
-    background-color: #d8ebff;
-    color: #004a92;
+    border-color: #4da2f8;
+    background-color: #4da2f8;
+    color: #fff;
 }
 
 .schedule-calendar-wrapper .fc .fc-button:focus,

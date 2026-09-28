@@ -25,6 +25,17 @@ body{
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
 }
 
+* {
+  scrollbar-color: #a1a1a6 transparent;
+}
+
+*::-webkit-scrollbar,
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  border: 0;
+  background: transparent;
+}
+
 
 .App-link {
   color: #61dafb;
@@ -145,6 +156,33 @@ body{
   color: #6e6e73;
   font-size: 13px;
   font-weight: 600;
+}
+
+/* 项目与问题库的固定表头由独立表格渲染，统一填满圆角和滚动条占位列。 */
+#root .project-list-table-area,
+#root .project-list-table-area .ant-table,
+#root .problems-page__table .ant-table,
+#root .project-list-table-area .ant-table-header,
+#root .problems-page__table .ant-table-header,
+#root .project-list-table-area .ant-table-container,
+#root .problems-page__table .ant-table-container,
+#root .project-list-table-area .ant-table-cell-scrollbar,
+#root .problems-page__table .ant-table-cell-scrollbar {
+  background: #f5f5f7;
+}
+
+#root .project-list-table-area .ant-table-body,
+#root .problems-page__table .ant-table-body {
+  background: #fff;
+}
+
+#root .project-list-table-area .ant-table-header table,
+#root .problems-page__table .ant-table-header table,
+#root .project-list-table-area .ant-table-thead > tr:first-child > th:first-child,
+#root .project-list-table-area .ant-table-thead > tr:first-child > th:last-child,
+#root .problems-page__table .ant-table-thead > tr:first-child > th:first-child,
+#root .problems-page__table .ant-table-thead > tr:first-child > th:last-child {
+  border-radius: 0;
 }
 
 #root .ant-table-tbody > tr > td,

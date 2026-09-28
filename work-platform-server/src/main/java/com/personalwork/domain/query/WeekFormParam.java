@@ -1,8 +1,8 @@
 package com.personalwork.domain.query;
 
+import com.personalwork.constants.Mark;
 import com.personalwork.validation.constraints.ValidDate;
 import com.personalwork.validation.constraints.ValidTime;
-import com.personalwork.constants.Mark;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,6 +27,8 @@ public class WeekFormParam {
     private List<ProjectTime> projectTimeList;
     @NotNull(message = "taskCount 任务统计不能为 null")
     private TaskCount taskCount;
+    /** 编辑周总结时保留已经安排的日程和工时统计。 */
+    private Boolean preserveScheduleTimes;
     private List<ProjectProgressWeekParam> projectProgressList;
     /**
      * 周记录表单创建才会有此参数，表示新增的问题

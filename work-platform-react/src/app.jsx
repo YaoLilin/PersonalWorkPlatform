@@ -3,8 +3,8 @@ import {
     CheckCircleOutlined,
     FundViewOutlined,
     InfoCircleOutlined,
-    UnorderedListOutlined,
-    ProjectOutlined
+    ProjectOutlined,
+    UnorderedListOutlined
 } from '@ant-design/icons';
 import {Layout, Menu, theme} from 'antd';
 import 'moment/locale/zh-cn';
@@ -133,7 +133,7 @@ const App = () => {
                           onClick={({key}) => navigate(key)}/>
                 </Sider>
                 <Content
-                    className="app-content"
+                    className={`app-content${pathname === '/problems' ? ' app-content--problems' : ''}`}
                     style={{padding: 20, minHeight: '100vh', marginLeft: paddingLeft}}
                     key={pathname}
                 >

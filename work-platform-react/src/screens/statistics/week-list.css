@@ -40,20 +40,6 @@
     font-size: 17px;
 }
 
-.week-list__create-button.ant-btn {
-    height: 44px;
-    padding: 0 20px;
-    border: 0;
-    border-radius: 999px;
-    background: #0071e3;
-    box-shadow: none;
-    font-weight: 500;
-    transition: background-color 200ms ease, opacity 200ms ease, transform 200ms ease;
-}
-
-.week-list__create-button.ant-btn:hover { background: #0077ed; }
-.week-list__create-button.ant-btn:active { transform: scale(.98); }
-
 .week-list__body {
     display: grid;
     grid-template-columns: 116px minmax(0, 1fr);

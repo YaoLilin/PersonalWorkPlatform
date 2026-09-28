@@ -3,6 +3,10 @@ import TextArea from "antd/es/input/TextArea";
 import React from "react";
 import PropTypes from "prop-types";
 
+/**
+ * 总结编辑框或只读内容。
+ * @param {{editAble?: boolean, value?: string}} props 编辑状态与总结内容。
+ */
 const SummaryTextArea = ({editAble=false, value}) => {
     return (
         <Col span={24}>
@@ -25,11 +29,12 @@ const SummaryTextArea = ({editAble=false, value}) => {
                     >
                         <TextArea rows={4}/>
                     </Form.Item>
-                    : <div style={{
+                    : <div className="statistics-summary-readonly" style={{
                         padding: 6,
-                        border: 'solid 1px #eee',
-                        borderRadius: '6px',
-                        width: 800
+                        border: '1px solid #e6e6e6',
+                        borderRadius: 8,
+                        boxSizing: 'border-box',
+                        width: 'min(800px, 100%)'
                     }}>{value}</div>
             }
         </Col>

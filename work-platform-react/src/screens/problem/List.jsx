@@ -1,4 +1,4 @@
-import {Button, DatePicker, Modal} from "antd";
+import {Button, Modal} from "antd";
 import React, {useContext, useState} from "react";
 import {ProblemsApis} from "../../request/problemApi";
 import {useLoaderData} from "react-router-dom";
@@ -8,6 +8,8 @@ import ProblemsTable from "../../components/problems/Table";
 import {MessageContext} from "../../provider/MessageProvider";
 import useProblemEditDialog from "./useProblemEditDialog";
 import handleLoaderError from "../../util/handleLoaderError";
+import "./problems.css";
+
 const {confirm} = Modal;
 
 export async function loader({params}) {
@@ -18,7 +20,7 @@ export async function loader({params}) {
     }
 }
 
-// 问题库页面
+/** 问题库页面，条件区与分页固定，列表内容独立滚动。 */
 const ProblemList = () => {
     const data = useLoaderData();
     data.forEach(i => i.key = i.id);
@@ -107,24 +109,26 @@ const ProblemList = () => {
     }
 
     return (
-        <div>
+        <div className="problems-page">
             {dialog}
-            <ConditionPanel style={{float: 'left'}}
-                            onChange={handleConditionChange}
-            />
-            <div style={{float: 'right'}}>
-                <Button type={"primary"} onClick={() => {
-                    setEditDialogOpen(true);
-                    setEditDialogData({});
-                    setEditDialogType("add")
-                }}>添加</Button>
-                <Button style={{marginLeft: 10}} disabled={!canDelete} onClick={handleDelete}>删除</Button>
+            <div className="problems-page__toolbar">
+                <ConditionPanel onChange={handleConditionChange}/>
+                <div className="problems-page__actions">
+                    <Button type="primary" onClick={() => {
+                        setEditDialogOpen(true);
+                        setEditDialogData({});
+                        setEditDialogType("add")
+                    }}>添加</Button>
+                    <Button disabled={!canDelete} onClick={handleDelete}>删除</Button>
+                </div>
             </div>
-            <div style={{paddingTop: 20, clear: 'both'}}>
-                <ProblemsTable dataSource={tableData}
-                               onClickTitle={handleClickTableTitle}
-                               rowSelection={rowSelection}
-                               tableOperation={tableOperation}/>
+            <div className="problems-page__table">
+                <ProblemsTable
+                    dataSource={tableData}
+                    onClickTitle={handleClickTableTitle}
+                    rowSelection={rowSelection}
+                    tableOperation={tableOperation}
+                />
             </div>
         </div>
     )

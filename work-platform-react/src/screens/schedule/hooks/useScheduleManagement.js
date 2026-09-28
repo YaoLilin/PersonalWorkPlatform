@@ -62,6 +62,7 @@ export function useScheduleManagement({
             extendedProps: {
                 projectId: editor.projectId,
                 checklistId: editor.checklistId,
+                checklistTypeId: editor.checklistTypeId,
                 createChecklist: !editor.checklistId,
                 description: editor.description,
             }
@@ -186,6 +187,7 @@ export function useScheduleManagement({
             title: "",
             description: "",
             projectId: undefined,
+            checklistTypeId: undefined,
             originalEvent: {title: "", description: "", projectId: undefined, start: info.start, end: info.end},
             timeRange: [dayjs(info.start), dayjs(info.end)], ...editorPosition(info.jsEvent.clientX + VIEWPORT_OFFSET, info.jsEvent.clientY + VIEWPORT_OFFSET)
         });
@@ -208,6 +210,7 @@ export function useScheduleManagement({
             description: info.event.extendedProps.description || "",
             projectId: info.event.extendedProps.projectId ? Number(info.event.extendedProps.projectId) : undefined,
             checklistId: info.event.extendedProps.checklistId ? Number(info.event.extendedProps.checklistId) : undefined,
+            checklistTypeId: info.event.extendedProps.checklistTypeId ? Number(info.event.extendedProps.checklistTypeId) : undefined,
             originalEvent: {
                 title: "",
                 description: "",

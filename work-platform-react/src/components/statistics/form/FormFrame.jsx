@@ -1,9 +1,31 @@
 import {ArrowLeftOutlined, DashOutlined} from "@ant-design/icons";
-import {Dropdown} from "antd";
+import {Button, Dropdown} from "antd";
 import React from "react";
 
+/**
+ * 表单卡片及操作区。
+ * @param {{backEvent: Function, dropMenu?: Array, buttons?: Array, title?: React.ReactNode, hideBack?: boolean, children: React.ReactNode}} props 表单内容与顶部操作。
+ */
 const FormFrame = (props)=>{
-    const {backEvent,dropMenu,buttons} = props;
+    const {backEvent,dropMenu,buttons,title,hideBack = false} = props;
+
+    if (title) {
+        return (
+            <div className="week-form-frame form-card">
+                <div className="week-form-frame__header">
+                    <div className="week-form-frame__title">{title}</div>
+                    <div className="week-form-frame__actions">
+                        {!hideBack && <Button icon={<ArrowLeftOutlined/>} onClick={backEvent}>返回</Button>}
+                        {buttons?.map((item, key) => <React.Fragment key={key}>{item}</React.Fragment>)}
+                        {dropMenu?.length > 0 && <Dropdown menu={{items: dropMenu}}>
+                            <Button icon={<DashOutlined/>} aria-label="更多操作"/>
+                        </Dropdown>}
+                    </div>
+                </div>
+                <div className="week-form-frame__body">{props.children}</div>
+            </div>
+        );
+    }
 
     return (
         <div style={{height:'100%',overflowY:'auto'}}>

@@ -87,6 +87,7 @@ export function toScheduleParam(event) {
     return {
         projectId: event.extendedProps.projectId,
         checklistId: event.extendedProps.checklistId,
+        checklistTypeId: event.extendedProps.checklistTypeId,
         createChecklist: event.extendedProps.createChecklist,
         scheduleName: event.title,
         description: event.extendedProps.description || "",

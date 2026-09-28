@@ -3,7 +3,11 @@ import dayjs from "dayjs";
 import React from "react";
 import DateUtil from "../../../util/DateUtil";
 
-const WeekSelector = ({editAble,isFormCreate,onWeekChange,value}) => {
+/**
+ * 周次展示；仅创建周记录时允许选择日期。
+ * @param {{isFormCreate: boolean, onWeekChange: Function, value?: string}} props 创建状态、日期变更事件和当前周日期。
+ */
+const WeekSelector = ({isFormCreate,onWeekChange,value}) => {
     const getWeekRange = () => {
         const {startDate, endDate} = DateUtil.getWeekRangeByDate(value);
         return startDate + ' ' + endDate;
@@ -11,14 +15,14 @@ const WeekSelector = ({editAble,isFormCreate,onWeekChange,value}) => {
     return (
         <Col span={12}>
             {
-                    editAble ?
+                    isFormCreate ?
                     <Form.Item
                         label="选择周次"
                         name="week"
                         labelAlign={'left'}
                         rules={[{required: true}]}
                     >
-                        <DatePicker disabled={!isFormCreate} picker="week" onChange={onWeekChange}/>
+                        <DatePicker picker="week" onChange={onWeekChange}/>
                     </Form.Item>
                     :
                     <>

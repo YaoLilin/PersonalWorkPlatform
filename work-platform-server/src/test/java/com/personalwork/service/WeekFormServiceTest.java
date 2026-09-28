@@ -3,14 +3,15 @@ package com.personalwork.service;
 import com.personalwork.base.TestSetUp;
 import com.personalwork.constants.Mark;
 import com.personalwork.dao.*;
-import com.personalwork.exception.ProblemAddException;
 import com.personalwork.domain.dto.WeekFormDto;
 import com.personalwork.domain.entity.ProblemDo;
 import com.personalwork.domain.entity.ProjectTimeDo;
 import com.personalwork.domain.entity.RecordWeekDo;
 import com.personalwork.domain.query.WeekFormParam;
+import com.personalwork.exception.ProblemAddException;
 import com.personalwork.util.RedisUtil;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
@@ -81,6 +82,23 @@ class WeekFormServiceTest extends TestSetUp {
         verify(recordWeekMapper, times(1)).updateWorkWeek(any(RecordWeekDo.class));
         verify(monthCountService, times(1)).countMonthProjectTime(anyInt(), anyInt());
         assertTrue(result);
+    }
+
+    @Test
+    void testSaveFormPreservesScheduleTimes() {
+        WeekFormParam param = getWeekFormParam();
+        param.setPreserveScheduleTimes(true);
+        when(recordWeekMapper.getWorkWeekById(1)).thenReturn(getRecordWeekDo());
+
+        assertTrue(weekFormService.saveForm(1, param));
+
+        ArgumentCaptor<RecordWeekDo> savedWeek = ArgumentCaptor.forClass(RecordWeekDo.class);
+        verify(recordWeekMapper).updateWorkWeek(savedWeek.capture());
+        assertEquals(180, savedWeek.getValue().getTime());
+        verify(projectTimeMapper, never()).deleteWeekProjectTime(anyInt());
+        verify(projectTimeMapper, never()).insert(any(ProjectTimeDo.class));
+        verify(countMapper, never()).deleteByWeek(anyInt());
+        verify(countMapper, never()).add(any());
     }
 
     @Test

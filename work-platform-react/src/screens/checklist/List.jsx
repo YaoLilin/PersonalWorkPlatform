@@ -1,15 +1,17 @@
 import React, {useContext, useMemo, useState} from "react";
-import {Button, Form, Input, Modal, Select} from "antd";
+import {Button, DatePicker, Form, Input, Modal, TreeSelect} from "antd";
 import {FormOutlined, PlusCircleOutlined, PlusOutlined} from "@ant-design/icons";
 import {useLoaderData, useRevalidator} from "react-router-dom";
 import {ChecklistApi} from "../../request/checklistApi";
 import {ProjectApi} from "../../request/projectApi";
+import ScheduleApi from "../../request/scheduleApi";
+import ProjectBrowser from "../../components/public/projectBrowser";
 import {MessageContext} from "../../provider/MessageProvider";
 import TypeAddDialogContent from "../../components/type/TypeAddDialogContent";
 import TypeEditDialogContent from "../../components/type/TypeEditDialogContent";
 import ProjectTypePanel from "../project/ProjectTypePanel";
 import {getParentTypeId, getTypeAndDescendantIds} from "../project/projectListUtils";
-import {flattenTypes, getChecklistGroups} from "./checklistUtils";
+import {getChecklistGroups} from "./checklistUtils";
 import CompletedChecklistModal from "./CompletedChecklistModal";
 import ChecklistTypeCard from "./ChecklistTypeCard";
 import "../../components/project/project.css";
@@ -45,6 +47,7 @@ const ChecklistList = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [completedScope, setCompletedScope] = useState(null);
     const [form] = Form.useForm();
+    const selectedProjectId = Form.useWatch("projectId", form);
     const selectedTypeIds = useMemo(() => selectedTypeId === "all" ? null
         : getTypeAndDescendantIds(typeTree, selectedTypeId), [selectedTypeId, typeTree]);
     const checklistGroups = useMemo(() => getChecklistGroups(checklists, typeTree, selectedTypeIds),
@@ -70,15 +73,20 @@ const ChecklistList = () => {
      */
     const showAddTypeDialog = (node) => {
         let name = "";
+        let color = node?.color || "#1677FF";
         confirm({
             title: "添加清单类型",
             icon: <PlusCircleOutlined/>,
-            content: <TypeAddDialogContent onChange={(event) => name = event.target.value}/>,
+            content: <TypeAddDialogContent
+                color={color}
+                onChange={(event) => name = event.target.value}
+                onColorChange={(value) => color = value}
+            />,
             onOk: async () => {
                 if (!name.trim()) {
                     return Promise.reject();
                 }
-                await ChecklistApi.addType({name, parentId: node?.key});
+                await ChecklistApi.addType({name, parentId: node?.key, color});
                 messageApi.success("添加成功", 5);
                 refreshData();
             },
@@ -147,31 +155,58 @@ const ChecklistList = () => {
     /**
      * <p>打开清单新增或编辑弹窗。</p>
      */
-    const openChecklistModal = (checklist = null) => {
+    const openChecklistModal = (checklist = null, group = null) => {
         setEditingChecklist(checklist);
-        form.setFieldsValue(checklist || {
+        form.setFieldsValue(checklist ? {...checklist, scheduleTime: undefined} : {
             name: "",
             projectId: undefined,
-            checklistTypeId: selectedTypeId === "all" ? undefined : Number(selectedTypeId),
+            scheduleTime: undefined,
+            checklistTypeId: group ? group.id : selectedTypeId === "all" ? undefined : Number(selectedTypeId),
         });
         setIsCreateModalOpen(!checklist);
     };
+
+    /** 在指定类型卡片中新建清单。 */
+    const addChecklistInGroup = (group) => openChecklistModal(null, group);
 
     /**
      * <p>保存新增或编辑的清单。</p>
      */
     const saveChecklist = async () => {
-        const values = await form.validateFields();
-        if (editingChecklist) {
-            await ChecklistApi.updateChecklist(editingChecklist.id, values);
-            messageApi.success("保存成功", 5);
-        } else {
-            await ChecklistApi.addChecklist(values);
-            messageApi.success("添加成功", 5);
+        try {
+            const {scheduleTime, ...values} = await form.validateFields();
+            if (editingChecklist) {
+                await ChecklistApi.updateChecklist(editingChecklist.id, values);
+                messageApi.success("保存成功", 5);
+            } else if (scheduleTime?.[0] && scheduleTime?.[1]) {
+                const [start, end] = scheduleTime;
+                if (!end.isAfter(start)) {
+                    messageApi.error("结束时间必须晚于开始时间");
+                    return;
+                }
+                await ScheduleApi.createSchedule({
+                    projectId: values.projectId,
+                    checklistTypeId: values.checklistTypeId,
+                    createChecklist: true,
+                    scheduleName: values.name,
+                    date: start.format("YYYY-MM-DD"),
+                    endDate: end.format("YYYY-MM-DD"),
+                    startTime: start.format("HH:mm:ss"),
+                    endTime: end.format("HH:mm:ss"),
+                });
+                messageApi.success("添加成功", 5);
+            } else {
+                await ChecklistApi.addChecklist(values);
+                messageApi.success("添加成功", 5);
+            }
+            setEditingChecklist(null);
+            setIsCreateModalOpen(false);
+            refreshData();
+        } catch (error) {
+            if (!error?.errorFields) {
+                messageApi.error(error?.response?.data?.message || error?.message || "清单保存失败");
+            }
         }
-        setEditingChecklist(null);
-        setIsCreateModalOpen(false);
-        refreshData();
     };
 
     /**
@@ -234,6 +269,7 @@ const ChecklistList = () => {
                             onDelete={deleteChecklist}
                             onStateChange={changeChecklistState}
                             onViewAll={openCompletedModal}
+                            onAddChecklist={addChecklistInGroup}
                         />
                     ))}
                 </div>
@@ -260,12 +296,29 @@ const ChecklistList = () => {
                     <Form.Item label="名称" name="name" rules={[{required: true, message: "请输入清单名称"}]}>
                         <Input maxLength={255}/>
                     </Form.Item>
-                    <Form.Item label="关联项目" name="projectId">
-                        <Select allowClear options={projects.map((project) => ({value: project.id, label: project.name}))}/>
+                    <Form.Item name="projectId" hidden><Input/></Form.Item>
+                    <Form.Item label="关联项目">
+                        <ProjectBrowser
+                            value={projects.find((project) => project.id === selectedProjectId) || null}
+                            style={{width: "100%"}}
+                            onChange={(project) => form.setFieldValue("projectId", project?.id)}
+                        />
                     </Form.Item>
                     <Form.Item label="清单类型" name="checklistTypeId">
-                        <Select allowClear placeholder="未指定时归入收集箱" options={flattenTypes(typeTree)}/>
+                        <TreeSelect
+                            allowClear
+                            treeData={typeTree}
+                            treeDefaultExpandAll
+                            placeholder="未指定时归入收集箱"
+                        />
                     </Form.Item>
+                    {!editingChecklist && <Form.Item label="日程时间" name="scheduleTime">
+                        <DatePicker.RangePicker
+                            showTime={{format: "HH:mm"}}
+                            format="YYYY-MM-DD HH:mm"
+                            style={{width: "100%"}}
+                        />
+                    </Form.Item>}
                 </Form>
             </Modal>
         </div>

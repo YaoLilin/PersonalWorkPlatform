@@ -3,6 +3,16 @@
  */
 export function getChecklistGroups(checklists, typeTree, selectedTypeIds) {
     const groups = new Map();
+    if (!selectedTypeIds) {
+        groups.set(null, {id: null, name: "收集箱", color: "#1677FF", items: []});
+    }
+    const addTypes = (types) => types.forEach((type) => {
+        if (!selectedTypeIds || selectedTypeIds.includes(String(type.key))) {
+            groups.set(type.key, {id: type.key, name: type.title, color: type.color || "#1677FF", items: []});
+        }
+        addTypes(type.children || []);
+    });
+    addTypes(typeTree);
     checklists.filter((item) => !selectedTypeIds || selectedTypeIds.includes(String(item.checklistTypeId)))
         .forEach((item) => {
             const group = groups.get(item.checklistTypeId) || {

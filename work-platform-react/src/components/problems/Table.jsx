@@ -1,6 +1,10 @@
 import {Button, Table, Tag} from "antd";
-import React, {useState} from "react";
+import React from "react";
 
+/**
+ * 问题列表表格。
+ * @param {{dataSource: Array, onClickTitle: Function, rowSelection: Object, tableOperation: Function}} props 数据、选择与操作回调。
+ */
 const ProblemsTable= ({dataSource,onClickTitle,rowSelection,tableOperation})=>{
     const columns = [
         {
@@ -67,7 +71,13 @@ const ProblemsTable= ({dataSource,onClickTitle,rowSelection,tableOperation})=>{
     ]
 
     return (
-        <Table columns={columns} dataSource={dataSource} rowSelection={rowSelection}/>
+        <Table
+            columns={columns}
+            dataSource={dataSource}
+            rowSelection={rowSelection}
+            scroll={{y: '100%'}}
+            pagination={{position: ['bottomRight']}}
+        />
     )
 }
 

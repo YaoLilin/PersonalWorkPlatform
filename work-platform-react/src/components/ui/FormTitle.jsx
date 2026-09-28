@@ -3,8 +3,16 @@ import {Row} from "antd";
 import {ThemeContext} from "../../provider/ThemProvider";
 
 
+/**
+ * 表单分节标题。
+ * @param {{name: string, variant?: 'apple'}} props 标题文字和样式类型。
+ */
 export const FormTitle = (props)=>{
     const {styleColor} = useContext(ThemeContext);
+
+    if (props.variant === 'apple') {
+        return <Row gutter={0} className="week-form-section-title"><h2>{props.name}</h2></Row>;
+    }
 
     return(
         <Row gutter={0}>

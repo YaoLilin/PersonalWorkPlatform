@@ -1,6 +1,5 @@
 import {Button, Empty} from "antd";
-import {PlusOutlined} from "@ant-design/icons";
-import {useLoaderData, useNavigate} from "react-router-dom";
+import {useLoaderData} from "react-router-dom";
 import WeekCard from "../../components/statistics/list/WeekCard";
 import {WeeksApi} from "../../request/weeksApi";
 import {useEffect, useMemo, useState} from "react";
@@ -46,7 +45,6 @@ const groupWeeksByMonth = (weeks) => {
  * @returns {JSX.Element} Apple 风格的周记录卡片及日期导航。
  */
 const WeekList = () => {
-    const navigate = useNavigate();
     const data = useLoaderData();
     const [activeMonthId, setActiveMonthId] = useState();
     const weekGroups = useMemo(() => groupWeeksByMonth(data), [data]);
@@ -98,14 +96,6 @@ const WeekList = () => {
                     <h1>周统计</h1>
                     <p>回顾每一周投入的时间，沉淀稳定的工作节奏。</p>
                 </div>
-                <Button
-                    className="week-list__create-button"
-                    icon={<PlusOutlined/>}
-                    type="primary"
-                    onClick={() => navigate("form/add")}
-                >
-                    添加周记录
-                </Button>
             </header>
             <div className="week-list__body">
                 <aside aria-label="周记录时间导航" className="week-time-navigation">

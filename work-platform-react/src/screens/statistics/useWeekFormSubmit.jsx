@@ -4,7 +4,7 @@ import {useContext} from "react";
 import {MessageContext} from "../../provider/MessageProvider";
 
 export default function useWeekFormSubmit(isFormCreate, tableData, theWeekProblems, projectTimeCount,
-                                          weekIdFromParam,projectProgress) {
+                                          weekIdFromParam,projectProgress, originalWeekDate) {
     const messageApi = useContext(MessageContext);
     async function fetchExistProblemNames(problems) {
         let existProblemNames = "";
@@ -88,6 +88,7 @@ export default function useWeekFormSubmit(isFormCreate, tableData, theWeekProble
         params.mark = Number(mark);
         params.summary = summary;
         params.projectProgressList = projectProgress;
+        params.preserveScheduleTimes = !isFormCreate;
         if (isFormCreate) {
             const addProblemList = theWeekProblems.filter(i => i.title);
             addProblemList.forEach(i => i.weekDate = weekDate);
@@ -100,7 +101,7 @@ export default function useWeekFormSubmit(isFormCreate, tableData, theWeekProble
 
     return  async (data) => {
         const {week, mark, summary} = data;
-        const weekDate = week.day(1).format('YYYY-MM-DD');
+        const weekDate = isFormCreate ? week.day(1).format('YYYY-MM-DD') : originalWeekDate;
         if (!verifyTableData()) {
             messageApi.error("表格未填写完整", 5);
         }

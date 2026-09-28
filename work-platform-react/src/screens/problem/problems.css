@@ -1,0 +1,65 @@
+.app-content--problems {
+    height: 100vh;
+    min-height: 0 !important;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.problems-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.problems-page__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex: none;
+    padding-bottom: 20px;
+}
+
+.problems-page__toolbar > :first-child > div {flex-wrap: wrap; gap: 12px;}
+.problems-page__toolbar > :first-child > div > div {padding-left: 0 !important;}
+.problems-page__actions {display: flex; gap: 10px; flex: none;}
+
+.problems-page__table {flex: 1; min-height: 0;}
+.problems-page__table .ant-table-wrapper,
+.problems-page__table .ant-spin-nested-loading,
+.problems-page__table .ant-spin-container {height: 100%; min-height: 0;}
+.problems-page__table .ant-spin-container,
+.problems-page__table .ant-table,
+.problems-page__table .ant-table-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+.problems-page__table .ant-table {flex: 1;}
+.problems-page__table .ant-table-container {flex: 1;}
+.problems-page__table .ant-table-body {
+    flex: 1;
+    min-height: 0;
+    max-height: none !important;
+    overflow-y: auto !important;
+}
+.problems-page__table .ant-table-pagination {flex: none; margin-bottom: 0;}
+
+#root .problems-page__toolbar .ant-picker,
+#root .problems-page__toolbar .ant-select-selector {
+    background: #fff !important;
+    color: #1d1d1f !important;
+}
+.problems-page__toolbar,
+.problems-page__toolbar .ant-picker-input > input,
+.problems-page__toolbar .ant-select-selection-item,
+.problems-page__toolbar .ant-select-selection-placeholder {
+    color: #1d1d1f !important;
+}
+.problems-page__toolbar .ant-picker-input > input::placeholder {color: #1d1d1f !important;}
+
+@media (max-width: 900px) {
+    .problems-page__toolbar {align-items: flex-start; flex-direction: column;}
+}

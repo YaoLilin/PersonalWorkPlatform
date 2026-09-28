@@ -4,6 +4,7 @@ import {useContext, useEffect, useRef, useState} from "react";
 import {ChecklistApi} from "../../request/checklistApi";
 import {MessageContext} from "../../provider/MessageProvider";
 import {flattenTypes} from "./checklistUtils";
+import ProjectBrowser from "../../components/public/projectBrowser";
 
 /**
  * <p>日程页面的清单编辑弹窗，修改后自动保存。</p>
@@ -154,11 +155,10 @@ const ChecklistEditorModal = ({open, checklist, projects, typeTree, onCancel, on
                     />
                 </Form.Item>
                 <Form.Item label="关联项目">
-                    <Select
-                        allowClear
-                        value={draft.projectId}
-                        options={projects.map((project) => ({value: project.id, label: project.name}))}
-                        onChange={(value) => changeField("projectId", value)}
+                    <ProjectBrowser
+                        value={projects.find((project) => project.id === draft.projectId) || null}
+                        style={{width: "100%"}}
+                        onChange={(project) => changeField("projectId", project?.id)}
                     />
                 </Form.Item>
                 <Form.Item label="清单类型">

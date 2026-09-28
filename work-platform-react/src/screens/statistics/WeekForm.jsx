@@ -21,10 +21,11 @@ import useDeleteDialog from "./useDeleteDialog";
 import useHeadMenus from "./useHeadMenus";
 import handleLoaderError from "../../util/handleLoaderError";
 import ProjectProgressList from "@/components/statistics/form/ProjectProgressList";
-import WorkTimePieChart from "../../components/statistics/charts/WorkTimePieChart";
-import DateUtil from "../../util/DateUtil";
 import ScheduleApi from "../../request/scheduleApi";
 import WeekSchedule from "./WeekSchedule";
+import {countWeekTasks} from "./weekTaskCount";
+import WeekTaskPieChart from "./WeekTaskPieChart";
+import "./week-form.css";
 
 
 export async function loader({params}) {
@@ -42,6 +43,10 @@ export async function loader({params}) {
     }
 }
 
+/**
+ * 周统计表单。
+ * @param {{isFormCreate?: boolean}} props 是否为创建周记录的页面。
+ */
 const WeekForm = ({isFormCreate = false}) => {
     const {formData,goals:goalList, scheduleEvents} = useLoaderData();
     const {date, mark, summary,projectProgressList} = formData;
@@ -66,12 +71,16 @@ const WeekForm = ({isFormCreate = false}) => {
     const projectTimeCount = useMemo(()=>{
         return merger(tableData);
     },[tableData]);
-    const handleSubmit = useWeekFormSubmit(isFormCreate, tableData, theWeekProblems, projectTimeCount, weekIdFromParam
-                         ,projectProgress);
+    const handleSubmit = useWeekFormSubmit(isFormCreate, tableData, theWeekProblems, projectTimeCount, weekIdFromParam,
+        projectProgress, date);
     const {deleteDialog, setDeleteDialogOpen} = useDeleteDialog(weekIdFromParam);
     const {headButtons,dropMenu,editAble} =
-        useHeadMenus(form, isFormCreate,()=> setDeleteDialogOpen(true));
-    debugger
+        useHeadMenus(form, isFormCreate, () => setDeleteDialogOpen(true),
+            {hideCreateCancel: true, cancelLabel: '取消编辑'});
+    const taskCount = useMemo(
+        () => countWeekTasks(scheduleEvents, weekValue?.format('YYYY-MM-DD')),
+        [scheduleEvents, weekValue],
+    );
 
     const fetchGoals = async (date)=>{
         const year = dayjs(date).year();
@@ -97,81 +106,69 @@ const WeekForm = ({isFormCreate = false}) => {
         }
     }
 
-    /**
-     * <p>获取当前周的利用时间占比统计条件。</p>
-     *
-     * @returns {Object} 当前周的自定义日期统计条件
-     */
-    const getChartCondition = () => {
-        const {startDate, endDate} = DateUtil.getWeekRangeByDate(date);
-        return {dateRangeType: 3, startDate, endDate};
-    };
-
     return (
-        <FormFrame backEvent={() => navigate('/weeks')}
-                   dropMenu={dropMenu}
-                   buttons={headButtons}
-                   >
-            {deleteDialog}
-            <Form
-                name="basic"
-                labelCol={{
-                    span: 4,
-                }}
-                form={form}
-                wrapperCol={{
-                    span: 8,
-                }}
-                autoComplete="off"
-                onFinish={handleSubmit}
-                method={'post'}
-                scrollToFirstError={true}
-                initialValues={{
-                    week: date ? dayjs(date, 'YYYY-MM-DD') : '',
-                    mark: mark,
-                    summary: summary
-                }}
+        <Form
+            className="week-statistics-form"
+            name="basic"
+            labelCol={{span: 4}}
+            form={form}
+            wrapperCol={{span: 8}}
+            autoComplete="off"
+            onFinish={handleSubmit}
+            method="post"
+            scrollToFirstError
+            initialValues={{
+                week: date ? dayjs(date, 'YYYY-MM-DD') : '',
+                mark,
+                summary,
+            }}
+        >
+            <FormFrame
+                backEvent={() => navigate('/weeks')}
+                dropMenu={dropMenu}
+                buttons={headButtons}
+                hideBack={editAble && !isFormCreate}
+                title={
+                    <Row gutter={24} align="middle" className="week-form-frame__fields">
+                        <WeekSelector
+                            isFormCreate={isFormCreate}
+                            onWeekChange={handleWeekChange}
+                            value={formData?.date}
+                        />
+                        <MarkSelector editAble={editAble} value={formData.mark}/>
+                    </Row>
+                }
             >
-                <Row gutter={0} justify="start">
-                    <WeekSelector editAble={editAble}
-                                  isFormCreate={isFormCreate}
-                                  onWeekChange={handleWeekChange}
-                                  value={formData?.date}/>
-                    <MarkSelector editAble={editAble} value={formData.mark} />
-                </Row>
-                <FormTitle name='项目情况'/>
+                {deleteDialog}
+                <FormTitle name="项目情况" variant="apple"/>
                 <FullRow>
                     <WeekSchedule
                         weekDate={weekValue?.format("YYYY-MM-DD")}
                         scheduleEvents={scheduleEvents}
                     />
                 </FullRow>
-                <FormTitle name='任务统计'/>
+                <FormTitle name="任务统计" variant="apple"/>
                 <Row gutter={0}>
-                    <ProjectCount data={projectTimeCount}/>
+                    <ProjectCount data={taskCount} columnName="项目或清单"/>
                 </Row>
                 <Row>
                     {
-                        !editAble && projectTimeCount.length > 0 ?
+                        !editAble && taskCount.length > 0 ?
                             <div style={{width: 500, height: 300}}>
-                                <WorkTimePieChart
-                                    showCondition={false}
-                                    showLegend={false}
-                                    defaultCondition={getChartCondition()}
-                                />
+                                <WeekTaskPieChart data={taskCount}/>
                             </div> : null
                     }
                 </Row>
-                <FormTitle name='项目成果'/>
+                <FormTitle name="项目成果" variant="apple"/>
                 <FullRow>
                     <ProjectProgressList data={projectProgress} isEditable={editAble}
                                          onChange={(data) => setProjectProgress(data)}/>
                 </FullRow>
-                <FormTitle name='目标'/>
+                <FormTitle name="目标" variant="apple"/>
                 <FullRow>
                     <GoalList data={goals} showTitle={false} onChange={(data) => setGoals(data)}/>
                 </FullRow>
-                <FormTitle name='问题'/>
+                <FormTitle name="问题" variant="apple"/>
                 <FormProblemList isFormCreate={isFormCreate}
                                  theWeekProblems={theWeekProblems}
                                  nowProblems={nowProblems}
@@ -179,12 +176,12 @@ const WeekForm = ({isFormCreate = false}) => {
                                  onTheWeekProblemsListChange={(data) => setTheWeekProblems(data)}
                                  onNowProblemsListChange={(data)=>setNowProblems(data)}
                                  editAble={editAble}/>
-                <FormTitle name='总结'/>
+                <FormTitle name="总结" variant="apple"/>
                 <Row gutter={0}>
                     <SummaryTextArea editAble={editAble} value={formData.summary}/>
                 </Row>
-            </Form>
-        </FormFrame>
+            </FormFrame>
+        </Form>
     )
 }
 
