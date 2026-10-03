@@ -16,6 +16,8 @@
 - 数据持久化：优先使用 MyBatis Pro 注解，关联复杂时改用 xml 文件编写 sql
 - 如果数据库表结构发生更改，即时更新SQL文件：[personal_work.sql](work-platform-server/sql/personal_work.sql)。
 - 数据库表结构发生更改后，创建升级文件：在 [upgrade](work-platform-server/sql/upgrade) 目录下新增/修改SQL文件，记录表结构变更内容，如果文件夹下有git未提交修改的SQL文件，则记录到此文件，如果没有修改文件，则创建文件，需先在文件夹下新增名称为当前日期的文件夹，例如：upgrade/20260719，然后在日期文件夹内新增SQL文件，记录变更内容。
+- 发布新版本时，必须在 [version-upgrade](work-platform-server/sql/upgrade/version-upgrade) 下创建以版本号命名的文件夹，并在其中放置同名升级 SQL 文件，例如 `version-upgrade/v1.1.0/v1.1.0.sql`。
+- 版本升级 SQL 应按执行顺序合并上一个已发布版本至当前版本的全部数据库变更，避免重复执行相同语句；即使没有数据库变更，也必须创建该版本的 SQL 文件，并以注释说明无需执行数据库升级。
 - 如果数据库表字段为字典类，则必需在字段注释中说明字典对应名称，如：0:未完成 1:已完成
 
 ### 前端规则
