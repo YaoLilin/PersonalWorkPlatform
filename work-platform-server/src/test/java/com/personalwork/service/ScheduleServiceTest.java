@@ -93,18 +93,33 @@ class ScheduleServiceTest extends TestSetUp {
     }
 
     @Test
-    void rejectsUpdateThatRemovesChecklist() {
+    void updatesExistingScheduleWithoutChecklistOrProject() {
         ScheduleEventParam param = validParam();
+        param.setScheduleName("修改后的日程");
         ProjectTimeDo existing = new ProjectTimeDo();
+        existing.setId(7);
         existing.setDate("2026-10-02");
         existing.setEndDate("2026-10-02");
         existing.setStartTime("09:00");
         existing.setEndTime("10:00");
-        when(projectTimeMapper.getScheduleById(7, 1)).thenReturn(existing);
+        RecordWeekDo week = new RecordWeekDo();
+        week.setId(3);
+        when(weekFormService.ensureWeekForm(any(LocalDate.class))).thenReturn(week);
+        when(projectTimeMapper.getScheduleById(7, 1)).thenReturn(existing).thenAnswer(invocation -> {
+            ArgumentCaptor<ProjectTimeDo> updated = ArgumentCaptor.forClass(ProjectTimeDo.class);
+            verify(projectTimeMapper).updateSchedule(updated.capture());
+            return updated.getValue();
+        });
 
-        assertThrows(MethodParamInvalidException.class, () -> scheduleService.updateSchedule(7, param));
+        ScheduleEventVo result = scheduleService.updateSchedule(7, param);
 
-        verify(projectTimeMapper, never()).updateSchedule(any(ProjectTimeDo.class));
+        assertEquals(7, result.getId());
+        assertEquals("修改后的日程", result.getScheduleName());
+        assertNull(result.getProjectId());
+        assertNull(result.getChecklistId());
+        verify(projectTimeMapper).updateSchedule(org.mockito.ArgumentMatchers.argThat(schedule ->
+                schedule.getId() == 7 && schedule.getProjectId() == null && schedule.getChecklistId() == null));
+        verify(checklistMapper, never()).insert(any(ChecklistDo.class));
     }
 
     @Test

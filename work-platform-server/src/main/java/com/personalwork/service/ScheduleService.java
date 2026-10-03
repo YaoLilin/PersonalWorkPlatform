@@ -88,7 +88,6 @@ public class ScheduleService {
     public ScheduleEventVo updateSchedule(Integer id, ScheduleEventParam param) {
         ProjectTimeDo originalProjectTime = getSchedule(id);
         LocalDateTimeRange newTimeRange = validateTimeRange(param);
-        validateChecklistSelection(param);
         ProjectDo project = getUserProject(param.getProjectId());
         ChecklistDo checklist = getChecklist(param.getChecklistId());
         checklist = createChecklistForProject(param, project, checklist);
