@@ -22,6 +22,10 @@ import useHeadMenus from "./useHeadMenus";
 import handleLoaderError from "../../util/handleLoaderError";
 import ProjectProgressList from "@/components/statistics/form/ProjectProgressList";
 import ScheduleApi from "../../request/scheduleApi";
+import {TypeApi} from "../../request/typeApi";
+import {ProjectApi} from "../../request/projectApi";
+import {ChecklistApi} from "../../request/checklistApi";
+import {getChecklistTypeColors, getProjectColors} from "../schedule/utils/scheduleUtils";
 import WeekSchedule from "./WeekSchedule";
 import {countWeekTasks} from "./weekTaskCount";
 import WeekTaskPieChart from "./WeekTaskPieChart";
@@ -31,13 +35,19 @@ import "./week-form.css";
 export async function loader({params}) {
     try {
         const weekId = params.weekId;
-        const [formData, scheduleEvents] = await Promise.all([
+        const [formData, scheduleEvents, projectTypes, projects, checklistTypes, checklists] = await Promise.all([
             weekId ? WeeksApi.getForm(weekId) : {},
             ScheduleApi.getSchedule(),
+            TypeApi.getTypeTree({}),
+            ProjectApi.getProjects({}),
+            ChecklistApi.getTypeTree(),
+            ChecklistApi.getChecklists(),
         ]);
         const goalsResult = await GoalApi.getWeekGoals({weekDate:formData.date});
         const goals = goalsResult.length > 0 ? goalsResult[0].goals : [];
-        return {formData, goals, scheduleEvents};
+        return {formData, goals, scheduleEvents,
+            projectColors: getProjectColors(projectTypes, projects),
+            checklistTypeColors: getChecklistTypeColors(checklistTypes, checklists)};
     } catch (e) {
         handleLoaderError(e);
     }
@@ -48,7 +58,7 @@ export async function loader({params}) {
  * @param {{isFormCreate?: boolean}} props 是否为创建周记录的页面。
  */
 const WeekForm = ({isFormCreate = false}) => {
-    const {formData,goals:goalList, scheduleEvents} = useLoaderData();
+    const {formData, goals: goalList, scheduleEvents, projectColors, checklistTypeColors} = useLoaderData();
     const {date, mark, summary,projectProgressList} = formData;
     const navigate = useNavigate();
     const [form] = useForm();
@@ -145,6 +155,8 @@ const WeekForm = ({isFormCreate = false}) => {
                     <WeekSchedule
                         weekDate={weekValue?.format("YYYY-MM-DD")}
                         scheduleEvents={scheduleEvents}
+                        projectColors={projectColors}
+                        checklistTypeColors={checklistTypeColors}
                     />
                 </FullRow>
                 <FormTitle name="任务统计" variant="apple"/>

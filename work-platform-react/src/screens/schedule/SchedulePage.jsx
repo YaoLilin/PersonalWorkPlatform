@@ -26,6 +26,7 @@ import {
     getCurrentWeekRange,
     getHiddenTimeRangeHint,
     getPointerScheduleTime,
+    getProjectColors,
     getProjectTimeStatistics,
     getSelectionTimeRange,
     INBOX_CHECKLIST_TYPE_KEY,
@@ -60,15 +61,18 @@ export async function loader() {
         ChecklistApi.getChecklists(),
     ]);
     const activeProjects = projects.filter((project) => project.state === 1);
+    const projectColors = getProjectColors(typeTree, projects);
     const checklistTypeColors = getChecklistTypeColors(checklistTypeTree, checklists);
     return {
-        events: toScheduleEvents(projectTimes, checklistTypeColors),
-        projectTree: toProjectTree(typeTree, activeProjects),
+        events: toScheduleEvents(projectTimes, checklistTypeColors, projectColors),
+        projectTree: toProjectTree(typeTree, activeProjects, projectColors),
         projectOptions: projects.map((project) => ({value: project.id, label: project.name})),
         projects,
         checklistTypeTree,
         checklistTypeColors,
-        checklistTree: toChecklistTree(checklistTypeTree, checklists.filter((item) => item.isDone !== 1)),
+        projectColors,
+        checklistTree: toChecklistTree(checklistTypeTree, checklists.filter((item) => item.isDone !== 1),
+            checklistTypeColors, projectColors),
         checklists,
     };
 }
@@ -80,7 +84,8 @@ export async function loader() {
  * @returns {JSX.Element} 页面内容
  */
 const SchedulePage = () => {
-    const {events, projectTree, projectOptions, projects, checklistTree, checklistTypeTree, checklistTypeColors, checklists} = useLoaderData();
+    const {events, projectTree, projectOptions, projects, checklistTree, checklistTypeTree, checklistTypeColors,
+        projectColors, checklists} = useLoaderData();
     const {revalidate} = useRevalidator();
     const messageApi = useContext(MessageContext);
     const {user} = useContext(UserContext);
@@ -97,6 +102,7 @@ const SchedulePage = () => {
         messageApi,
         initialEvents: events,
         checklistTypeColors,
+        projectColors,
         onChecklistCreated: () => {
             setExpandedChecklistKeys((keys) => keys.includes(INBOX_CHECKLIST_TYPE_KEY)
                 ? keys : [...keys, INBOX_CHECKLIST_TYPE_KEY]);

@@ -19,7 +19,7 @@ const VIEWPORT_OFFSET = 8;
 /**
  * 管理日程的编辑、创建、删除与拖拽更新。
  *
- * @param {{calendarRef: Object, projectOptions: Array, checklists: Array, messageApi: Object, initialEvents: Array, checklistTypeColors: Object, onChecklistCreated: Function, onChecklistChanged: Function}} options 业务依赖
+ * @param {{calendarRef: Object, projectOptions: Array, checklists: Array, messageApi: Object, initialEvents: Array, checklistTypeColors: Object, projectColors: Object, onChecklistCreated: Function, onChecklistChanged: Function}} options 业务依赖
  * @returns {Object} 日程状态与操作
  */
 export function useScheduleManagement({
@@ -29,6 +29,7 @@ export function useScheduleManagement({
     messageApi,
     initialEvents,
     checklistTypeColors,
+    projectColors,
     onChecklistCreated,
     onChecklistChanged,
 }) {
@@ -42,9 +43,9 @@ export function useScheduleManagement({
     useEffect(() => setScheduleEvents(initialEvents), [initialEvents]);
 
     const replaceEvent = useCallback((scheduleEvent) => {
-        const [updated] = toScheduleEvents([scheduleEvent], checklistTypeColors);
+        const [updated] = toScheduleEvents([scheduleEvent], checklistTypeColors, projectColors);
         setScheduleEvents((items) => items.map((item) => item.id === updated.id ? updated : item));
-    }, [checklistTypeColors]);
+    }, [checklistTypeColors, projectColors]);
     const closeEditor = useCallback(() => setEventEditor(null), []);
     const editorPosition = (left, top) => ({
         left: Math.max(VIEWPORT_OFFSET, Math.min(left, window.innerWidth - EDITOR_WIDTH - VIEWPORT_OFFSET)),
@@ -69,7 +70,7 @@ export function useScheduleManagement({
         };
         try {
             const saved = await ScheduleApi.createSchedule(toScheduleParam(event));
-            setScheduleEvents((items) => [...items, toScheduleEvents([saved], checklistTypeColors)[0]]);
+            setScheduleEvents((items) => [...items, toScheduleEvents([saved], checklistTypeColors, projectColors)[0]]);
             if (saved.checklistId && !editor.checklistId) onChecklistCreated();
             else if (saved.checklistId) onChecklistChanged();
         } catch (error) {
@@ -115,7 +116,7 @@ export function useScheduleManagement({
                 });
             }
             const saved = await ScheduleApi.updateSchedule(event.extendedProps.scheduleId || event.id, toScheduleParam(event));
-            const [savedEvent] = toScheduleEvents([saved], checklistTypeColors);
+            const [savedEvent] = toScheduleEvents([saved], checklistTypeColors, projectColors);
             event.setProp("backgroundColor", savedEvent.backgroundColor);
             event.setProp("borderColor", savedEvent.borderColor);
             event.setProp("textColor", savedEvent.textColor);

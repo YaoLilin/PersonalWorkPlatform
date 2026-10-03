@@ -17,15 +17,18 @@ import "../schedule/schedule.css";
  * @param {Object} props 组件参数
  * @param {string} props.weekDate 周起始日期
  * @param {Array} props.scheduleEvents 日程接口返回的事件数据
+ * @param {Object} props.projectColors 项目编号到有效颜色的映射
+ * @param {Object} props.checklistTypeColors 清单编号到类型颜色的映射
  * @returns {JSX.Element} 固定为周视图的日程组件
  */
-const WeekSchedule = ({weekDate, scheduleEvents}) => {
+const WeekSchedule = ({weekDate, scheduleEvents, projectColors, checklistTypeColors}) => {
     const messageApi = useContext(MessageContext);
     const {user} = useContext(UserContext);
     const calendarRef = useRef(null);
     const toolbarRootRef = useRef(null);
     const hiddenRange = useHiddenTimeRange({userName: user?.name, messageApi});
-    const events = useMemo(() => toScheduleEvents(scheduleEvents || []), [scheduleEvents]);
+    const events = useMemo(() => toScheduleEvents(scheduleEvents || [], checklistTypeColors, projectColors),
+        [scheduleEvents, checklistTypeColors, projectColors]);
 
     /**
      * 跟随表单周次切换日程视图，始终展示对应周。

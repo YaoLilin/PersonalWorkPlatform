@@ -35,6 +35,7 @@
   "scripts": {
     "dev": "vite --mode dev",
     "test": "vite --mode test",
+    "test:colors": "node tests/colorRules.test.cjs",
     "build:dev": "vite build --mode dev",
     "start": "npx vite --mode production",
     "build": "vite build --mode production",

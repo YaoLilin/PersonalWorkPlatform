@@ -1,6 +1,7 @@
 import React from "react";
 import {Button, Tree} from "antd";
 import {FormOutlined, PlusCircleOutlined} from "@ant-design/icons";
+import {getInheritedTypeColors} from "../../util/typeColorUtils";
 
 /**
  * <p>项目类型树面板。</p>
@@ -24,6 +25,8 @@ const ProjectTypePanel = ({
     onEditType,
     onDeleteType,
 }) => {
+    const typeColors = getInheritedTypeColors(typeTree);
+
     /**
      * <p>渲染带操作按钮的类型树节点标题。</p>
      */
@@ -33,7 +36,7 @@ const ProjectTypePanel = ({
         }
         return (
             <div className="tree_title">
-                <span className="project-type-color" style={{backgroundColor: node.color || "#1677FF"}}/>
+                <span className="project-type-color" style={{backgroundColor: typeColors[node.key] || "#1677FF"}}/>
                 <span>{node.title}</span>
                 <PlusCircleOutlined
                     className="tree_bt"
