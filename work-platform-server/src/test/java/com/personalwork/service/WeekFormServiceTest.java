@@ -44,6 +44,25 @@ class WeekFormServiceTest extends TestSetUp {
     @InjectMocks
     private WeekFormService weekFormService;
 
+    @Test
+    void countsScheduleWithoutProjectInWeekTotal() {
+        RecordWeekDo week = new RecordWeekDo();
+        week.setId(3);
+        ProjectTimeDo schedule = new ProjectTimeDo();
+        schedule.setDate("2026-10-02");
+        schedule.setEndDate("2026-10-02");
+        schedule.setStartTime("09:00");
+        schedule.setEndTime("10:00");
+        when(recordWeekMapper.getWorkWeekByDate("2026-09-28", 1)).thenReturn(week);
+        when(projectTimeMapper.getProjectTimesByWeekRange("2026-09-28", "2026-10-05", 1))
+                .thenReturn(List.of(schedule));
+
+        weekFormService.recalculateWeekProjectTime(java.time.LocalDate.of(2026, 9, 28));
+
+        verify(recordWeekMapper).updateWorkWeek(argThat(record -> record.getTime() == 60));
+        verify(countMapper, never()).add(any());
+    }
+
 
     @Test
     void testCreateForm() {

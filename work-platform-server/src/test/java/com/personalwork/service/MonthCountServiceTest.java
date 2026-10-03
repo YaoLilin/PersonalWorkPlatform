@@ -262,17 +262,76 @@ class MonthCountServiceTest extends TestSetUp {
         monthProjectCountDo.setMinute(20);
         monthProjectCountDo.setProjectId(1);
 
-        when(projectTimeMapper.getProjectTimesByRange(eq("2020-03-01"),eq("2020-03-31"),anyInt()))
+        when(projectTimeMapper.getProjectTimesByWeekRange(eq("2020-03-01"),eq("2020-04-01"),anyInt()))
                 .thenReturn(Stream.of(projectTimeDo).toList());
         when(recordMonthMapper.getByDate(anyInt(),anyInt(),anyInt())).thenReturn(null)
                 .thenReturn(recordMonthDo);
         when(monthProjectCountMapper.list(anyInt())).thenReturn(Stream.of(monthProjectCountDo).toList());
         monthCountService.countMonthProjectTime(2020,3);
-        verify(projectTimeMapper).getProjectTimesByRange(eq("2020-03-01"),eq("2020-03-31"),anyInt());
+        verify(projectTimeMapper).getProjectTimesByWeekRange(eq("2020-03-01"),eq("2020-04-01"),anyInt());
         verify(recordMonthMapper, times(1)).insert(argThat(arg -> arg.getMonth() == 3
                 && arg.getYear() == 2020 && arg.getWorkTime().equals(60)));
         verify(monthProjectCountMapper,times(1)).update(argThat( arg ->
                 arg.getMinute().equals(60)));
+    }
+
+    @Test
+    void countsOnlyTheOctoberPartOfAnOvernightChecklistSchedule() {
+        ProjectDo project = new ProjectDo();
+        project.setId(1);
+        ProjectTimeDo schedule = buildProjectTimeDo(project, "2026-09-30", "23:00", "01:00", "清单 A");
+        schedule.setEndDate("2026-10-01");
+        schedule.setChecklistId(7);
+        RecordMonthDo month = new RecordMonthDo();
+        month.setId(1);
+        when(projectTimeMapper.getProjectTimesByWeekRange("2026-10-01", "2026-11-01", 1))
+                .thenReturn(java.util.List.of(schedule));
+        when(recordMonthMapper.getByDate(2026, 10, 1)).thenReturn(month);
+
+        monthCountService.countMonthProjectTime(2026, 10);
+
+        verify(monthProjectCountMapper).insert(argThat(count -> count.getMinute() == 60));
+        verify(recordMonthMapper).update(argThat(record -> record.getWorkTime() == 60));
+    }
+
+    @Test
+    void countsScheduleWithoutProjectInMonthTotal() {
+        ProjectTimeDo schedule = buildProjectTimeDo(null, "2026-10-02", "09:00", "10:00", "独立清单");
+        RecordMonthDo month = new RecordMonthDo();
+        month.setId(1);
+        when(projectTimeMapper.getProjectTimesByWeekRange("2026-10-01", "2026-11-01", 1))
+                .thenReturn(java.util.List.of(schedule));
+        when(recordMonthMapper.getByDate(2026, 10, 1)).thenReturn(month);
+
+        monthCountService.countMonthProjectTime(2026, 10);
+
+        verify(recordMonthMapper).update(argThat(record -> record.getWorkTime() == 60));
+        verify(monthProjectCountMapper, never()).insert(any());
+    }
+
+    @Test
+    void recountsLegacyOvernightScheduleInBothMonths() {
+        ProjectDo project = new ProjectDo();
+        project.setId(1);
+        ProjectTimeDo schedule = buildProjectTimeDo(project, "2026-09-30", "23:00", "01:00", "项目 A");
+        RecordMonthDo september = new RecordMonthDo();
+        september.setId(1);
+        september.setYear(2026);
+        september.setMonth(9);
+        RecordMonthDo october = new RecordMonthDo();
+        october.setId(2);
+        october.setYear(2026);
+        october.setMonth(10);
+        when(projectTimeMapper.list(1)).thenReturn(java.util.List.of(schedule));
+        when(recordMonthMapper.getByDate(2026, 9, 1)).thenReturn(september);
+        when(recordMonthMapper.getByDate(2026, 10, 1)).thenReturn(october);
+
+        monthCountService.reCountAll();
+
+        verify(recordMonthMapper).update(argThat(month -> month.getYear() == 2026
+                && month.getMonth() == 9 && month.getWorkTime() == 60));
+        verify(recordMonthMapper).update(argThat(month -> month.getYear() == 2026
+                && month.getMonth() == 10 && month.getWorkTime() == 60));
     }
 
     /**
@@ -305,4 +364,3 @@ class MonthCountServiceTest extends TestSetUp {
 
 
 }
-

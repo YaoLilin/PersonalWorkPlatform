@@ -26,4 +26,13 @@ public class ProjectTimeDo {
     private String checklistTypeColor;
     /** 清单完成状态：0 未完成，1 已完成。 */
     private Integer checklistIsDone;
+
+    /**
+     * 获取可为空的关联项目编号，供日程写入使用。
+     *
+     * @return 项目编号；未关联项目时为空
+     */
+    public Integer getProjectId() {
+        return project == null ? null : project.getId();
+    }
 }

@@ -1,5 +1,6 @@
 package com.personalwork.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
@@ -10,6 +11,9 @@ import lombok.Data;
 @Data
 public class PieCountVo {
     private String name;
+    private String key;
+    @JsonProperty("isChecklist")
+    private Boolean checklist;
     private Double count;
     private Double percent;
 }

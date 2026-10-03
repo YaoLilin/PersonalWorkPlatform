@@ -60,7 +60,7 @@ const LoginForm = ({onClickRegister,style})=>{
                 <Input placeholder={'请输入用户名'}/>
             </Form.Item>
             <Form.Item name={'password'} className={'m-0'} rules={[{required: true, message: '请输入密码'}]}>
-                <Input.Password placeholder={'请输入密码'}/>
+                <Input.Password className="auth-form__password" placeholder={'请输入密码'}/>
             </Form.Item>
             <div className="auth-form__links">
                 <a href={'#'} onClick={onClickRegister}>注册</a>

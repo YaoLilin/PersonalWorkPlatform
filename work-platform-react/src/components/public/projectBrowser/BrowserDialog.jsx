@@ -83,12 +83,12 @@ const BrowserDialog =({onClickRow,onCancel,onOk,visible,isMultiple,selectedProje
                open={visible}
                onCancel={onCancel}
                width={600}
-               style={{top: 24}}
-               styles={{body: {maxHeight: "calc(100vh - 190px)", overflowY: "auto"}}}>
+               style={{top: 24}}>
             <ConditionPanel onChange={(name, type) => searchTable(name, type)}/>
             <Table columns={columns}
                    dataSource={tableData}
                    pagination={{position: ['bottomRight']}}
+                   scroll={{y: 'max(120px, calc(100vh - 360px))'}}
                    loading={isLoading}
                    style={{paddingTop:10}}
                    rowSelection={rowSelection}

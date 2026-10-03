@@ -1,83 +1,64 @@
 import {Tag} from "antd";
+import ChecklistTag from "../ChecklistTag";
+import "./statistics-card.css";
+
 /**
  * 月统计记录展示卡片。
  *
- * @param {{data: Object, title: React.ReactNode, onClick: Function, bottomFlag?: React.ReactNode, style?: Object}} props 卡片展示数据、标题、交互回调和可选内容。
- * @returns {JSX.Element} 可点击的统计记录卡片。
+ * @param {{data: {id: number, year: number, month: number, mark?: number, hours?: number, summary?: string, projectTime?: Array<{projectName: string, isChecklist?: boolean, minutes: number, percent: number}>}, title: React.ReactNode, onClick: Function, bottomFlag?: React.ReactNode, style?: Object}} props 月统计数据、标题、点击回调、状态标签和样式。
+ * @returns {JSX.Element} 可进入月统计详情的卡片。
  */
 const InfoCard = ({data, title, onClick, bottomFlag, style}) => {
-    const {mark, hours,minutes, projectTime, summary,id} = data;
-
-    const getMarkColor = (mark)=>{
-        if (mark === 1){
-            return 'red';
-        }else if (mark === 2){
-            return 'green';
-        }else if (mark === 3){
-            return 'blue';
-        }
-    }
-
-    const getMarkText = (mark)=>{
-        if (mark === 1){
-            return '不合格';
-        }else if (mark === 2){
-            return '合格';
-        }else if(mark === 3){
-            return '优秀';
-        }
-    }
-
-    const sortedProjectTime = [...(projectTime ?? [])].sort((firstProject, secondProject) =>
-        secondProject.minutes - firstProject.minutes);
+    const {mark, hours, projectTime, summary, id, year, month} = data;
+    const markMap = {
+        1: {color: "red", text: "不合格"},
+        2: {color: "green", text: "合格"},
+        3: {color: "blue", text: "优秀"}
+    };
+    const markInfo = markMap[mark];
+    const sortedProjectTime = [...(projectTime ?? [])]
+        .sort((firstProject, secondProject) => secondProject.minutes - firstProject.minutes);
 
     return (
-        <article className="statistics-info-card" style={{
-            width: 350,
-            position:"relative",
-            overflow:"hidden",
-            ...style
-        }} onClick={() => onClick(id)}>
-            <div>
-                {title}
+        <article
+            aria-label={`${year}年${month}月统计`}
+            className="statistics-card"
+            onClick={() => onClick(id)}
+            style={style}
+        >
+            <div className="statistics-card__header">
+                <div>
+                    <p className="statistics-card__eyebrow">MONTH {String(month).padStart(2, "0")}</p>
+                    <h3>{title}</h3>
+                </div>
+                <div className="statistics-card__status">
+                    {markInfo && <Tag color={markInfo.color}>{markInfo.text}</Tag>}
+                    {bottomFlag}
+                </div>
             </div>
-            <div style={{paddingTop: "10px"}}>
-                <span>评价：</span>
-                <span>
-                    {mark ? <Tag color={getMarkColor(mark)}>{getMarkText(mark)}</Tag> : null}
-                </span>
+            <p className="statistics-card__date">{year}年{month}月</p>
+            <div className="statistics-card__duration">
+                <span>消费时间</span>
+                <strong>{hours ?? 0}<small> 小时</small></strong>
             </div>
-            <div style={{paddingTop: "10px"}}>
-                <span>利用时间：{hours} 小时</span>
-                <span style={{paddingLeft:4}}>{minutes ? minutes+' 分钟' : ''}</span>
+            <div className="statistics-card__projects">
+                <p>项目或清单时间</p>
+                {sortedProjectTime.length > 0 ? sortedProjectTime.map((item) => (
+                    <div
+                        className="statistics-card__project"
+                        key={`${item.isChecklist ? "checklist" : "project"}:${item.projectName}`}
+                    >
+                        <span className="statistics-card__name" title={item.projectName}>
+                            <span className="statistics-card__name-text">{item.projectName}</span>
+                            {item.isChecklist && <ChecklistTag/>}
+                        </span>
+                        <b>{item.percent}%</b>
+                    </div>
+                )) : <span className="statistics-card__empty">暂无项目或清单记录</span>}
             </div>
-            <div style={{paddingTop: "10px"}}>
-                项目时间：
-            </div>
-            <div>
-                {sortedProjectTime.map((item,index) =>{
-                    return (
-                        <div style={{display: "flex", paddingTop: 4}} key={index}>
-                            <div style={{flex:2, overflow: "hidden"}}>{item.projectName}</div>
-                            <div style={{flex:1}}>{item.minutes}min</div>
-                            <div style={{flex:1}}>{item.hours}h</div>
-                            <div style={{flex:1}}>{item.percent}%</div>
-                        </div>
-                    )
-                })}
-            </div>
-            <div style={{paddingTop: "10px"}}>
-                总结：
-            </div>
-            <div style={{
-                overflow: "hidden",
-                whiteSpace: "nowrap",
-                textOverflow: "ellipsis"
-            }}>
-                {summary}
-            </div>
-            {bottomFlag}
+            <p className="statistics-card__summary">{summary || "暂未填写本月总结"}</p>
         </article>
     );
-}
+};
+
 export default InfoCard;

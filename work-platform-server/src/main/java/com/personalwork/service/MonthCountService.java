@@ -8,17 +8,17 @@ import com.personalwork.domain.entity.MonthProjectCountDo;
 import com.personalwork.domain.entity.ProjectTimeDo;
 import com.personalwork.domain.entity.RecordMonthDo;
 import com.personalwork.security.bean.UserDetail;
-import com.personalwork.util.TimeUtils;
 import com.personalwork.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Duration;
+import java.time.YearMonth;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author 姚礼林
@@ -55,11 +55,9 @@ public class MonthCountService {
      */
     public void reCountAll(){
         List<ProjectTimeDo> projectTimeDoList = projectTimeMapper.list(UserUtil.getLoginUserId());
-        Map<String, List<ProjectTimeDo>> projectTimeMap = groupProjectTimeByMonth(projectTimeDoList);
+        Map<YearMonth, List<ProjectTimeDo>> projectTimeMap = groupProjectTimeByMonth(projectTimeDoList);
         projectTimeMap.forEach((k, v) -> {
-            int year = Integer.parseInt(k.split("-")[0]);
-            int month = Integer.parseInt(k.split("-")[1]);
-            countMonthProjectTime(year, month, v);
+            countMonthProjectTime(k.getYear(), k.getMonthValue(), v);
         });
     }
 
@@ -67,9 +65,9 @@ public class MonthCountService {
         if (projectTimeDoList.isEmpty()) {
             return;
         }
-        Map<Integer, Integer> countData = computeEachProjectTime(projectTimeDoList);
-        int totalMinute = countData.values().stream().mapToInt(i -> i).sum();
-        RecordMonthDo recordMonthDo = alterDbRecordMonth(year, month, totalMinute);
+        MonthMinutes monthMinutes = computeEachProjectTime(year, month, projectTimeDoList);
+        Map<Integer, Integer> countData = monthMinutes.projectMinutes();
+        RecordMonthDo recordMonthDo = alterDbRecordMonth(year, month, monthMinutes.totalMinutes());
         int monthId = recordMonthDo.getId();
         List<MonthProjectCountDo> countListDb = monthProjectCountMapper.list(monthId);
         updateDbMonthProjectTimeCount(countData, countListDb);
@@ -85,12 +83,20 @@ public class MonthCountService {
         }
     }
 
-    private Map<String, List<ProjectTimeDo>> groupProjectTimeByMonth(List<ProjectTimeDo> projectTimeDoList) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        return projectTimeDoList.stream().collect(Collectors.groupingBy(project -> {
-                    LocalDate date = LocalDate.parse(project.getDate(), formatter);
-                    return date.format(DateTimeFormatter.ofPattern("yyyy-MM"));
-                }));
+    private Map<YearMonth, List<ProjectTimeDo>> groupProjectTimeByMonth(List<ProjectTimeDo> projectTimeDoList) {
+        Map<YearMonth, List<ProjectTimeDo>> months = new HashMap<>(projectTimeDoList.size());
+        for (ProjectTimeDo projectTime : projectTimeDoList) {
+            LocalDateTime start = LocalDateTime.of(LocalDate.parse(projectTime.getDate()),
+                    LocalTime.parse(projectTime.getStartTime()));
+            YearMonth current = YearMonth.from(start);
+            YearMonth last = YearMonth.from(getEffectiveEnd(projectTime, start));
+            while (!current.isAfter(last)) {
+                months.computeIfAbsent(current,
+                        key -> new ArrayList<>(Math.min(projectTimeDoList.size(), 16))).add(projectTime);
+                current = current.plusMonths(1);
+            }
+        }
+        return months;
     }
 
     /**
@@ -158,28 +164,44 @@ public class MonthCountService {
         return Objects.requireNonNull(UserUtil.getLoginUser());
     }
 
-    private  Map<Integer, Integer> computeEachProjectTime(List<ProjectTimeDo> projectTimeDoList) {
+    private MonthMinutes computeEachProjectTime(int year, int month, List<ProjectTimeDo> projectTimeDoList) {
         // 统计每个项目在这个月所用的时间
         Map<Integer, Integer> countData = new HashMap<>(10);
+        int totalMinutes = 0;
+        LocalDateTime monthStart = LocalDate.of(year, month, 1).atStartOfDay();
+        LocalDateTime monthEnd = monthStart.plusMonths(1);
         for (ProjectTimeDo projectTimeDo : projectTimeDoList) {
-            int projectId = projectTimeDo.getProject().getId();
-            int minutes = TimeUtils.getMinutes(projectTimeDo.getStartTime(), projectTimeDo.getEndTime());
-            countData.put(projectId, countData.getOrDefault(projectId, 0) + minutes);
+            LocalDateTime start = LocalDateTime.of(LocalDate.parse(projectTimeDo.getDate()),
+                    LocalTime.parse(projectTimeDo.getStartTime()));
+            LocalDateTime end = getEffectiveEnd(projectTimeDo, start);
+            LocalDateTime overlapStart = start.isAfter(monthStart) ? start : monthStart;
+            LocalDateTime overlapEnd = end.isBefore(monthEnd) ? end : monthEnd;
+            if (overlapEnd.isAfter(overlapStart)) {
+                int minutes = Math.toIntExact(Duration.between(overlapStart, overlapEnd).toMinutes());
+                totalMinutes += minutes;
+                if (projectTimeDo.getProject() != null) {
+                    countData.merge(projectTimeDo.getProject().getId(), minutes, Integer::sum);
+                }
+            }
         }
-        return countData;
+        return new MonthMinutes(countData, totalMinutes);
+    }
+
+    private record MonthMinutes(Map<Integer, Integer> projectMinutes, int totalMinutes) {
+    }
+
+    private LocalDateTime getEffectiveEnd(ProjectTimeDo projectTime, LocalDateTime start) {
+        LocalDate endDate = LocalDate.parse(projectTime.getEndDate() == null
+                ? projectTime.getDate() : projectTime.getEndDate());
+        LocalDateTime end = LocalDateTime.of(endDate, LocalTime.parse(projectTime.getEndTime()));
+        return end.isAfter(start) ? end : end.plusDays(1);
     }
 
     private List<ProjectTimeDo> getProjectTimeList(int year, int month) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, year);
-        calendar.set(Calendar.MONTH, month -1);
-        calendar.set(Calendar.DAY_OF_MONTH, 1);
-        String startDate = dateFormat.format(calendar.getTime());
-        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-        String endDate = dateFormat.format(calendar.getTime());
+        LocalDate start = LocalDate.of(year, month, 1);
         UserDetail loginUser = getLoginUser();
-        return projectTimeMapper.getProjectTimesByRange(startDate, endDate,loginUser.getId());
+        return projectTimeMapper.getProjectTimesByWeekRange(start.toString(), start.plusMonths(1).toString(),
+                loginUser.getId());
     }
 
 

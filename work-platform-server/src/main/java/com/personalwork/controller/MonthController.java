@@ -71,23 +71,26 @@ public class MonthController {
         MonthVo vo = new MonthVo();
         BeanUtils.copyProperties(o.getRecordMonthDo(),vo);
         vo.setIsSummarize(Objects.equals(o.getRecordMonthDo().getIsSummarize(),1));
-        double hours = NumberUtil.round((double) o.getRecordMonthDo().getWorkTime() / 60,
+        int totalMinutes = o.getTaskTimeList().stream().mapToInt(i -> i.minutes()).sum();
+        double hours = NumberUtil.round((double) totalMinutes / 60,
                 1, false);
         List<MonthProjectTimeVo> projectTime = new ArrayList<>();
-        o.getProjectCountList().forEach(i ->{
-            double projectHours = NumberUtil.round((double) i.getMinute() / 60,
+        o.getTaskTimeList().forEach(i ->{
+            double projectHours = NumberUtil.round((double) i.minutes() / 60,
                     1, false);
-            double percent = NumberUtil.round((double) i.getMinute() /
-                    o.getRecordMonthDo().getWorkTime() * 100, 0, true);
+            double percent = totalMinutes == 0 ? 0 : NumberUtil.round((double) i.minutes() /
+                    totalMinutes * 100, 0, true);
             MonthProjectTimeVo timeVo = new MonthProjectTimeVo();
-            timeVo.setMinutes(i.getMinute());
+            timeVo.setMinutes(i.minutes());
             timeVo.setHours(projectHours);
             timeVo.setPercent(percent);
-            timeVo.setProjectName(i.getProjectName());
+            timeVo.setProjectName(i.name());
+            timeVo.setChecklist(i.isChecklist());
             projectTime.add(timeVo);
         });
         vo.setProjectTime(projectTime);
         vo.setHours(hours);
+        vo.setMinutes(totalMinutes);
         return vo;
     }
 

@@ -1,0 +1,21 @@
+.chart-page__card { width: 500px; max-width: 100%; }
+.chart-page__backdrop { position: fixed; inset: 0; z-index: 1000; background: rgba(0, 0, 0, .45); }
+.chart-page__card--fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 1001;
+    width: 100vw;
+    max-width: none;
+    height: 100vh;
+    overflow: auto;
+    border-radius: 0;
+}
+.chart-page__plot { box-sizing: border-box; height: 300px; padding-top: 10px; }
+.chart-page__card--fullscreen .chart-page__plot { height: max(320px, calc(100vh - 220px)); }
+
+#root .chart-page .ant-select-selector,
+#root .chart-page .ant-picker,
+#root .chart-page .ant-input,
+#root .chart-page .ant-input-affix-wrapper {
+    background: #fff !important;
+}

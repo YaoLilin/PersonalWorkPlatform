@@ -12,7 +12,7 @@ const MonthTimeChartCondition = ({onChange,defaultMonth = 4,monthItems = []}) =>
     const [selectedType, setSelectedType] = useState([]);
 
     const handleConditionChange = ({
-                                       dateRangeType, startDate, endDate, countType,projects,types
+                                       dateRangeType, startDate, endDate, countType, projects, types
                                    }) => {
         onChange({
             dateRangeType : dateRangeType !== undefined ? dateRangeType : selectedDateRange,

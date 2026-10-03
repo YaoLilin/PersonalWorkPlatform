@@ -112,7 +112,7 @@ CREATE TABLE `project_progress_week` (
 -- ----------------------------
 DROP TABLE IF EXISTS `project_time`;
 CREATE TABLE `project_time` (
-  `project_id` int(11) NOT NULL,
+  `project_id` int(11) DEFAULT NULL,
   `date` date NOT NULL,
   `end_date` date DEFAULT NULL,
   `start_time` time NOT NULL,

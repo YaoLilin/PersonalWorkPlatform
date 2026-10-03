@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import {Tag} from "antd";
+import ChecklistTag from "./ChecklistTag";
 
 /**
  * 单个项目或清单的工时统计行。
@@ -14,8 +14,7 @@ const ProjectCountItem = ({data, allTime,cellStyle, borderColor}) => {
                 borderRight: borderColor
             }}>
                 {data.name}
-                {data.isChecklist && <Tag style={{marginLeft: 6, marginRight: 0, fontSize: 10,
-                    color: '#1677ff', background: '#fff', borderColor: '#e6e6e6', borderRadius: 8}}>清单</Tag>}
+                {data.isChecklist && <ChecklistTag/>}
             </div>
             <div style={{
                 ...cellStyle,

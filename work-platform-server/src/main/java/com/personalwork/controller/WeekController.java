@@ -114,8 +114,10 @@ public class WeekController {
         return projectTimeDoList.stream().map(i -> {
             ProjectTimeVo vo = new ProjectTimeVo();
             BeanUtils.copyProperties(i, vo);
-            BrowserObject browserObject = new BrowserObject(i.getProject().getId(), i.getProject().getName());
-            vo.setProject(browserObject);
+            if (i.getProject() != null) {
+                BrowserObject browserObject = new BrowserObject(i.getProject().getId(), i.getProject().getName());
+                vo.setProject(browserObject);
+            }
             return vo;
         }).toList();
     }

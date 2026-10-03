@@ -1,5 +1,11 @@
 
+import {chartChecklistRichText, chartChecklistTooltipTag} from "./chartChecklistBadge";
+
 const useBarChartOption = (data =[], categories=[],xName=[],defaultMaxValue = 1000, unit = '分钟') => {
+    const seriesByKey = new Map(data.map(item => [item.name, item]));
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[character]);
     // ECharts 配置
     return {
         tooltip: {
@@ -15,11 +21,14 @@ const useBarChartOption = (data =[], categories=[],xName=[],defaultMaxValue = 10
                     if (item.seriesName === '全部' || item.value === 0) {
                         return;
                     }
+                    const series = seriesByKey.get(item.seriesName);
+                    const checklistTag = series?.isChecklist
+                        ? chartChecklistTooltipTag
+                        : '';
                     html+='<div style="font-size: 12px;display: flex;align-items: center">';
                     html+= item.marker;
-                    html+= `<div style="padding: 0 10px 0 10px;display: inline-block;width: 120px;white-space: nowrap;
-                            text-overflow:ellipsis;overflow: hidden">
-                                ${item.seriesName} 
+                    html+= `<div style="padding:0 10px;display:inline-flex;align-items:center;gap:6px;max-width:180px">
+                                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(series?.displayName || item.seriesName)}</span>${checklistTag}
                             </div>
                             <span> ${item.value} ${unit} </span>`;
                     html+='</div>'
@@ -30,6 +39,14 @@ const useBarChartOption = (data =[], categories=[],xName=[],defaultMaxValue = 10
         legend: {
             data: categories,
             type: 'scroll',
+            formatter: (key) => {
+                const series = seriesByKey.get(key);
+                const name = series?.displayName || key;
+                return series?.isChecklist ? `{name|${name}} {badge|清单}` : name;
+            },
+            textStyle: {
+                rich: chartChecklistRichText
+            }
         },
         grid: {
             left: '3%',

@@ -141,7 +141,8 @@ public class WeekFormService {
      */
     public void recalculateWeekProjectTime(LocalDate weekStart) {
         RecordWeekDo recordWeek = ensureWeekForm(weekStart);
-        Map<Integer, Integer> projectMinutes = calculateWeekProjectMinutes(weekStart);
+        WeekMinutes weekMinutes = calculateWeekProjectMinutes(weekStart);
+        Map<Integer, Integer> projectMinutes = weekMinutes.projectMinutes();
         countMapper.deleteByWeek(recordWeek.getId());
         projectMinutes.forEach((projectId, minutes) -> {
             WeekProjectTimeCountDo timeCount = new WeekProjectTimeCountDo();
@@ -150,9 +151,13 @@ public class WeekFormService {
             timeCount.setMinutes(minutes);
             countMapper.add(timeCount);
         });
-        recordWeek.setTime(projectMinutes.values().stream().mapToInt(Integer::intValue).sum());
+        recordWeek.setTime(weekMinutes.totalMinutes());
         recordWeekMapper.updateWorkWeek(recordWeek);
         monthCountService.countMonthProjectTime(weekStart.getYear(), weekStart.getMonthValue());
+        LocalDate weekEnd = weekStart.plusDays(6);
+        if (weekEnd.getMonthValue() != weekStart.getMonthValue()) {
+            monthCountService.countMonthProjectTime(weekEnd.getYear(), weekEnd.getMonthValue());
+        }
         deleteScheduleCaches();
     }
 
@@ -231,19 +236,26 @@ public class WeekFormService {
                 weekStart.plusDays(7).format(DATE_FORMATTER), getLoginUser().getId()).isEmpty();
     }
 
-    private Map<Integer, Integer> calculateWeekProjectMinutes(LocalDate weekStart) {
+    private WeekMinutes calculateWeekProjectMinutes(LocalDate weekStart) {
         LocalDate weekEnd = weekStart.plusDays(7);
         List<ProjectTimeDo> projectTimes = projectTimeMapper.getProjectTimesByWeekRange(
                 weekStart.format(DATE_FORMATTER), weekEnd.format(DATE_FORMATTER), getLoginUser().getId());
         Map<Integer, Integer> projectMinutes = new HashMap<>(projectTimes.size());
+        int totalMinutes = 0;
         for (ProjectTimeDo projectTime : projectTimes) {
             int minutes = calculateOverlapMinutes(projectTime, weekStart, weekEnd);
             if (minutes > 0) {
-                Integer projectId = projectTime.getProject().getId();
-                projectMinutes.merge(projectId, minutes, Integer::sum);
+                totalMinutes += minutes;
+                if (projectTime.getProject() != null) {
+                    Integer projectId = projectTime.getProject().getId();
+                    projectMinutes.merge(projectId, minutes, Integer::sum);
+                }
             }
         }
-        return projectMinutes;
+        return new WeekMinutes(projectMinutes, totalMinutes);
+    }
+
+    private record WeekMinutes(Map<Integer, Integer> projectMinutes, int totalMinutes) {
     }
 
     private int calculateOverlapMinutes(ProjectTimeDo projectTime, LocalDate weekStart, LocalDate weekEnd) {

@@ -6,11 +6,14 @@ const useChartData = (apiData =[])=>{
     const seriesData = [];
     apiData.forEach(i => {
         i.items.forEach(it => {
-            const seriesDataItem = seriesData.find(s => s.name === it.name);
+            const key = it.key || it.name;
+            const seriesDataItem = seriesData.find(s => s.name === key);
             if (!seriesDataItem) {
-                categories.push(it.name);
+                categories.push(key);
                 seriesData.push({
-                    name: it.name,
+                    name: key,
+                    displayName: it.name,
+                    isChecklist: Boolean(it.isChecklist),
                     type: 'bar',
                     stack: 'total',
                     emphasis: {
@@ -26,7 +29,7 @@ const useChartData = (apiData =[])=>{
     seriesData.forEach(s =>{
         const data = [];
         apiData.forEach(i =>{
-           const item = i.items.find(it => it.name === s.name);
+           const item = i.items.find(it => (it.key || it.name) === s.name);
            data.push(item ? item.value : 0)
         });
         s.data = data;

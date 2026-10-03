@@ -13,7 +13,7 @@ import {MessageContext} from "../../provider/MessageProvider";
 import useHeadMenus from "./useHeadMenus";
 import SummaryTextArea from "../../components/statistics/form/SummaryTextArea";
 import handleLoaderError from "../../util/handleLoaderError";
-import WorkTimePieChart from "../../components/statistics/charts/WorkTimePieChart";
+import WeekTaskPieChart from "./WeekTaskPieChart";
 import GoalList from "../../components/goal/List";
 import FullRow from "../../components/statistics/form/FullRow";
 import GoalApi from "../../request/goalApi";
@@ -48,7 +48,7 @@ const MonthForm = () => {
     const {month,mark, summary,year, projectTime} = monthData;
     const countData = [];
     projectTime?.forEach(item => {
-        countData.push({name: item.projectName, minutes: item.minutes})
+        countData.push({name: item.projectName, minutes: item.minutes, isChecklist: item.isChecklist})
     });
     projectTime.sort((a,b) => b.minutes - a.minutes);
     const {headButtons,editAble:isEdit} = useHeadMenus(formInstance,false,()=>{})
@@ -84,15 +84,6 @@ const MonthForm = () => {
                 window.location.reload();
             },1000)
         })
-    }
-
-    const getChartCondition = ()=>{
-        const date = dayjs().year(monthData.year).month(monthData.month-1);
-        return {
-            dateRangeType: 3,
-            startDate: date.startOf('month').format('YYYY-MM-DD'),
-            endDate: date.endOf('month').format('YYYY-MM-DD')
-        }
     }
 
     return (
@@ -133,15 +124,11 @@ const MonthForm = () => {
             >
                 <FormTitle name="任务统计" variant="apple"/>
                 <Row>
-                    <ProjectCount data={countData}/>
+                    <ProjectCount data={countData} columnName="项目或清单"/>
                 </Row>
                 {projectTime.length > 0 && <Row>
                     <div style={{width: 500, height: 300}}>
-                        <WorkTimePieChart
-                            showCondition={false}
-                            showLegend={false}
-                            defaultCondition={getChartCondition()}
-                        />
+                        <WeekTaskPieChart data={countData}/>
                     </div>
                 </Row>}
                 <FormTitle name="目标" variant="apple"/>

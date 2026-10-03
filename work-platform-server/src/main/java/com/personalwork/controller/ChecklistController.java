@@ -4,6 +4,8 @@ import com.personalwork.domain.dto.ChecklistDto;
 import com.personalwork.domain.query.ChecklistParam;
 import com.personalwork.domain.query.ChecklistStateParam;
 import com.personalwork.service.ChecklistService;
+import com.personalwork.system.cache.DeleteCache;
+import com.personalwork.system.cache.RedisKeyConstants;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -56,6 +58,7 @@ public class ChecklistController {
      * @param param 清单参数
      */
     @PutMapping("/{id}")
+    @DeleteCache(value = {RedisKeyConstants.WEEK_LIST_KEY, RedisKeyConstants.MONTH_LIST_KEY}, isUserData = true)
     public void update(@PathVariable Integer id, @RequestBody @Valid ChecklistParam param) {
         checklistService.update(id, param);
     }
@@ -77,6 +80,7 @@ public class ChecklistController {
      * @param id 清单编号
      */
     @DeleteMapping("/{id}")
+    @DeleteCache(value = {RedisKeyConstants.WEEK_LIST_KEY, RedisKeyConstants.MONTH_LIST_KEY}, isUserData = true)
     public void delete(@PathVariable Integer id) {
         checklistService.delete(id);
     }

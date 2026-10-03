@@ -1,12 +1,9 @@
 package com.personalwork.service;
 
 import com.personalwork.base.TestSetUp;
-import com.personalwork.dao.ProjectMapper;
 import com.personalwork.dao.RecordWeekMapper;
-import com.personalwork.dao.WeekProjectTimeCountMapper;
-import com.personalwork.domain.entity.ProjectDo;
+import com.personalwork.domain.dto.TaskTimeDto;
 import com.personalwork.domain.entity.RecordWeekDo;
-import com.personalwork.domain.entity.WeekProjectTimeCountDo;
 import com.personalwork.domain.vo.WeekProjectTimeVo;
 import com.personalwork.domain.vo.WeeksVo;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,9 +14,11 @@ import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
 
 class WeekListServiceTest extends TestSetUp {
 
@@ -29,43 +28,26 @@ class WeekListServiceTest extends TestSetUp {
     @Mock
     private RecordWeekMapper recordWeekMapper;
     @Mock
-    private WeekProjectTimeCountMapper projectTimeCountMapper;
-    @Mock
-    private ProjectMapper projectMapper;
+    private TaskTimeCountService taskTimeCountService;
 
     @BeforeEach
     void setUp() {
         // Setup mock data
         RecordWeekDo recordWeekDo = new RecordWeekDo();
         recordWeekDo.setId(1);
+        recordWeekDo.setDate("2026-09-28");
         recordWeekDo.setTime(400); // 10 hours
 
         List<RecordWeekDo> recordWeekDoList = new ArrayList<>();
         recordWeekDoList.add(recordWeekDo);
 
-        WeekProjectTimeCountDo weekProjectTimeCountDo = new WeekProjectTimeCountDo();
-        weekProjectTimeCountDo.setMinutes(300); // 5 hours
-        weekProjectTimeCountDo.setProject(1);
-        WeekProjectTimeCountDo weekProjectTimeCountDo2 = new WeekProjectTimeCountDo();
-        weekProjectTimeCountDo2.setMinutes(100); // 5 hours
-        weekProjectTimeCountDo2.setProject(2);
-
-        List<WeekProjectTimeCountDo> weekProjectTimeCountDoList = new ArrayList<>();
-        weekProjectTimeCountDoList.add(weekProjectTimeCountDo);
-        weekProjectTimeCountDoList.add(weekProjectTimeCountDo2);
-
-        ProjectDo projectDo = new ProjectDo();
-        projectDo.setName("Test Project1");
-        projectDo.setId(1);
-        ProjectDo projectDo2 = new ProjectDo();
-        projectDo2.setName("Test Project2");
-        projectDo2.setId(2);
-
         // Setup mock behavior
         Mockito.when(recordWeekMapper.getWorkWeekList(anyInt())).thenReturn(recordWeekDoList);
-        Mockito.when(projectTimeCountMapper.listByWeekId(Mockito.anyInt())).thenReturn(weekProjectTimeCountDoList);
-        Mockito.when(projectMapper.getProject(Mockito.eq(1))).thenReturn(projectDo);
-        Mockito.when(projectMapper.getProject(Mockito.eq(2))).thenReturn(projectDo2);
+        Mockito.when(taskTimeCountService.listEvents()).thenReturn(List.of());
+        Mockito.when(taskTimeCountService.count(any(), Mockito.eq(LocalDate.parse("2026-09-28")),
+                Mockito.eq(LocalDate.parse("2026-10-05")))).thenReturn(List.of(
+                new TaskTimeDto(1, "Test Project1", 300, false),
+                new TaskTimeDto(2, "清单 A", 100, true)));
     }
 
     @Test
@@ -87,5 +69,6 @@ class WeekListServiceTest extends TestSetUp {
         assertEquals(300, projectTimeVo.getMinutes());
         assertEquals(5, projectTimeVo.getHours(), 0);
         assertEquals("75", projectTimeVo.getPercent());
+        assertTrue(weeksVo.getProjectTime().get(1).getChecklist());
     }
 }

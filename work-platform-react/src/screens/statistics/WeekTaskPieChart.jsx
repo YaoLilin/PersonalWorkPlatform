@@ -1,7 +1,7 @@
 import ReactECharts from "echarts-for-react";
 
 /**
- * 本周项目与独立清单的用时占比图。
+ * 项目与独立清单的用时占比图。
  * @param {{data: Array<{name: string, minutes: number, isChecklist: boolean}>}} props 任务统计数据。
  */
 const WeekTaskPieChart = ({data}) => {

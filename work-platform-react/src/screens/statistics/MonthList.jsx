@@ -65,10 +65,7 @@ const MonthList = () => {
         document.getElementById(targetId)?.scrollIntoView({behavior: "smooth", block: "start"});
     };
 
-    const bottomFlag = <Tag color={'red'}
-                            style={{position: 'absolute', bottom: '30px', right: "20px", fontSize: '1em'}}>
-        未总结
-    </Tag>
+    const bottomFlag = <Tag color="red">未总结</Tag>;
 
     const reCount = () => {
         MonthsApi.reCount().then(() => {
@@ -117,8 +114,7 @@ const MonthList = () => {
                                         bottomFlag={!item.isSummarize ? bottomFlag : null}
                                         data={item}
                                         key={item.id}
-                                        style={{marginTop: 0, width: "100%"}}
-                                        title={<span style={{fontSize: "1.5em"}}>{item.month}月</span>}
+                                        title={`${item.month}月`}
                                         onClick={(id) => navigate(`form/${id}`)}
                                     />
                                 ))}

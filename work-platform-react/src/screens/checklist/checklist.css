@@ -3,7 +3,7 @@
     gap: 20px;
     height: calc(100vh - 40px);
     min-height: 0;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .checklist-list-panel {

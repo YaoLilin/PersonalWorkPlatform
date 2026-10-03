@@ -1,13 +1,14 @@
-import {Checkbox, DatePicker, Form, Input, Modal, Select, Space} from "antd";
+import {Checkbox, DatePicker, Form, Input, Modal, Select} from "antd";
 import dayjs from "dayjs";
 import {useContext, useEffect, useRef, useState} from "react";
 import {ChecklistApi} from "../../request/checklistApi";
 import {MessageContext} from "../../provider/MessageProvider";
 import {flattenTypes} from "./checklistUtils";
+import {checklistProjectBrowserStyle} from "./checklistFieldStyles";
 import ProjectBrowser from "../../components/public/projectBrowser";
 
 /**
- * <p>日程页面的清单编辑弹窗，修改后自动保存。</p>
+ * <p>清单和日程页面共用的清单编辑弹窗，修改后自动保存。</p>
  *
  * @param {Object} props 组件参数
  * @param {boolean} props.open 是否展示弹窗
@@ -157,7 +158,7 @@ const ChecklistEditorModal = ({open, checklist, projects, typeTree, onCancel, on
                 <Form.Item label="关联项目">
                     <ProjectBrowser
                         value={projects.find((project) => project.id === draft.projectId) || null}
-                        style={{width: "100%"}}
+                        style={checklistProjectBrowserStyle}
                         onChange={(project) => changeField("projectId", project?.id)}
                     />
                 </Form.Item>
@@ -171,7 +172,7 @@ const ChecklistEditorModal = ({open, checklist, projects, typeTree, onCancel, on
                     />
                 </Form.Item>
                 <Form.Item label="日程时间">
-                    {scheduleTimes.length ? <Space direction="vertical" size={8}>
+                    {scheduleTimes.length ? <div style={{display: "grid", gap: 8}}>
                         {scheduleTimes.map((scheduleTime) => (
                             <DatePicker.RangePicker
                                 key={scheduleTime.id}
@@ -181,11 +182,12 @@ const ChecklistEditorModal = ({open, checklist, projects, typeTree, onCancel, on
                                 ]}
                                 showTime={{format: "HH:mm"}}
                                 format="YYYY-MM-DD HH:mm"
+                                style={{width: "100%"}}
                                 disabled={savingTimeId === scheduleTime.id}
                                 onChange={(range) => void updateTime(scheduleTime, range)}
                             />
                         ))}
-                    </Space> : "暂未创建日程"}
+                    </div> : "暂未创建日程"}
                 </Form.Item>
             </Form>}
         </Modal>

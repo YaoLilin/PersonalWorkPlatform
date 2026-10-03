@@ -43,6 +43,8 @@ class MonthRecordServiceTest extends TestSetUp {
     private RecordMonthMapper recordMonthMapper;
     @Mock
     private RedisUtil redisUtil;
+    @Mock
+    private TaskTimeCountService taskTimeCountService;
 
     /**
      * Method under test: {@link MonthRecordService#getWorkMonthRecordList()}
@@ -100,10 +102,10 @@ class MonthRecordServiceTest extends TestSetUp {
         recordMonthDo1.setId(2);
         recordMonthDo1.setIsSummarize(0);
         recordMonthDo1.setMark(Mark.UNQUALIFIED);
-        recordMonthDo1.setMonth(0);
+        recordMonthDo1.setMonth(2);
         recordMonthDo1.setSummary("com.personalwork.modal.entity.RecordMonthDo");
         recordMonthDo1.setWorkTime(0);
-        recordMonthDo1.setYear(0);
+        recordMonthDo1.setYear(1);
 
         ArrayList<RecordMonthDo> recordMonthDoList = new ArrayList<>();
         recordMonthDoList.add(recordMonthDo1);
@@ -438,4 +440,3 @@ class MonthRecordServiceTest extends TestSetUp {
         verify(projectMapper, atLeast(1)).getProject(anyInt());
     }
 }
-

@@ -193,10 +193,19 @@ body{
 #root .ant-input,
 #root .ant-input-affix-wrapper,
 #root .ant-select-selector,
-#root .ant-picker {
+#root .ant-picker,
+#root .ant-input-number {
   border-color: #e6e6e6 !important;
-  background: #f5f5f7 !important;
   box-shadow: none !important;
+}
+
+/* 所有页面和弹窗中的可编辑输入控件统一使用白色背景。 */
+body .ant-input:not(:disabled),
+body .ant-input-affix-wrapper:not(.ant-input-affix-wrapper-disabled),
+body .ant-select:not(.ant-select-disabled) .ant-select-selector,
+body .ant-picker:not(.ant-picker-disabled),
+body .ant-input-number:not(.ant-input-number-disabled) {
+  background: #fff !important;
 }
 
 #root .ant-input:focus,
@@ -294,27 +303,12 @@ body .ant-modal .ant-modal-header {
   color: #0071e3;
 }
 
+#root .auth-form__password .ant-input:focus {
+  box-shadow: none !important;
+}
+
 .auth-form__submit { padding-top: 40px; }
 .auth-form__submit-button { width: 100%; }
-
-.statistics-info-card {
-  box-sizing: border-box;
-  min-height: 280px;
-  padding: 24px;
-  border: 1px solid #e6e6e6;
-  border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
-  cursor: pointer;
-  transition: box-shadow 500ms cubic-bezier(.25, .1, .25, 1), transform 500ms cubic-bezier(.25, .1, .25, 1);
-}
-
-.statistics-info-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
-  transform: translateY(-2px);
-}
-
-.statistics-info-card:active { transform: scale(.98); }
 
 .statistics-list-grid {
   display: grid;

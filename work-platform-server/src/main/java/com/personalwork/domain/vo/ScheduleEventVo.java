@@ -16,7 +16,7 @@ public class ScheduleEventVo {
     private String projectColor;
     private Integer checklistId;
     private String checklistName;
-    /** 清单关联的项目编号；为空时按清单统计。 */
+    /** 清单关联的项目编号；统计名称始终优先使用清单名称。 */
     private Integer checklistProjectId;
     private String checklistProjectName;
     private String checklistTypeColor;

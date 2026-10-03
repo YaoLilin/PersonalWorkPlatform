@@ -12,7 +12,9 @@ import TypeEditDialogContent from "../../components/type/TypeEditDialogContent";
 import ProjectTypePanel from "../project/ProjectTypePanel";
 import {getParentTypeId, getTypeAndDescendantIds} from "../project/projectListUtils";
 import {getChecklistGroups} from "./checklistUtils";
+import {checklistProjectBrowserStyle} from "./checklistFieldStyles";
 import CompletedChecklistModal from "./CompletedChecklistModal";
+import ChecklistEditorModal from "./ChecklistEditorModal";
 import ChecklistTypeCard from "./ChecklistTypeCard";
 import "../../components/project/project.css";
 import "./checklist.css";
@@ -152,33 +154,29 @@ const ChecklistList = () => {
         refreshData();
     };
 
-    /**
-     * <p>打开清单新增或编辑弹窗。</p>
-     */
+    /** <p>打开清单新增或编辑弹窗。</p> */
     const openChecklistModal = (checklist = null, group = null) => {
-        setEditingChecklist(checklist);
-        form.setFieldsValue(checklist ? {...checklist, scheduleTime: undefined} : {
+        if (checklist) {
+            setEditingChecklist(checklist);
+            return;
+        }
+        form.setFieldsValue({
             name: "",
             projectId: undefined,
             scheduleTime: undefined,
             checklistTypeId: group ? group.id : selectedTypeId === "all" ? undefined : Number(selectedTypeId),
         });
-        setIsCreateModalOpen(!checklist);
+        setIsCreateModalOpen(true);
     };
 
     /** 在指定类型卡片中新建清单。 */
     const addChecklistInGroup = (group) => openChecklistModal(null, group);
 
-    /**
-     * <p>保存新增或编辑的清单。</p>
-     */
+    /** <p>保存新增的清单。</p> */
     const saveChecklist = async () => {
         try {
             const {scheduleTime, ...values} = await form.validateFields();
-            if (editingChecklist) {
-                await ChecklistApi.updateChecklist(editingChecklist.id, values);
-                messageApi.success("保存成功", 5);
-            } else if (scheduleTime?.[0] && scheduleTime?.[1]) {
+            if (scheduleTime?.[0] && scheduleTime?.[1]) {
                 const [start, end] = scheduleTime;
                 if (!end.isAfter(start)) {
                     messageApi.error("结束时间必须晚于开始时间");
@@ -199,7 +197,6 @@ const ChecklistList = () => {
                 await ChecklistApi.addChecklist(values);
                 messageApi.success("添加成功", 5);
             }
-            setEditingChecklist(null);
             setIsCreateModalOpen(false);
             refreshData();
         } catch (error) {
@@ -207,6 +204,24 @@ const ChecklistList = () => {
                 messageApi.error(error?.response?.data?.message || error?.message || "清单保存失败");
             }
         }
+    };
+
+    /** <p>保存清单关联日程的时间，并保留原日程的项目和描述。</p> */
+    const updateScheduleTime = async (scheduleTimeId, range, checklistName) => {
+        const schedules = await ScheduleApi.getSchedule();
+        const schedule = schedules.find((item) => item.id === scheduleTimeId);
+        if (!schedule) throw new Error("关联日程不存在，请刷新页面后重试");
+        await ScheduleApi.updateSchedule(scheduleTimeId, {
+            projectId: schedule.projectId,
+            checklistId: schedule.checklistId,
+            scheduleName: checklistName,
+            description: schedule.description,
+            date: range[0].format("YYYY-MM-DD"),
+            endDate: range[1].format("YYYY-MM-DD"),
+            startTime: range[0].format("HH:mm:ss"),
+            endTime: range[1].format("HH:mm:ss"),
+        });
+        refreshData();
     };
 
     /**
@@ -281,13 +296,19 @@ const ChecklistList = () => {
                 onClose={() => setCompletedScope(null)}
                 onSelect={openChecklistModal}
             />
+            <ChecklistEditorModal
+                open={Boolean(editingChecklist)}
+                checklist={editingChecklist}
+                projects={projects}
+                typeTree={typeTree}
+                onCancel={() => setEditingChecklist(null)}
+                onChanged={refreshData}
+                onUpdateScheduleTime={updateScheduleTime}
+            />
             <Modal
-                title={editingChecklist ? "编辑清单" : "添加清单"}
-                open={isCreateModalOpen || Boolean(editingChecklist)}
-                onCancel={() => {
-                    setEditingChecklist(null);
-                    setIsCreateModalOpen(false);
-                }}
+                title="添加清单"
+                open={isCreateModalOpen}
+                onCancel={() => setIsCreateModalOpen(false)}
                 onOk={saveChecklist}
                 okText="保存"
                 cancelText="取消"
@@ -300,7 +321,7 @@ const ChecklistList = () => {
                     <Form.Item label="关联项目">
                         <ProjectBrowser
                             value={projects.find((project) => project.id === selectedProjectId) || null}
-                            style={{width: "100%"}}
+                            style={checklistProjectBrowserStyle}
                             onChange={(project) => form.setFieldValue("projectId", project?.id)}
                         />
                     </Form.Item>
@@ -312,13 +333,13 @@ const ChecklistList = () => {
                             placeholder="未指定时归入收集箱"
                         />
                     </Form.Item>
-                    {!editingChecklist && <Form.Item label="日程时间" name="scheduleTime">
+                    <Form.Item label="日程时间" name="scheduleTime">
                         <DatePicker.RangePicker
                             showTime={{format: "HH:mm"}}
                             format="YYYY-MM-DD HH:mm"
                             style={{width: "100%"}}
                         />
-                    </Form.Item>}
+                    </Form.Item>
                 </Form>
             </Modal>
         </div>

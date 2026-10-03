@@ -5,7 +5,7 @@
 <mapper namespace="com.personalwork.dao.ProjectTimeMapper">
     <insert id="insert" parameterType="com.personalwork.domain.entity.ProjectTimeDo" useGeneratedKeys="true" keyProperty="id">
         insert into project_time (project_id, date, end_date, start_time, end_time, schedule_name, description, week_id, checklist_id)
-        values (#{project.id}, #{date}, #{endDate}, #{startTime}, #{endTime}, #{scheduleName}, #{description}, #{weekId}, #{checklistId});
+        values (#{projectId}, #{date}, #{endDate}, #{startTime}, #{endTime}, #{scheduleName}, #{description}, #{weekId}, #{checklistId});
     </insert>
 
     <update id="update" parameterType="com.personalwork.domain.entity.ProjectTimeDo">
@@ -36,21 +36,28 @@
         select p.* from project_time p join record_week w on p.week_id = w.id
         where user_id = #{userId}
     </select>
-    <select id="listScheduleByUser" resultType="com.personalwork.domain.vo.ScheduleEventVo">
+    <select id="listScheduleBaseByUser" resultType="com.personalwork.domain.vo.ScheduleEventVo">
         select pt.id, pt.project_id, p.name as project_name, p.color as project_color, pt.checklist_id,
-               cl.name as checklist_name, cl.project_id as checklist_project_id,
-               cp.name as checklist_project_name,
-               ct.color as checklist_type_color, cl.is_done as checklist_is_done,
                pt.schedule_name, pt.description,
                pt.date, coalesce(pt.end_date, pt.date) as end_date, pt.start_time, pt.end_time
         from project_time pt
         join record_week rw on pt.week_id = rw.id
-        join project p on pt.project_id = p.id
-        left join checklist cl on pt.checklist_id = cl.id
-        left join project cp on cl.project_id = cp.id
-        left join checklist_type ct on cl.checklist_type_id = ct.id
+        left join project p on pt.project_id = p.id
         where rw.user_id = #{userId}
         order by pt.date, pt.start_time
+    </select>
+
+    <select id="listChecklistDetailsByIds" resultType="com.personalwork.domain.vo.ScheduleEventVo">
+        select cl.id as checklist_id, cl.name as checklist_name,
+               cl.project_id as checklist_project_id, cp.name as checklist_project_name,
+               ct.color as checklist_type_color, cl.is_done as checklist_is_done
+        from checklist cl
+        left join project cp on cl.project_id = cp.id
+        left join checklist_type ct on cl.checklist_type_id = ct.id
+        where cl.id in
+        <foreach collection="checklistIds" item="checklistId" open="(" separator="," close=")">
+            #{checklistId}
+        </foreach>
     </select>
 
     <select id="listChecklistScheduleTimesByUser" resultType="com.personalwork.domain.dto.ChecklistScheduleTimeDto">
@@ -70,7 +77,7 @@
     </select>
 
     <update id="updateSchedule" parameterType="com.personalwork.domain.entity.ProjectTimeDo">
-        update project_time set project_id = #{project.id}, date = #{date}, end_date = #{endDate}, start_time = #{startTime},
+        update project_time set project_id = #{projectId}, date = #{date}, end_date = #{endDate}, start_time = #{startTime},
         end_time = #{endTime}, schedule_name = #{scheduleName}, description = #{description}, week_id = #{weekId},
         checklist_id = #{checklistId}
         where id = #{id}
@@ -115,11 +122,14 @@
     </select>
 
     <select id="getProjectTimesByWeekRange" resultMap="projectTimeMap">
-        select pt.*
+        select pt.id, pt.project_id, pt.date, pt.end_date, pt.start_time, pt.end_time,
+               pt.schedule_name, pt.description, pt.week_id, pt.checklist_id
         from project_time pt join record_week rw on pt.week_id = rw.id
         where rw.user_id = #{userId}
           and pt.date &lt; #{endDate}
-          and coalesce(pt.end_date, pt.date) &gt;= #{startDate}
+          and (coalesce(pt.end_date, pt.date) &gt;= #{startDate}
+               or (pt.end_date is null and pt.date = date_sub(#{startDate}, interval 1 day)
+                   and pt.end_time &lt;= pt.start_time))
     </select>
 
 </mapper>

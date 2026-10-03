@@ -21,8 +21,8 @@ const MonthTimeChart = () => {
     return (
         <div>
             <MonthTimeChartCondition onChange={handleConditionChange} monthItems={[4,5,3]} />
-            <div style={{height: 300, paddingTop: 10}}>
-                <ReactECharts option={option} notMerge/>
+            <div className="chart-page__plot">
+                <ReactECharts option={option} notMerge style={{height: "100%"}}/>
             </div>
         </div>
     )

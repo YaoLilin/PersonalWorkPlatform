@@ -25,12 +25,12 @@ export function toDateTime(date, time) {
  * @returns {Array} 日历事件
  */
 export function toScheduleEvents(projectTimes, checklistTypeColors = {}) {
-    return projectTimes.filter((item) => item.date && item.startTime && item.endTime && item.projectName).map((item) => {
+    return projectTimes.filter((item) => item.date && item.startTime && item.endTime).map((item) => {
         const completed = Boolean(item.checklistId && item.checklistIsDone === 1);
         const originalColor = getScheduleColor(item, checklistTypeColors);
         const displayColor = completed ? getMutedScheduleColor(originalColor) : originalColor;
         return {
-            id: String(item.id), title: item.scheduleName || item.projectName,
+            id: String(item.id), title: item.scheduleName || item.checklistName || item.projectName || "未命名日程",
             start: toDateTime(item.date, item.startTime), end: toDateTime(item.endDate || item.date, item.endTime),
             backgroundColor: displayColor,
             borderColor: displayColor,

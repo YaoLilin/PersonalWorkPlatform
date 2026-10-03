@@ -1,11 +1,9 @@
 package com.personalwork.service;
 
-import com.personalwork.dao.ProjectMapper;
 import com.personalwork.dao.RecordWeekMapper;
-import com.personalwork.dao.WeekProjectTimeCountMapper;
-import com.personalwork.domain.entity.ProjectDo;
+import com.personalwork.domain.dto.TaskTimeDto;
 import com.personalwork.domain.entity.RecordWeekDo;
-import com.personalwork.domain.entity.WeekProjectTimeCountDo;
+import com.personalwork.domain.vo.ScheduleEventVo;
 import com.personalwork.domain.vo.WeekProjectTimeVo;
 import com.personalwork.domain.vo.WeeksVo;
 import com.personalwork.util.NumberUtil;
@@ -15,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,15 +25,12 @@ import java.util.List;
 @Service
 public class WeekListService {
     private final RecordWeekMapper recordWeekMapper;
-    private final WeekProjectTimeCountMapper projectTimeCountMapper;
-    private final ProjectMapper projectMapper;
+    private final TaskTimeCountService taskTimeCountService;
 
     @Autowired
-    public WeekListService(RecordWeekMapper recordWeekMapper, WeekProjectTimeCountMapper projectTimeCountMapper,
-                           ProjectMapper projectMapper) {
+    public WeekListService(RecordWeekMapper recordWeekMapper, TaskTimeCountService taskTimeCountService) {
         this.recordWeekMapper = recordWeekMapper;
-        this.projectTimeCountMapper = projectTimeCountMapper;
-        this.projectMapper = projectMapper;
+        this.taskTimeCountService = taskTimeCountService;
     }
 
     public List<WeeksVo> getCardList() {
@@ -46,12 +42,14 @@ public class WeekListService {
         List<WeeksVo> result = new ArrayList<>();
         DecimalFormat df = new DecimalFormat("0.00");
         DecimalFormat df2 = new DecimalFormat("0");
+        List<ScheduleEventVo> events = taskTimeCountService.listEvents();
         for (RecordWeekDo recordWeekDo : weekList) {
-            int weekUseMinutes = recordWeekDo.getTime();
+            LocalDate weekStart = LocalDate.parse(recordWeekDo.getDate());
+            List<TaskTimeDto> taskTimes = taskTimeCountService.count(
+                    events, weekStart, weekStart.plusWeeks(1));
+            int weekUseMinutes = taskTimes.stream().mapToInt(TaskTimeDto::minutes).sum();
             double totalHours = Double.parseDouble(df.format((double) weekUseMinutes / 60));
-            // 获取项目的占用时间
-            List<WeekProjectTimeCountDo> projectTimeCountList = projectTimeCountMapper.listByWeekId(recordWeekDo.getId());
-            List<WeekProjectTimeVo> projectTimeList = getWeekProjectTimeVos(df2, weekUseMinutes, projectTimeCountList);
+            List<WeekProjectTimeVo> projectTimeList = getWeekProjectTimeVos(df2, weekUseMinutes, taskTimes);
             WeeksVo weeksVo = new WeeksVo();
             BeanUtils.copyProperties(recordWeekDo, weeksVo);
             weeksVo.setHours(totalHours);
@@ -62,23 +60,24 @@ public class WeekListService {
     }
 
     private List<WeekProjectTimeVo> getWeekProjectTimeVos(DecimalFormat df2, int weekUseMinutes,
-                                                          List<WeekProjectTimeCountDo> projectTimeCountList) {
+                                                          List<TaskTimeDto> taskTimes) {
         List<WeekProjectTimeVo> projectTimeList = new ArrayList<>();
-        for (WeekProjectTimeCountDo count : projectTimeCountList) {
+        for (TaskTimeDto count : taskTimes) {
             WeekProjectTimeVo weekProjectTimeVo = buildWeekProjectTimeVo(df2, weekUseMinutes, count);
             projectTimeList.add(weekProjectTimeVo);
         }
         return projectTimeList;
     }
 
-    private WeekProjectTimeVo buildWeekProjectTimeVo(DecimalFormat df2, int weekUseMinutes, WeekProjectTimeCountDo count) {
+    private WeekProjectTimeVo buildWeekProjectTimeVo(DecimalFormat df2, int weekUseMinutes,
+                                                     TaskTimeDto count) {
         WeekProjectTimeVo weekProjectTimeVo = new WeekProjectTimeVo();
-        ProjectDo project = projectMapper.getProject(count.getProject());
-        double projectHours = NumberUtil.round((double) count.getMinutes() / 60,
+        double projectHours = NumberUtil.round((double) count.minutes() / 60,
                 2, true);
-        double percent = Math.round((double) count.getMinutes() / weekUseMinutes * 100);
-        weekProjectTimeVo.setProjectName(project.getName());
-        weekProjectTimeVo.setMinutes(count.getMinutes());
+        double percent = weekUseMinutes == 0 ? 0 : Math.round((double) count.minutes() / weekUseMinutes * 100);
+        weekProjectTimeVo.setProjectName(count.name());
+        weekProjectTimeVo.setChecklist(count.isChecklist());
+        weekProjectTimeVo.setMinutes(count.minutes());
         weekProjectTimeVo.setHours(projectHours);
         weekProjectTimeVo.setPercent(df2.format(percent));
         return weekProjectTimeVo;

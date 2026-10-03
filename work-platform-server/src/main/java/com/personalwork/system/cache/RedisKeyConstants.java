@@ -10,9 +10,9 @@ public class RedisKeyConstants {
 
     }
     public static final String PREFIX_LOGIN_USER_KEY = "login:user:";
-    public static final String WEEK_LIST_KEY = "week:list";
+    public static final String WEEK_LIST_KEY = "week:list:v2";
     public static final long WEEK_LIST_TTL = 60 * 60 * 4L;
-    public static final String MONTH_LIST_KEY = "month:list";
+    public static final String MONTH_LIST_KEY = "month:list:v2";
     public static final long MONTH_LIST_TTL = 60 * 60 * 4L;
     /**
      * 默认缓存过期时间，1天

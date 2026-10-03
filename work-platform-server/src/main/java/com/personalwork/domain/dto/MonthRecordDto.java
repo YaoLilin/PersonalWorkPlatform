@@ -15,4 +15,5 @@ import java.util.List;
 public class MonthRecordDto {
     private RecordMonthDo recordMonthDo;
     private List<MonthProjectCountDto> projectCountList;
+    private List<TaskTimeDto> taskTimeList;
 }

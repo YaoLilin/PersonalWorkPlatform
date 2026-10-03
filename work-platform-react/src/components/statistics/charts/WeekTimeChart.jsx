@@ -21,8 +21,8 @@ const WeekTimeChart = () => {
     return (
         <div>
             <WeekTimeChartConditions onChange={handleConditionChange}/>
-            <div style={{height: 300,paddingTop:10}}>
-                <ReactECharts option={option} notMerge/>
+            <div className="chart-page__plot">
+                <ReactECharts option={option} notMerge style={{height: "100%"}}/>
             </div>
         </div>
     );

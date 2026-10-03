@@ -1,11 +1,13 @@
 import {Tag} from "antd";
 import {useNavigate} from "react-router-dom";
 import dayjs from "dayjs";
+import ChecklistTag from "../ChecklistTag";
+import "./statistics-card.css";
 
 /**
  * Apple 风格的周统计卡片。
  *
- * @param {{data: {id: string|number, date: string, mark?: number, hours?: number, minutes?: number, summary?: string, projectTime?: Array<{projectName: string, minutes: number, hours: number, percent: number}>}}} props 卡片展示所需的周统计数据。
+ * @param {{data: {id: string|number, date: string, mark?: number, hours?: number, minutes?: number, summary?: string, projectTime?: Array<{projectName: string, isChecklist?: boolean, minutes: number, hours: number, percent: number}>}}} props 卡片展示所需的周统计数据。
  * @returns {JSX.Element} 可进入周统计详情的卡片。
  */
 const WeekCard = ({data}) => {
@@ -35,32 +37,35 @@ const WeekCard = ({data}) => {
     return (
         <article
             aria-label={`第 ${weekNumber} 周统计`}
-            className="week-statistics-card"
+            className="statistics-card"
             onClick={() => navigate(`form/${data.id}`)}
         >
-            <div className="week-statistics-card__header">
+            <div className="statistics-card__header">
                 <div>
-                    <p className="week-statistics-card__eyebrow">WEEK {weekNumber}</p>
+                    <p className="statistics-card__eyebrow">WEEK {weekNumber}</p>
                     <h3>第 {weekNumber} 周</h3>
                 </div>
                 {mark && <Tag color={mark.color}>{mark.text}</Tag>}
             </div>
-            <p className="week-statistics-card__date">{data.date} — {endDate}</p>
-            <div className="week-statistics-card__duration">
-                <span>专注时间</span>
+            <p className="statistics-card__date">{data.date} — {endDate}</p>
+            <div className="statistics-card__duration">
+                <span>消费时间</span>
                 <strong>{data.hours ?? 0}<small> 小时</small></strong>
                 {data.minutes ? <em>{data.minutes} 分钟</em> : null}
             </div>
-            <div className="week-statistics-card__projects">
-                <p>项目时间</p>
+            <div className="statistics-card__projects">
+                <p>项目或清单时间</p>
                 {projectTime.length > 0 ? projectTime.map((project) => (
-                    <div className="week-statistics-card__project" key={project.projectName}>
-                        <span title={project.projectName}>{project.projectName}</span>
+                    <div className="statistics-card__project" key={`${project.isChecklist ? "checklist" : "project"}:${project.projectName}`}>
+                        <span className="statistics-card__name" title={project.projectName}>
+                            <span className="statistics-card__name-text">{project.projectName}</span>
+                            {project.isChecklist && <ChecklistTag/>}
+                        </span>
                         <b>{project.percent}%</b>
                     </div>
-                )) : <span className="week-statistics-card__empty">暂无项目记录</span>}
+                )) : <span className="statistics-card__empty">暂无项目或清单记录</span>}
             </div>
-            <p className="week-statistics-card__summary">{data.summary || "暂未填写本周总结"}</p>
+            <p className="statistics-card__summary">{data.summary || "暂未填写本周总结"}</p>
         </article>
     );
 };

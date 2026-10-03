@@ -1,5 +1,6 @@
 package com.personalwork.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
@@ -10,6 +11,8 @@ import lombok.Data;
 @Data
 public class MonthProjectTimeVo {
     private String projectName;
+    @JsonProperty("isChecklist")
+    private Boolean checklist;
     private Integer minutes;
     private Double hours;
     private Double percent;

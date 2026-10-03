@@ -57,8 +57,10 @@ const ProjectBrowserEditModal = ({projectId, onClose, onSaved}) => {
             className="project-form-modal"
             title="编辑项目"
             open={Boolean(projectId)}
+            centered
             destroyOnClose
             width={760}
+            styles={{body: {maxHeight: "calc(100dvh - 220px)", overflowY: "auto"}}}
             confirmLoading={saving}
             onCancel={onClose}
             onOk={() => formRef.current?.submit()}

@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 
-/** 将日程按当前周的实际重叠分钟数汇总到项目或独立清单。 */
+/** 将日程按当前周的实际重叠分钟数汇总到项目或清单。 */
 export function countWeekTasks(events, weekDate) {
     if (!weekDate) return [];
     const start = dayjs(weekDate).startOf('day').valueOf();
@@ -11,8 +11,8 @@ export function countWeekTasks(events, weekDate) {
         const eventEnd = dayjs(`${event.endDate || event.date}T${event.endTime}`).valueOf();
         const minutes = Math.max(0, Math.round((Math.min(end, eventEnd) - Math.max(start, eventStart)) / 60000));
         if (!minutes) return;
-        const isChecklist = event.checklistId != null && event.checklistProjectId == null;
-        const id = isChecklist ? event.checklistId : (event.checklistProjectId ?? event.projectId);
+        const isChecklist = event.checklistId != null;
+        const id = isChecklist ? event.checklistId : event.projectId;
         if (id == null) return;
         const key = `${isChecklist ? 'checklist' : 'project'}:${id}`;
         const current = counts.get(key);
@@ -20,7 +20,7 @@ export function countWeekTasks(events, weekDate) {
             current.minutes += minutes;
         } else {
             counts.set(key, {
-                name: isChecklist ? event.checklistName : (event.checklistProjectName || event.projectName),
+                name: isChecklist ? event.checklistName : event.projectName,
                 minutes,
                 isChecklist,
             });

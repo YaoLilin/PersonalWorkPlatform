@@ -1,11 +1,9 @@
 package com.personalwork.service;
 
-import com.personalwork.constants.ProjectState;
 import com.personalwork.dao.*;
 import com.personalwork.domain.entity.ChecklistDo;
 import com.personalwork.domain.entity.ProjectDo;
 import com.personalwork.domain.entity.ProjectTimeDo;
-import com.personalwork.domain.entity.TypeDo;
 import com.personalwork.domain.query.ScheduleEventParam;
 import com.personalwork.domain.vo.ScheduleEventVo;
 import com.personalwork.exception.DbOperateException;
@@ -38,14 +36,11 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class ScheduleService {
 
-    private static final String INBOX_NAME = "收集箱";
-
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("H:mm[:ss]");
 
     private final ProjectTimeMapper projectTimeMapper;
     private final ProjectMapper projectMapper;
-    private final TypeMapper typeMapper;
     private final ChecklistMapper checklistMapper;
     private final ChecklistTypeMapper checklistTypeMapper;
     private final WeekFormService weekFormService;
@@ -68,6 +63,7 @@ public class ScheduleService {
     @Transactional(rollbackFor = Exception.class)
     public ScheduleEventVo createSchedule(ScheduleEventParam param) {
         LocalDateTimeRange timeRange = validateTimeRange(param);
+        validateChecklistSelection(param);
         ProjectDo project = getUserProject(param.getProjectId());
         ChecklistDo checklist = getChecklist(param.getChecklistId());
         checklist = createChecklistForProject(param, project, checklist);
@@ -92,9 +88,11 @@ public class ScheduleService {
     public ScheduleEventVo updateSchedule(Integer id, ScheduleEventParam param) {
         ProjectTimeDo originalProjectTime = getSchedule(id);
         LocalDateTimeRange newTimeRange = validateTimeRange(param);
-        ChecklistDo checklist = getChecklist(param.getChecklistId());
-        updateChecklistName(checklist, param.getScheduleName().trim());
+        validateChecklistSelection(param);
         ProjectDo project = getUserProject(param.getProjectId());
+        ChecklistDo checklist = getChecklist(param.getChecklistId());
+        checklist = createChecklistForProject(param, project, checklist);
+        updateChecklistName(checklist, param.getScheduleName().trim());
         Set<LocalDate> weekStarts = getWeekStarts(originalProjectTime);
         weekStarts.addAll(getWeekStarts(newTimeRange));
         weekStarts.forEach(weekFormService::ensureWeekForm);
@@ -130,9 +128,12 @@ public class ScheduleService {
         ProjectTimeDo projectTime = getSchedule(id);
         ScheduleEventVo scheduleEvent = new ScheduleEventVo();
         scheduleEvent.setId(projectTime.getId());
-        scheduleEvent.setProjectId(projectTime.getProject().getId());
-        scheduleEvent.setProjectName(projectTime.getProject().getName());
-        scheduleEvent.setProjectColor(projectTime.getProject().getColor());
+        ProjectDo project = projectTime.getProject();
+        if (project != null) {
+            scheduleEvent.setProjectId(project.getId());
+            scheduleEvent.setProjectName(project.getName());
+            scheduleEvent.setProjectColor(project.getColor());
+        }
         scheduleEvent.setChecklistId(projectTime.getChecklistId());
         scheduleEvent.setChecklistName(projectTime.getChecklistName());
         scheduleEvent.setChecklistTypeColor(projectTime.getChecklistTypeColor());
@@ -156,41 +157,13 @@ public class ScheduleService {
 
     private ProjectDo getUserProject(Integer projectId) {
         if (projectId == null) {
-            return getInboxProject();
+            return null;
         }
         ProjectDo project = projectMapper.getProject(projectId);
         if (project == null || !Objects.equals(project.getUserId(), getLoginUser().getId())) {
             throw new MethodParamInvalidException("项目不存在或无权操作");
         }
         return project;
-    }
-
-    private ProjectDo getInboxProject() {
-        Integer userId = getLoginUser().getId();
-        TypeDo inboxType = typeMapper.getRootTypeByName(INBOX_NAME, userId);
-        if (inboxType == null) {
-            inboxType = new TypeDo();
-            inboxType.setName(INBOX_NAME);
-            inboxType.setUserId(userId);
-            typeMapper.addType(inboxType);
-            inboxType = Objects.requireNonNull(typeMapper.getRootTypeByName(INBOX_NAME, userId));
-        }
-        ProjectDo inboxProject = projectMapper.getProjectByName(INBOX_NAME, userId);
-        if (inboxProject != null) {
-            return inboxProject;
-        }
-        inboxProject = new ProjectDo();
-        inboxProject.setName(INBOX_NAME);
-        inboxProject.setType(inboxType);
-        inboxProject.setStartDate(LocalDate.now().format(DATE_FORMATTER));
-        inboxProject.setProgress(0D);
-        inboxProject.setState(ProjectState.STARTED);
-        inboxProject.setImportant(0);
-        inboxProject.setColor("#1677FF");
-        inboxProject.setIsStartDateOnly(1);
-        inboxProject.setUserId(userId);
-        projectMapper.addProject(inboxProject);
-        return Objects.requireNonNull(projectMapper.getProjectByName(INBOX_NAME, userId));
     }
 
     private ProjectTimeDo buildProjectTime(ScheduleEventParam param, ProjectDo project, ChecklistDo checklist,
@@ -218,6 +191,12 @@ public class ScheduleService {
         return checklist;
     }
 
+    private void validateChecklistSelection(ScheduleEventParam param) {
+        if (param.getChecklistId() == null && !Boolean.TRUE.equals(param.getCreateChecklist())) {
+            throw new MethodParamInvalidException("日程必须关联已有清单或创建清单");
+        }
+    }
+
     /**
      * 为拖入日程的项目创建默认收集箱清单。
      *
@@ -232,7 +211,7 @@ public class ScheduleService {
         }
         ChecklistDo createdChecklist = new ChecklistDo();
         createdChecklist.setName(param.getScheduleName().trim());
-        createdChecklist.setProjectId(project.getId());
+        createdChecklist.setProjectId(project == null ? null : project.getId());
         createdChecklist.setIsDone(0);
         createdChecklist.setUserId(getLoginUser().getId());
         if (param.getChecklistTypeId() != null) {
