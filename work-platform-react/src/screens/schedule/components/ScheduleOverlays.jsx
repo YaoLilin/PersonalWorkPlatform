@@ -1,9 +1,5 @@
-import {BarChartOutlined, PieChartOutlined} from "@ant-design/icons";
-import {Button, Checkbox, DatePicker, Input, Modal, TreeSelect} from "antd";
+import {Button, Checkbox, DatePicker, Input, TreeSelect} from "antd";
 import ProjectBrowser from "../../../components/public/projectBrowser";
-import {getProjectTimeStatisticsTitle} from "../utils/scheduleUtils";
-import {ProjectTimeStatisticsContent} from "./ScheduleStatistics";
-import HiddenTimeRangeModal from "./HiddenTimeRangeModal";
 
 /**
  * 日程编辑浮层。
@@ -18,7 +14,15 @@ import HiddenTimeRangeModal from "./HiddenTimeRangeModal";
  * @param {Function} props.onToggleChecklistState 切换清单完成状态的回调
  * @returns {JSX.Element} 编辑器
  */
-export const ScheduleEventEditor = ({editor, checklist, checklistTypeTree, projectOptions, onChange, onSave, onToggleChecklistState}) => {
+export const ScheduleEventEditor = ({
+    editor,
+    checklist,
+    checklistTypeTree,
+    projectOptions,
+    onChange,
+    onSave,
+    onToggleChecklistState,
+}) => {
     const selectedProject = projectOptions.find((item) => item.value === editor.projectId);
     const update = (value) => onChange((current) => ({...current, ...value}));
 
@@ -75,56 +79,24 @@ export const ScheduleEventEditor = ({editor, checklist, checklistTypeTree, proje
 };
 
 /**
- * 日程页面浮层和对话框。
+ * 日程选择预览、右键菜单和事件编辑浮层。
  *
  * @param {Object} props 浮层参数
  * @param {Object|null} props.selectionPreview 拖动选择的时间范围预览
- * @param {Object|null} props.contextMenu 日程右键菜单状态
- * @param {Function} props.onDelete 删除日程的回调
- * @param {Object|null} props.editor 当前日程编辑器状态
+ * @param {Object} props.schedule 日程状态与操作
  * @param {Object|undefined} props.checklist 当前日程关联的清单
  * @param {Array} props.checklistTypeTree 清单类型树
  * @param {Array} props.projectOptions 可选项目列表
- * @param {Function} props.setEditor 更新编辑器状态的函数
- * @param {Function} props.onSaveEditor 保存编辑器内容的回调
  * @param {Function} props.onToggleChecklistState 切换清单完成状态的回调
- * @param {boolean} props.isHiddenRangeOpen 是否显示隐藏时间段对话框
- * @param {Array|null} props.hiddenRangeEditor 正在编辑的隐藏时间段
- * @param {Function} props.setHiddenRangeEditor 更新隐藏时间段的函数
- * @param {Function} props.onSaveHiddenRange 保存隐藏时间段的回调
- * @param {Function} props.onCloseHiddenRange 关闭隐藏时间段对话框的回调
- * @param {boolean} props.isStatisticsOpen 是否显示项目时间统计对话框
- * @param {Function} props.onCloseStatistics 关闭项目时间统计对话框的回调
- * @param {Array} props.statistics 项目时间统计数据
- * @param {number} props.totalHours 项目累计时长
- * @param {string} props.viewType 当前日历视图类型
- * @param {string} props.chartType 统计图类型
- * @param {Function} props.onChartTypeChange 切换统计图类型的回调
- * @returns {JSX.Element} 浮层集合
+ * @returns {JSX.Element} 日程浮层集合
  */
 export const ScheduleOverlays = ({
     selectionPreview,
-    contextMenu,
-    onDelete,
-    editor,
+    schedule,
     checklist,
     checklistTypeTree,
     projectOptions,
-    setEditor,
-    onSaveEditor,
     onToggleChecklistState,
-    isHiddenRangeOpen,
-    hiddenRangeEditor,
-    setHiddenRangeEditor,
-    onSaveHiddenRange,
-    onCloseHiddenRange,
-    isStatisticsOpen,
-    onCloseStatistics,
-    statistics,
-    totalHours,
-    viewType,
-    chartType,
-    onChartTypeChange,
 }) => (
     <>
         {selectionPreview && (
@@ -133,47 +105,21 @@ export const ScheduleOverlays = ({
                 {selectionPreview.start.format("MM-DD HH:mm")} - {selectionPreview.end.format("MM-DD HH:mm")}
             </div>
         )}
-        {contextMenu && (
-            <div className="schedule-event-context-menu" style={{left: contextMenu.left, top: contextMenu.top}}
+        {schedule.contextMenu && (
+            <div className="schedule-event-context-menu"
+                 style={{left: schedule.contextMenu.left, top: schedule.contextMenu.top}}
                  onClick={(event) => event.stopPropagation()}>
-                <Button type="text" danger size="small" onClick={onDelete}>删除日程</Button>
+                <Button type="text" danger size="small" onClick={() => void schedule.deleteEvent()}>删除日程</Button>
             </div>
         )}
-        {editor && <ScheduleEventEditor
-            editor={editor}
+        {schedule.eventEditor && <ScheduleEventEditor
+            editor={schedule.eventEditor}
             checklist={checklist}
             checklistTypeTree={checklistTypeTree}
             projectOptions={projectOptions}
-            onChange={setEditor}
-            onSave={onSaveEditor}
+            onChange={schedule.setEventEditor}
+            onSave={() => void schedule.saveEditor(true)}
             onToggleChecklistState={onToggleChecklistState}
         />}
-        <HiddenTimeRangeModal
-            open={isHiddenRangeOpen}
-            value={hiddenRangeEditor}
-            onChange={setHiddenRangeEditor}
-            onSave={onSaveHiddenRange}
-            onClose={onCloseHiddenRange}
-        />
-        <Modal
-            className="schedule-project-time-modal"
-            open={isStatisticsOpen}
-            title={<div className="schedule-project-time-modal-title">
-                <span>{getProjectTimeStatisticsTitle(viewType)}</span>
-                <Button type="text" icon={chartType === "pie" ? <BarChartOutlined/> : <PieChartOutlined/>}
-                        onClick={onChartTypeChange}/>
-            </div>}
-            footer={null}
-            width={760}
-            onCancel={onCloseStatistics}
-        >
-            <ProjectTimeStatisticsContent
-                data={statistics}
-                totalHours={totalHours}
-                chartType={chartType}
-                viewType={viewType}
-                expanded
-            />
-        </Modal>
     </>
 );
