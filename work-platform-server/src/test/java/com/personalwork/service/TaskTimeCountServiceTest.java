@@ -17,12 +17,13 @@ class TaskTimeCountServiceTest {
 
     @Test
     void countsChecklistAndProjectAcrossWeekAndMonthBoundaries() {
-        ScheduleEventVo checklist = event(1, "收集箱", 7, "清单 A", null,
+        ScheduleEventVo checklist = event(0, "", 7, "清单 A", null,
                 "2026-09-30", "2026-10-01", "23:00", "01:00");
-        ScheduleEventVo projectChecklist = event(2, "收集箱", 8, "清单 B", 2,
+        checklist.setProjectId(null);
+        ScheduleEventVo projectChecklist = event(2, "项目 B", 8, "清单 B", 2,
                 "2026-10-01", "2026-10-01", "09:00", "10:00");
         projectChecklist.setChecklistProjectName("项目 B");
-        ScheduleEventVo inboxProject = event(2, "收集箱", 9, "不应使用的清单名", 2,
+        ScheduleEventVo inboxProject = event(2, "项目 B", 9, "不应使用的清单名", 2,
                 "2026-10-01", "2026-10-01", "10:00", "11:00");
         inboxProject.setChecklistId(null);
         List<ScheduleEventVo> events = List.of(checklist, projectChecklist, inboxProject);
@@ -59,24 +60,45 @@ class TaskTimeCountServiceTest {
 
     @Test
     void chartMergesLinkedChecklistIntoItsProjectAndKeepsIndependentChecklistSeparate() {
-        ScheduleEventVo linked = event(1, "收集箱", 11, "骑行训练", 2,
+        ScheduleEventVo linked = event(2, "骑行训练项目", 11, "骑行训练", 2,
                 "2026-09-22", "2026-09-22", "12:30", "15:00");
         linked.setChecklistProjectName("骑行训练项目");
         ScheduleEventVo direct = event(2, "骑行训练项目", 0, "", null,
                 "2026-09-22", "2026-09-22", "15:00", "16:00");
         direct.setChecklistId(null);
-        ScheduleEventVo independent = event(1, "收集箱", 3, "骑行训练", null,
+        ScheduleEventVo checklistProject = event(0, "", 12, "项目清单", 2,
+                "2026-09-22", "2026-09-22", "17:00", "17:45");
+        checklistProject.setProjectId(null);
+        checklistProject.setChecklistProjectName("骑行训练项目");
+        ScheduleEventVo independent = event(0, "", 3, "骑行训练", null,
                 "2026-09-22", "2026-09-22", "16:00", "16:30");
+        independent.setProjectId(null);
 
         List<TaskTimeDto> result = service.countForChart(
-                List.of(linked, direct, independent), LocalDate.parse("2026-09-01"), LocalDate.parse("2026-10-01"));
+                List.of(linked, direct, checklistProject, independent),
+                LocalDate.parse("2026-09-01"), LocalDate.parse("2026-10-01"));
 
         assertEquals(2, result.size());
         assertTrue(result.stream().anyMatch(task -> task.id() == 2 && !task.isChecklist()
-                && task.name().equals("骑行训练项目") && task.minutes() == 210));
+                && task.name().equals("骑行训练项目") && task.minutes() == 255));
         assertTrue(result.stream().anyMatch(task -> task.id() == 3 && task.isChecklist()
                 && task.minutes() == 30));
         assertFalse(result.stream().anyMatch(task -> task.id() == 11));
+    }
+
+    @Test
+    void directProjectTakesPriorityOverChecklistProject() {
+        ScheduleEventVo schedule = event(5, "日程项目", 11, "清单", 2,
+                "2026-09-22", "2026-09-22", "12:00", "13:00");
+        schedule.setChecklistProjectName("清单项目");
+
+        List<TaskTimeDto> result = service.count(List.of(schedule),
+                LocalDate.parse("2026-09-01"), LocalDate.parse("2026-10-01"));
+
+        assertEquals(1, result.size());
+        assertEquals(5, result.get(0).id());
+        assertEquals("日程项目", result.get(0).name());
+        assertFalse(result.get(0).isChecklist());
     }
 
     private ScheduleEventVo event(int projectId, String projectName, int checklistId, String checklistName,

@@ -3,7 +3,6 @@ package com.personalwork.controller.handle;
 import com.personalwork.domain.vo.ErrorMsg;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.ValidationException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,16 +25,26 @@ import java.util.stream.Collectors;
 @Log4j2
 public class ControllerExceptionHandler {
 
+    /**
+     * <p>记录未处理异常，并返回不包含内部异常详情的统一错误消息。</p>
+     *
+     * @param e 接口异常
+     * @return 内部错误响应
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorMsg> handleException(Exception e) {
         log.error("接口发生异常：{}", e.getMessage(), e);
-        return new ResponseEntity<>(new ErrorMsg(e.getMessage(), e.getClass().getSimpleName()), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(new ErrorMsg("服务器发生内部错误", e.getClass().getSimpleName()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**
-     * 接口参数校验异常处理
+     * <p>处理接口参数校验异常，保留可供用户修正输入的提示。</p>
+     *
+     * @param e 参数校验异常
+     * @return 参数校验错误响应
      */
-    @ExceptionHandler(value = {BindException.class, ValidationException.class, MethodArgumentNotValidException.class})
+    @ExceptionHandler(value = {BindException.class, ConstraintViolationException.class,
+            MethodArgumentNotValidException.class})
     public ResponseEntity<ErrorMsg> handleValidatedException(Exception e) {
         ResponseEntity<ErrorMsg> resp = null;
         if (e instanceof MethodArgumentNotValidException ex) {

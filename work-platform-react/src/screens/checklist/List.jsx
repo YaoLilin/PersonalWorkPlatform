@@ -182,16 +182,22 @@ const ChecklistList = () => {
                     messageApi.error("结束时间必须晚于开始时间");
                     return;
                 }
-                await ScheduleApi.createSchedule({
-                    projectId: values.projectId,
-                    checklistTypeId: values.checklistTypeId,
-                    createChecklist: true,
-                    scheduleName: values.name,
-                    date: start.format("YYYY-MM-DD"),
-                    endDate: end.format("YYYY-MM-DD"),
-                    startTime: start.format("HH:mm:ss"),
-                    endTime: end.format("HH:mm:ss"),
-                });
+                try {
+                    await ScheduleApi.createSchedule({
+                        projectId: values.projectId,
+                        checklistTypeId: values.checklistTypeId,
+                        createChecklist: true,
+                        scheduleName: values.name,
+                        date: start.format("YYYY-MM-DD"),
+                        endDate: end.format("YYYY-MM-DD"),
+                        startTime: start.format("HH:mm:ss"),
+                        endTime: end.format("HH:mm:ss"),
+                    });
+                } catch (error) {
+                    const errorMessage = error?.response?.data?.message || error?.message || "未知错误";
+                    messageApi.error(`创建日程失败: ${errorMessage}`);
+                    return;
+                }
                 messageApi.success("添加成功", 5);
             } else {
                 await ChecklistApi.addChecklist(values);

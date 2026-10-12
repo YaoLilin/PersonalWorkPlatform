@@ -68,14 +68,16 @@ export function useScheduleManagement({
                 description: editor.description,
             }
         };
+        let saved;
         try {
-            const saved = await ScheduleApi.createSchedule(toScheduleParam(event));
-            setScheduleEvents((items) => [...items, toScheduleEvents([saved], checklistTypeColors, projectColors)[0]]);
-            if (saved.checklistId && !editor.checklistId) onChecklistCreated();
-            else if (saved.checklistId) onChecklistChanged();
+            saved = await ScheduleApi.createSchedule(toScheduleParam(event));
         } catch (error) {
-            messageApi.error(getErrorMessage(error), 5);
+            messageApi.error(`创建日程失败: ${getErrorMessage(error)}`, 5);
+            return;
         }
+        setScheduleEvents((items) => [...items, toScheduleEvents([saved], checklistTypeColors, projectColors)[0]]);
+        if (saved.checklistId && !editor.checklistId) onChecklistCreated();
+        else if (saved.checklistId) onChecklistChanged();
     };
 
     /**

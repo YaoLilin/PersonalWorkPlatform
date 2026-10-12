@@ -11,16 +11,20 @@ export function countWeekTasks(events, weekDate) {
         const eventEnd = dayjs(`${event.endDate || event.date}T${event.endTime}`).valueOf();
         const minutes = Math.max(0, Math.round((Math.min(end, eventEnd) - Math.max(start, eventStart)) / 60000));
         if (!minutes) return;
-        const isChecklist = event.checklistId != null;
-        const id = isChecklist ? event.checklistId : event.projectId;
+        const projectId = event.projectId ?? event.checklistProjectId;
+        const isChecklist = projectId == null && event.checklistId != null;
+        const id = isChecklist ? event.checklistId : projectId;
         if (id == null) return;
+        let name = event.projectName;
+        if (isChecklist) name = event.checklistName;
+        else if (event.projectId == null) name = event.checklistProjectName;
         const key = `${isChecklist ? 'checklist' : 'project'}:${id}`;
         const current = counts.get(key);
         if (current) {
             current.minutes += minutes;
         } else {
             counts.set(key, {
-                name: isChecklist ? event.checklistName : event.projectName,
+                name,
                 minutes,
                 isChecklist,
             });

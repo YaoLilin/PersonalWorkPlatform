@@ -89,15 +89,18 @@ public class TaskTimeCountService {
     }
 
     private TaskTimeDto toTaskTime(ScheduleEventVo event, int minutes) {
-        boolean linkedChecklist = event.getChecklistId() != null && event.getChecklistProjectId() != null;
-        boolean isChecklist = event.getChecklistId() != null && !linkedChecklist;
-        Integer id = isChecklist ? event.getChecklistId() : linkedChecklist
-                ? event.getChecklistProjectId() : event.getProjectId();
+        Integer projectId = event.getProjectId() != null ? event.getProjectId() : event.getChecklistProjectId();
+        boolean isChecklist = projectId == null && event.getChecklistId() != null;
+        Integer id = isChecklist ? event.getChecklistId() : projectId;
         if (id == null) {
             return null;
         }
-        String name = isChecklist ? event.getChecklistName() : linkedChecklist
-                ? event.getChecklistProjectName() : event.getProjectName();
+        String name = event.getProjectName();
+        if (isChecklist) {
+            name = event.getChecklistName();
+        } else if (event.getProjectId() == null) {
+            name = event.getChecklistProjectName();
+        }
         return new TaskTimeDto(id, name, minutes, isChecklist);
     }
 }
