@@ -11,6 +11,7 @@ import "./schedule.css";
 import {TypeApi} from "../../request/typeApi";
 import {ProjectApi} from "../../request/projectApi";
 import {ChecklistApi} from "../../request/checklistApi";
+import ScheduleApi from "../../request/scheduleApi";
 import {MessageContext} from "@/provider/MessageProvider";
 import {UserContext} from "@/provider/UserProvider";
 import {ScheduleOverlays} from "./components/ScheduleOverlays";
