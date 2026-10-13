@@ -41,6 +41,7 @@ export function toScheduleEvents(projectTimes, checklistTypeColors = {}, project
             classNames: completed ? ["schedule-checklist-completed"] : [],
             extendedProps: {
                 projectId: item.projectId, projectName: item.projectName,
+                checklistProjectId: item.checklistProjectId, checklistProjectName: item.checklistProjectName,
                 projectColor: projectColors[projectId],
                 checklistId: item.checklistId, checklistName: item.checklistName,
                 checklistTypeColor: checklistTypeColors[item.checklistId] || item.checklistTypeColor || INBOX_CHECKLIST_TYPE_COLOR,
@@ -375,22 +376,29 @@ export function getCurrentWeekRange() {
 }
 
 /**
- * 统计范围内各项目时长。
+ * 统计范围内各项目时长，优先归入日程项目，其次归入清单项目，无项目时按清单或日程名称分组。
  *
  * @param {Array} events 日历事件
  * @param {Object} range 统计范围
  * @returns {Array} 统计数据
  */
 export function getProjectTimeStatistics(events, {start: rangeStart, end: rangeEnd}) {
+    // key：项目编号、清单编号或无关联日程名称；value：分组名称、累计小时和图表颜色。
     const statistics = new Map();
     events.forEach((event) => {
         const start = dayjs(event.start), end = dayjs(event.end);
-        if (!start.isValid() || !end.isValid() || !end.isAfter(start) || !start.isBefore(rangeEnd) || !end.isAfter(rangeStart)) return;
-        const checklistId = event.extendedProps?.checklistId;
-        const name = checklistId ? event.extendedProps?.checklistName || event.title
-            : event.extendedProps?.projectName || event.title;
-        const key = checklistId ? `checklist-${checklistId}`
-            : event.extendedProps?.projectId === undefined ? name : `project-${event.extendedProps.projectId}`;
+        const overlapsRange = start.isValid() && end.isValid() && end.isAfter(start)
+            && start.isBefore(rangeEnd) && end.isAfter(rangeStart);
+        if (!overlapsRange) return;
+        const props = event.extendedProps || {};
+        const projectId = props.projectId ?? props.checklistProjectId;
+        const hasProject = projectId != null;
+        const hasChecklist = Boolean(props.checklistId);
+        const projectName = props.projectId != null ? props.projectName : props.checklistProjectName;
+        const name = hasProject ? projectName || event.title
+            : hasChecklist ? props.checklistName || event.title : event.title;
+        const key = hasProject ? `project-${projectId}`
+            : hasChecklist ? `checklist-${props.checklistId}` : name;
         const item = statistics.get(key) || {
             name,
             value: 0,
