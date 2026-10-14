@@ -6,8 +6,8 @@ import com.personalwork.domain.entity.ProjectDo;
 import com.personalwork.domain.entity.ProjectTimeDo;
 import com.personalwork.domain.query.ScheduleEventParam;
 import com.personalwork.domain.vo.ScheduleEventVo;
+import com.personalwork.exception.ApiParamInvalidException;
 import com.personalwork.exception.DbOperateException;
-import com.personalwork.exception.MethodParamInvalidException;
 import com.personalwork.security.bean.UserDetail;
 import com.personalwork.util.UserUtil;
 import lombok.RequiredArgsConstructor;
@@ -16,10 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAdjusters;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -62,8 +60,7 @@ public class ScheduleService {
      */
     @Transactional(rollbackFor = Exception.class)
     public ScheduleEventVo createSchedule(ScheduleEventParam param) {
-        LocalDateTimeRange timeRange = validateTimeRange(param);
-        validateChecklistSelection(param);
+        LocalDateTimeRange timeRange = parseTimeRange(param);
         ProjectDo project = getUserProject(param.getProjectId());
         ChecklistDo checklist = getChecklist(param.getChecklistId());
         checklist = createChecklistForProject(param, project, checklist);
@@ -87,7 +84,7 @@ public class ScheduleService {
     @Transactional(rollbackFor = Exception.class)
     public ScheduleEventVo updateSchedule(Integer id, ScheduleEventParam param) {
         ProjectTimeDo originalProjectTime = getSchedule(id);
-        LocalDateTimeRange newTimeRange = validateTimeRange(param);
+        LocalDateTimeRange newTimeRange = parseTimeRange(param);
         ProjectDo project = getUserProject(param.getProjectId());
         ChecklistDo checklist = getChecklist(param.getChecklistId());
         checklist = createChecklistForProject(param, project, checklist);
@@ -143,13 +140,20 @@ public class ScheduleService {
         scheduleEvent.setEndDate(projectTime.getEndDate());
         scheduleEvent.setStartTime(projectTime.getStartTime());
         scheduleEvent.setEndTime(projectTime.getEndTime());
+        if (projectTime.getChecklistId() != null) {
+            projectTimeMapper.listChecklistDetailsByIds(List.of(projectTime.getChecklistId())).stream()
+                    .findFirst().ifPresent(detail -> {
+                        scheduleEvent.setChecklistProjectId(detail.getChecklistProjectId());
+                        scheduleEvent.setChecklistProjectName(detail.getChecklistProjectName());
+                    });
+        }
         return scheduleEvent;
     }
 
     private ProjectTimeDo getSchedule(Integer id) {
         ProjectTimeDo projectTime = projectTimeMapper.getScheduleById(id, getLoginUser().getId());
         if (projectTime == null) {
-            throw new MethodParamInvalidException("日程不存在或无权操作");
+            throw new ApiParamInvalidException("日程不存在或无权操作");
         }
         return projectTime;
     }
@@ -160,7 +164,7 @@ public class ScheduleService {
         }
         ProjectDo project = projectMapper.getProject(projectId);
         if (project == null || !Objects.equals(project.getUserId(), getLoginUser().getId())) {
-            throw new MethodParamInvalidException("项目不存在或无权操作");
+            throw new ApiParamInvalidException("项目不存在或无权操作");
         }
         return project;
     }
@@ -185,15 +189,9 @@ public class ScheduleService {
         }
         ChecklistDo checklist = checklistMapper.getByIdAndUserId(checklistId, getLoginUser().getId());
         if (checklist == null) {
-            throw new MethodParamInvalidException("清单不存在或无权操作");
+            throw new ApiParamInvalidException("清单不存在或无权操作");
         }
         return checklist;
-    }
-
-    private void validateChecklistSelection(ScheduleEventParam param) {
-        if (param.getChecklistId() == null && !Boolean.TRUE.equals(param.getCreateChecklist())) {
-            throw new MethodParamInvalidException("日程必须关联已有清单或创建清单");
-        }
     }
 
     /**
@@ -215,7 +213,7 @@ public class ScheduleService {
         createdChecklist.setUserId(getLoginUser().getId());
         if (param.getChecklistTypeId() != null) {
             if (checklistTypeMapper.getByIdAndUserId(param.getChecklistTypeId(), getLoginUser().getId()) == null) {
-                throw new MethodParamInvalidException("清单类型不存在或无权操作");
+                throw new ApiParamInvalidException("清单类型不存在或无权操作");
             }
             createdChecklist.setChecklistTypeId(param.getChecklistTypeId());
         }
@@ -237,25 +235,18 @@ public class ScheduleService {
         }
         boolean updated = checklistMapper.updateNameByIdAndUserId(checklist.getId(), scheduleName, getLoginUser().getId());
         if (!updated) {
-            throw new MethodParamInvalidException("清单名称更新失败");
+            throw new DbOperateException("清单名称更新失败");
         }
         checklist.setName(scheduleName);
         projectTimeMapper.updateScheduleNameByChecklistId(checklist.getId(), scheduleName);
     }
 
-    private LocalDateTimeRange validateTimeRange(ScheduleEventParam param) {
-        try {
-            LocalDate startDate = LocalDate.parse(param.getDate(), DATE_FORMATTER);
-            LocalDate endDate = LocalDate.parse(param.getEndDate(), DATE_FORMATTER);
-            LocalTime startTime = LocalTime.parse(param.getStartTime(), TIME_FORMATTER);
-            LocalTime endTime = LocalTime.parse(param.getEndTime(), TIME_FORMATTER);
-            if (!LocalDateTime.of(endDate, endTime).isAfter(LocalDateTime.of(startDate, startTime))) {
-                throw new MethodParamInvalidException("结束时间必须晚于开始时间");
-            }
-            return new LocalDateTimeRange(startDate, endDate, startTime, endTime);
-        } catch (DateTimeParseException exception) {
-            throw new MethodParamInvalidException("日程日期或时间格式错误");
-        }
+    /** 将已通过接口校验的日期时间参数转换为业务计算所需的类型。 */
+    private LocalDateTimeRange parseTimeRange(ScheduleEventParam param) {
+        return new LocalDateTimeRange(LocalDate.parse(param.getDate(), DATE_FORMATTER),
+                LocalDate.parse(param.getEndDate(), DATE_FORMATTER),
+                LocalTime.parse(param.getStartTime(), TIME_FORMATTER),
+                LocalTime.parse(param.getEndTime(), TIME_FORMATTER));
     }
 
     private Set<LocalDate> getWeekStarts(ProjectTimeDo projectTime) {

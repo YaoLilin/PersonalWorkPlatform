@@ -3,6 +3,8 @@ package com.personalwork.controller;
 import com.personalwork.domain.query.ScheduleEventParam;
 import com.personalwork.domain.vo.ScheduleEventVo;
 import com.personalwork.service.ScheduleService;
+import jakarta.validation.groups.Default;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,8 +15,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 /**
  * 日程接口。<br>
@@ -46,7 +46,8 @@ public class ScheduleController {
      * @return 已新增的日程
      */
     @PostMapping
-    public ScheduleEventVo createSchedule(@RequestBody @Validated ScheduleEventParam param) {
+    public ScheduleEventVo createSchedule(
+            @RequestBody @Validated({Default.class, ScheduleEventParam.Create.class}) ScheduleEventParam param) {
         return scheduleService.createSchedule(param);
     }
 

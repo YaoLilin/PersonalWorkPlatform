@@ -5,7 +5,6 @@ import com.personalwork.domain.dto.TypeTreeNode;
 import com.personalwork.domain.entity.ChecklistTypeDo;
 import com.personalwork.domain.query.ChecklistTypeParam;
 import com.personalwork.exception.DbOperateException;
-import com.personalwork.exception.MethodParamInvalidException;
 import com.personalwork.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -60,7 +59,7 @@ public class ChecklistTypeService {
         type.setId(id);
         type.setUserId(UserUtil.getLoginUserId());
         if (!checklistTypeMapper.update(type)) {
-            throw new MethodParamInvalidException("清单类型不存在或无权限修改");
+            throw new DbOperateException("清单类型更新失败");
         }
     }
 
@@ -71,7 +70,7 @@ public class ChecklistTypeService {
      */
     public void deleteType(Integer id) {
         if (!checklistTypeMapper.deleteByIdAndUserId(id, UserUtil.getLoginUserId())) {
-            throw new MethodParamInvalidException("清单类型不存在或无权限删除");
+            throw new DbOperateException("清单类型删除失败");
         }
     }
 

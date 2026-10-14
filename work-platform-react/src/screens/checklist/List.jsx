@@ -1,18 +1,17 @@
-import React, {useContext, useMemo, useState} from "react";
-import {Button, DatePicker, Form, Input, Modal, TreeSelect} from "antd";
+import React, {useContext, useMemo, useRef, useState} from "react";
+import {Button, Modal} from "antd";
 import {FormOutlined, PlusCircleOutlined, PlusOutlined} from "@ant-design/icons";
 import {useLoaderData, useRevalidator} from "react-router-dom";
 import {ChecklistApi} from "../../request/checklistApi";
 import {ProjectApi} from "../../request/projectApi";
 import ScheduleApi from "../../request/scheduleApi";
-import ProjectBrowser from "../../components/public/projectBrowser";
+import ChecklistCreateModal from "./ChecklistCreateModal";
 import {MessageContext} from "../../provider/MessageProvider";
 import TypeAddDialogContent from "../../components/type/TypeAddDialogContent";
 import TypeEditDialogContent from "../../components/type/TypeEditDialogContent";
 import ProjectTypePanel from "../project/ProjectTypePanel";
 import {getParentTypeId, getTypeAndDescendantIds} from "../project/projectListUtils";
 import {getChecklistGroups} from "./checklistUtils";
-import {checklistProjectBrowserStyle} from "./checklistFieldStyles";
 import CompletedChecklistModal from "./CompletedChecklistModal";
 import ChecklistEditorModal from "./ChecklistEditorModal";
 import ChecklistTypeCard from "./ChecklistTypeCard";
@@ -46,10 +45,8 @@ const ChecklistList = () => {
     const {revalidate} = useRevalidator();
     const [selectedTypeId, setSelectedTypeId] = useState("all");
     const [editingChecklist, setEditingChecklist] = useState(null);
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const createModalRef = useRef(null);
     const [completedScope, setCompletedScope] = useState(null);
-    const [form] = Form.useForm();
-    const selectedProjectId = Form.useWatch("projectId", form);
     const selectedTypeIds = useMemo(() => selectedTypeId === "all" ? null
         : getTypeAndDescendantIds(typeTree, selectedTypeId), [selectedTypeId, typeTree]);
     const checklistGroups = useMemo(() => getChecklistGroups(checklists, typeTree, selectedTypeIds),
@@ -160,57 +157,12 @@ const ChecklistList = () => {
             setEditingChecklist(checklist);
             return;
         }
-        form.setFieldsValue({
-            name: "",
-            projectId: undefined,
-            scheduleTime: undefined,
-            checklistTypeId: group ? group.id : selectedTypeId === "all" ? undefined : Number(selectedTypeId),
-        });
-        setIsCreateModalOpen(true);
+        const defaultTypeId = group ? group.id : selectedTypeId === "all" ? undefined : Number(selectedTypeId);
+        createModalRef.current?.open(defaultTypeId);
     };
 
     /** 在指定类型卡片中新建清单。 */
     const addChecklistInGroup = (group) => openChecklistModal(null, group);
-
-    /** <p>保存新增的清单。</p> */
-    const saveChecklist = async () => {
-        try {
-            const {scheduleTime, ...values} = await form.validateFields();
-            if (scheduleTime?.[0] && scheduleTime?.[1]) {
-                const [start, end] = scheduleTime;
-                if (!end.isAfter(start)) {
-                    messageApi.error("结束时间必须晚于开始时间");
-                    return;
-                }
-                try {
-                    await ScheduleApi.createSchedule({
-                        projectId: values.projectId,
-                        checklistTypeId: values.checklistTypeId,
-                        createChecklist: true,
-                        scheduleName: values.name,
-                        date: start.format("YYYY-MM-DD"),
-                        endDate: end.format("YYYY-MM-DD"),
-                        startTime: start.format("HH:mm:ss"),
-                        endTime: end.format("HH:mm:ss"),
-                    });
-                } catch (error) {
-                    const errorMessage = error?.response?.data?.message || error?.message || "未知错误";
-                    messageApi.error(`创建日程失败: ${errorMessage}`);
-                    return;
-                }
-                messageApi.success("添加成功", 5);
-            } else {
-                await ChecklistApi.addChecklist(values);
-                messageApi.success("添加成功", 5);
-            }
-            setIsCreateModalOpen(false);
-            refreshData();
-        } catch (error) {
-            if (!error?.errorFields) {
-                messageApi.error(error?.response?.data?.message || error?.message || "清单保存失败");
-            }
-        }
-    };
 
     /** <p>保存清单关联日程的时间，并保留原日程的项目和描述。</p> */
     const updateScheduleTime = async (scheduleTimeId, range, checklistName) => {
@@ -311,43 +263,12 @@ const ChecklistList = () => {
                 onChanged={refreshData}
                 onUpdateScheduleTime={updateScheduleTime}
             />
-            <Modal
-                title="添加清单"
-                open={isCreateModalOpen}
-                onCancel={() => setIsCreateModalOpen(false)}
-                onOk={saveChecklist}
-                okText="保存"
-                cancelText="取消"
-            >
-                <Form form={form} layout="vertical">
-                    <Form.Item label="名称" name="name" rules={[{required: true, message: "请输入清单名称"}]}>
-                        <Input maxLength={255}/>
-                    </Form.Item>
-                    <Form.Item name="projectId" hidden><Input/></Form.Item>
-                    <Form.Item label="关联项目">
-                        <ProjectBrowser
-                            value={projects.find((project) => project.id === selectedProjectId) || null}
-                            style={checklistProjectBrowserStyle}
-                            onChange={(project) => form.setFieldValue("projectId", project?.id)}
-                        />
-                    </Form.Item>
-                    <Form.Item label="清单类型" name="checklistTypeId">
-                        <TreeSelect
-                            allowClear
-                            treeData={typeTree}
-                            treeDefaultExpandAll
-                            placeholder="未指定时归入收集箱"
-                        />
-                    </Form.Item>
-                    <Form.Item label="日程时间" name="scheduleTime">
-                        <DatePicker.RangePicker
-                            showTime={{format: "HH:mm"}}
-                            format="YYYY-MM-DD HH:mm"
-                            style={{width: "100%"}}
-                        />
-                    </Form.Item>
-                </Form>
-            </Modal>
+            <ChecklistCreateModal
+                ref={createModalRef}
+                projects={projects}
+                typeTree={typeTree}
+                onCreated={refreshData}
+            />
         </div>
     );
 };

@@ -4,7 +4,8 @@ import {INBOX_CHECKLIST_TYPE_KEY} from "../utils/scheduleUtils";
 import ScheduleChecklistEditor from "./ScheduleChecklistEditor";
 
 /**
- * 获取清单树中初始展开的分类节点。
+ * 获取清单树中初始展开的分类节点。<br>
+ * <p>只收集分类节点并递归访问其子分类；清单叶节点跳过，空子节点数组结束递归。</p>
  *
  * @param {Array} nodes 清单树节点
  * @returns {Array<string>} 分类节点键值

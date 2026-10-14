@@ -1,6 +1,7 @@
 package com.personalwork.controller.handle;
 
 import com.personalwork.domain.vo.ErrorMsg;
+import com.personalwork.exception.ApiParamInvalidException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.log4j.Log4j2;
@@ -35,6 +36,19 @@ public class ControllerExceptionHandler {
     public ResponseEntity<ErrorMsg> handleException(Exception e) {
         log.error("接口发生异常：{}", e.getMessage(), e);
         return new ResponseEntity<>(new ErrorMsg("服务器发生内部错误", e.getClass().getSimpleName()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    /**
+     * <p>返回接口业务参数的校验原因，供调用方修正请求。</p>
+     *
+     * @param exception 接口参数异常
+     * @return 包含具体提示的 HTTP 400 响应
+     */
+    @ExceptionHandler(ApiParamInvalidException.class)
+    public ResponseEntity<ErrorMsg> handleApiParamInvalidException(ApiParamInvalidException exception) {
+        log.warn("接口参数校验失败：{}", exception.getMessage(), exception);
+        return ResponseEntity.badRequest().body(
+                new ErrorMsg(exception.getMessage(), exception.getClass().getSimpleName()));
     }
 
     /**

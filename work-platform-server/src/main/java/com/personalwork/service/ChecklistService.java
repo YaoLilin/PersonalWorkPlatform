@@ -6,8 +6,8 @@ import com.personalwork.domain.dto.ChecklistDto;
 import com.personalwork.domain.dto.ChecklistScheduleTimeDto;
 import com.personalwork.domain.entity.ChecklistDo;
 import com.personalwork.domain.query.ChecklistParam;
+import com.personalwork.exception.ApiParamInvalidException;
 import com.personalwork.exception.DbOperateException;
-import com.personalwork.exception.MethodParamInvalidException;
 import com.personalwork.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -68,7 +68,7 @@ public class ChecklistService {
         ChecklistDo checklist = toChecklist(param);
         checklist.setId(id);
         if (!checklistMapper.update(checklist)) {
-            throw new MethodParamInvalidException("清单不存在或无权限修改");
+            throw new DbOperateException("清单更新失败");
         }
         projectTimeMapper.updateScheduleNameByChecklistId(id, checklist.getName());
     }
@@ -80,11 +80,8 @@ public class ChecklistService {
      * @param isDone 完成状态，0:未完成 1:已完成
      */
     public void updateState(Integer id, Integer isDone) {
-        if (!Integer.valueOf(0).equals(isDone) && !Integer.valueOf(1).equals(isDone)) {
-            throw new MethodParamInvalidException("清单完成状态只能为0或1");
-        }
         if (!checklistMapper.updateState(id, isDone, UserUtil.getLoginUserId())) {
-            throw new MethodParamInvalidException("清单不存在或无权限修改");
+            throw new DbOperateException("清单更新失败");
         }
     }
 
@@ -95,11 +92,11 @@ public class ChecklistService {
      */
     public void delete(Integer id) {
         if (checklistMapper.getByIdAndUserId(id, UserUtil.getLoginUserId()) == null) {
-            throw new MethodParamInvalidException("清单不存在或无权限删除");
+            throw new ApiParamInvalidException("清单不存在或无权限删除");
         }
         projectTimeMapper.clearChecklistIdByChecklistId(id);
         if (!checklistMapper.deleteByIdAndUserId(id, UserUtil.getLoginUserId())) {
-            throw new MethodParamInvalidException("清单不存在或无权限删除");
+            throw new DbOperateException("清单删除失败");
         }
     }
 

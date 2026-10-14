@@ -3,15 +3,17 @@ package com.personalwork.service;
 import com.personalwork.dao.ChecklistTypeMapper;
 import com.personalwork.domain.dto.TypeTreeNode;
 import com.personalwork.domain.entity.ChecklistTypeDo;
+import com.personalwork.domain.query.ChecklistTypeParam;
+import com.personalwork.exception.DbOperateException;
 import com.personalwork.security.bean.UserDetail;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * <p>清单类型服务单元测试。</p>
@@ -46,6 +48,18 @@ class ChecklistTypeServiceTest {
 
         assertEquals(1, result.size());
         assertEquals("开发", result.get(0).getChildren().get(0).getTitle());
+    }
+
+    @Test
+    void updateFailureUsesDatabaseException() {
+        UserDetail user = new UserDetail("admin", "admin", "", "", 1);
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user, null));
+        ChecklistTypeService service = new ChecklistTypeService(new InMemoryChecklistTypeMapper(List.of()));
+
+        DbOperateException exception = assertThrows(DbOperateException.class,
+                () -> service.updateType(10, new ChecklistTypeParam()));
+
+        assertEquals("清单类型更新失败", exception.getMessage());
     }
 
     /**

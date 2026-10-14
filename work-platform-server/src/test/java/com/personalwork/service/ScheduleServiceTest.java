@@ -10,17 +10,16 @@ import com.personalwork.domain.entity.ProjectTimeDo;
 import com.personalwork.domain.entity.RecordWeekDo;
 import com.personalwork.domain.query.ScheduleEventParam;
 import com.personalwork.domain.vo.ScheduleEventVo;
-import com.personalwork.exception.MethodParamInvalidException;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -82,17 +81,6 @@ class ScheduleServiceTest extends TestSetUp {
     }
 
     @Test
-    void rejectsScheduleWithoutChecklistEvenWhenProjectIsSelected() {
-        ScheduleEventParam param = validParam();
-        param.setProjectId(2);
-
-        assertThrows(MethodParamInvalidException.class, () -> scheduleService.createSchedule(param));
-
-        verify(projectTimeMapper, never()).insert(any(ProjectTimeDo.class));
-        verify(checklistMapper, never()).insert(any(ChecklistDo.class));
-    }
-
-    @Test
     void updatesExistingScheduleWithoutChecklistOrProject() {
         ScheduleEventParam param = validParam();
         param.setScheduleName("修改后的日程");
@@ -145,6 +133,47 @@ class ScheduleServiceTest extends TestSetUp {
 
         verify(projectTimeMapper).updateSchedule(org.mockito.ArgumentMatchers.argThat(schedule ->
                 schedule.getProject() == null && Integer.valueOf(5).equals(schedule.getChecklistId())));
+    }
+
+    @Test
+    void updatingOnlyTimeRetainsChecklistProjectInResponse() {
+        ScheduleEventParam param = validParam();
+        param.setChecklistId(11);
+        param.setScheduleName("项目清单");
+        param.setEndTime("11:00");
+        ProjectTimeDo original = new ProjectTimeDo();
+        original.setId(7);
+        original.setDate("2026-10-02");
+        original.setEndDate("2026-10-02");
+        original.setStartTime("09:00");
+        original.setEndTime("10:00");
+        original.setChecklistId(11);
+        ChecklistDo checklist = new ChecklistDo();
+        checklist.setId(11);
+        checklist.setName("项目清单");
+        checklist.setProjectId(2);
+        ScheduleEventVo detail = new ScheduleEventVo();
+        detail.setChecklistId(11);
+        detail.setChecklistProjectId(2);
+        detail.setChecklistProjectName("项目B");
+        RecordWeekDo week = new RecordWeekDo();
+        week.setId(3);
+        when(weekFormService.ensureWeekForm(any(LocalDate.class))).thenReturn(week);
+        when(checklistMapper.getByIdAndUserId(11, 1)).thenReturn(checklist);
+        when(projectTimeMapper.listChecklistDetailsByIds(List.of(11))).thenReturn(List.of(detail));
+        when(projectTimeMapper.getScheduleById(7, 1)).thenReturn(original).thenAnswer(invocation -> {
+            ArgumentCaptor<ProjectTimeDo> updated = ArgumentCaptor.forClass(ProjectTimeDo.class);
+            verify(projectTimeMapper).updateSchedule(updated.capture());
+            return updated.getValue();
+        });
+
+        ScheduleEventVo result = scheduleService.updateSchedule(7, param);
+
+        assertNull(result.getProjectId());
+        assertEquals(11, result.getChecklistId());
+        assertEquals(2, result.getChecklistProjectId());
+        assertEquals("项目B", result.getChecklistProjectName());
+        assertEquals("11:00", result.getEndTime());
     }
 
     private ScheduleEventParam validParam() {

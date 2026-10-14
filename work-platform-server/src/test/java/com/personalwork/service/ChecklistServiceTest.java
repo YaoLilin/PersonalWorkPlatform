@@ -4,16 +4,18 @@ import com.personalwork.dao.ChecklistMapper;
 import com.personalwork.dao.ProjectTimeMapper;
 import com.personalwork.domain.dto.ChecklistDto;
 import com.personalwork.domain.dto.ChecklistScheduleTimeDto;
+import com.personalwork.domain.query.ChecklistParam;
+import com.personalwork.exception.DbOperateException;
 import com.personalwork.security.bean.UserDetail;
+import java.lang.reflect.Proxy;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.lang.reflect.Proxy;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -50,6 +52,19 @@ class ChecklistServiceTest {
         assertEquals(1, result.get(0).getScheduleTimes().size());
         assertEquals("09:00", result.get(0).getScheduleTimes().get(0).getStartTime());
         assertTrue(result.get(0).getScheduleTimes().contains(scheduleTime));
+    }
+
+    @Test
+    void updateFailureUsesDatabaseException() {
+        UserDetail user = new UserDetail("admin", "admin", "", "", 1);
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user, null));
+        ChecklistMapper mapper = createMapperProxy(ChecklistMapper.class, "update", false);
+        ChecklistService service = new ChecklistService(mapper, null);
+
+        DbOperateException exception = assertThrows(DbOperateException.class,
+                () -> service.update(10, new ChecklistParam()));
+
+        assertEquals("清单更新失败", exception.getMessage());
     }
 
     /**
